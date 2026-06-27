@@ -73,13 +73,13 @@ export class Todos extends Controller {
 		else if (filter === 'completed') title = 'Completed Tasks'
 		if (search) title = `Search: "${search}"`
 
-		return this.page('TodoApp', {
+		return this.view('TodoList', {
+			title,
 			todos: todos.rows,
 			stats: { total, completed, active },
 			filter,
 			priority,
-			search,
-		}, { title })
+		})
 	}
 
 	/**
@@ -94,18 +94,17 @@ export class Todos extends Controller {
 			return this.badRequest(v.errors)
 		}
 
-		// Validate priority value
 		const priority = v.data.priority
 		if (!['high', 'medium', 'low'].includes(priority)) {
 			return this.badRequest({ priority: ['Must be high, medium, or low'] })
 		}
 
-		const result = await this.db.query(
-			'INSERT INTO todos (title, priority) VALUES (?, ?) RETURNING *',
+		await this.db.query(
+			'INSERT INTO todos (title, priority) VALUES (?, ?)',
 			[v.data.title.trim(), priority]
 		)
 
-		return this.json(result.rows[0] ?? { id: result.insertId }, 201)
+		return this.redirect('/todos')
 	}
 
 	/**
@@ -154,12 +153,12 @@ export class Todos extends Controller {
 		updates.push("updated_at = datetime('now')")
 		params.push(id)
 
-		const result = await this.db.query<Todo>(
-			`UPDATE todos SET ${updates.join(', ')} WHERE id = ? RETURNING *`,
+		await this.db.query(
+			`UPDATE todos SET ${updates.join(', ')} WHERE id = ?`,
 			params
 		)
 
-		return this.json(result.rows[0])
+		return this.redirect('/todos')
 	}
 
 	/**
@@ -172,6 +171,6 @@ export class Todos extends Controller {
 		if (!existing) return this.notFound('Todo not found')
 
 		await this.db.query('DELETE FROM todos WHERE id = ?', [id])
-		return this.json({ deleted: true, id })
+		return this.redirect('/todos')
 	}
 }
