@@ -26,6 +26,7 @@ import { applyMiddleware } from './helpers/middleware'
 import type { MiddlewareConfig } from './helpers/middleware'
 import { loadMiddleware, applyMiddlewareToApp } from './helpers/middleware-loader'
 import { setViewsDir } from './view/renderer'
+import { openapi } from './helpers/openapi'
 import { createCache, Cache } from './helpers/cache'
 import { createQueue, Queue } from './helpers/queue'
 import { createUpload, Upload } from './helpers/upload'
@@ -147,6 +148,12 @@ async function main() {
 	if (existsSync(routesDir)) {
 		await registerServerRoutes(app, routesDir, '')
 	}
+
+	// ─── OpenAPI Documentation ───────────────────────────────
+	openapi(app, {
+		title: 'NexusTS API',
+		version: '0.1.0',
+	})
 
 	// ─── Health Check ─────────────────────────────────────────
 	app.get('/health', () => new Response(JSON.stringify({
