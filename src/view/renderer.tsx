@@ -67,12 +67,12 @@ export async function renderView(
 	name: string,
 	props: Record<string, any> = {},
 	options: { title?: string; scripts?: string[] } = {}
-): Promise<string> {
+): Promise<string | Response> {
 	// Try to load the component from views/ directory
 	let Component = registry.get(name)
 
 	if (!Component) {
-		// Auto-load .tsx (React), .mdx (MDX), .html (plain HTML), or index
+		// Auto-load .tsx (React), .mdx (MDX), .html (plain HTML via rendu), or index
 		const candidates = [
 			join(process.cwd(), viewsDir, `${name}.tsx`),
 			join(process.cwd(), viewsDir, `${name}.mdx`),
@@ -88,10 +88,11 @@ export async function renderView(
 
 		if (targetPath) {
 			const ext = extname(targetPath)
-			if (ext === '.mdx' || ext === '.md') {
+			if (ext === '.html') {
+				// HTML templates use Rendu engine (PHP-like <?= ?> syntax)
+				return renderHTML(targetPath, props)
+			} else if (ext === '.mdx' || ext === '.md') {
 				Component = await compileMDX(targetPath, name, props)
-			} else if (ext === '.html') {
-				Component = compileHTML(targetPath, props)
 			} else {
 				const mod = await import(targetPath)
 				Component = mod.default ?? mod[name]
@@ -103,18 +104,14 @@ export async function renderView(
 	}
 
 	if (!Component) {
-		// Fallback: render props as JSON in HTML shell
 		return renderFallback(name, props, options)
 	}
 
 	try {
 		const html = renderToString(React.createElement(Component, props))
-
 		const title = options.title ?? name
 		const serialized = JSON.stringify({ component: name, props })
-
 		const scripts = (options.scripts ?? []).map(s => `<script src="${s}"></script>`).join('\n')
-
 		return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -154,25 +151,62 @@ function renderFallback(name: string, props: Record<string, any>, options: { tit
 }
 
 /**
- * Compile a plain HTML file into a React component.
- * Supports {{ variable }} interpolation, no JSX needed.
+ * Compile a plain HTML file using Rendu (PHP-like template engine).
+ * Supports <?= expr ?>, <?js code ?>, {{ expr }}, {{{ expr }}} syntax.
  */
 function compileHTML(filePath: string, props: Record<string, any>): any {
 	const source = readFileSync(filePath, 'utf-8')
 
-	// Interpolate {{ variable }} with prop values
-	const html = source.replace(/\{\{\s*(\w+(?:\.\w+)*)\s*\}\}/g, (match, keyPath) => {
-		const value = keyPath.split('.').reduce((obj: any, key: string) => obj?.[key], props)
-		return value !== undefined ? String(value) : match
-	})
-
-	// Return a React component that renders the HTML via dangerouslySetInnerHTML
-	const HtmlComponent = () =>
-		React.createElement('div', {
-			dangerouslySetInnerHTML: { __html: html }
-		})
+	// Build a component that renders the template at request time
+	const HtmlComponent = () => {
+		// Use React state/effect to render on mount, but for SSR we need sync
+		// Actually, return a placeholder that gets stream-rendered
+		throw new Error('Use renderHTML() instead of React for .html templates')
+	}
 
 	return HtmlComponent
+}
+
+/**
+ * Render an HTML template using Rendu engine.
+ * Handles PHP-style <?= ?>, control flow <?js ?>, and {{ }} mustache syntax.
+ * Returns a Promise<Response> with rendered HTML.
+ */
+export async function renderHTML(filePath: string, props: Record<string, any> = {}): Promise<Response> {
+	const source = readFileSync(filePath, 'utf-8')
+
+	// Compile template using Rendu
+	const { compileTemplate } = await import('rendu')
+	const fn = compileTemplate(source)
+
+	// Execute with props
+	const stream = await fn(props)
+
+	// Collect stream into string
+	const reader = stream.getReader()
+	const chunks: Uint8Array[] = []
+	while (true) {
+		const { done, value } = await reader.read()
+		if (done) break
+		chunks.push(value)
+	}
+
+	const html = new TextDecoder().decode(concatUint8Arrays(chunks))
+
+	return new Response(html, {
+		headers: { 'content-type': 'text/html; charset=utf-8' }
+	})
+}
+
+function concatUint8Arrays(arrays: Uint8Array[]): Uint8Array {
+	const total = arrays.reduce((s, a) => s + a.length, 0)
+	const result = new Uint8Array(total)
+	let offset = 0
+	for (const a of arrays) {
+		result.set(a, offset)
+		offset += a.length
+	}
+	return result
 }
 
 /**

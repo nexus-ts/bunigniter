@@ -347,9 +347,11 @@ function registerRoute(
 			if (result instanceof Response) return result
 
 			// Handle PageResponse — render HTML for first load, JSON for Inertia
-			// Handle ViewResponse — SSR render a React component
+			// Handle ViewResponse — SSR render a React component or Rendu HTML template
 			if (result instanceof ViewResponse) {
 				const html = await renderView(result.name, result.props, result.options)
+				// html can be a string (React SSR) or a Response (Rendu HTML)
+				if (html instanceof Response) return html
 				return new Response(html, {
 					status: 200,
 					headers: { 'content-type': 'text/html; charset=utf-8' }

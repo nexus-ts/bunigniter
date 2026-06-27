@@ -19,8 +19,9 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.45.0",
-    "zod": "^4.4.3",
-    "elysia": "file:/tmp/pi-github-repos/elysiajs/elysia@kiana"
+    "elysia": "file:/tmp/pi-github-repos/elysiajs/elysia@kiana",
+    "rendu": "^0.1.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bun": "^1.3.14",

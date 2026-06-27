@@ -1,0 +1,35 @@
+# 📋 About Todo App
+
+A full-stack Todo application built with **NexusTS** — a Bun-native framework inspired by CodeIgniter.
+
+**Current stats:** {{ total }} todos ({{ active }} active, {{ completed }} completed)
+**Server uptime:** {{ uptime }}
+**Generated at:** {{ generatedAt }}
+
+## Features
+
+- **SSR React Views** — Pages rendered on the server
+- **SQLite Database** — Lightweight, zero-config persistence
+- **CRUD Operations** — Create, read, update, delete todos
+- **Rendu Templates** — PHP-style `<?= expr ?>` in HTML files
+- **Filter & Search** — By status (active/completed), priority, or text
+- **Post/Redirect/Get** — HTML form submissions with PRG pattern
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| Runtime | [Bun](https://bun.sh) 1.3+ |
+| Framework | NexusTS |
+| HTTP | Elysia v2 |
+| Templates | Rendu (PHP-style) + React SSR + MDX |
+| Database | SQLite via `bun:sqlite` |
+
+## Routes
+
+| Method | Path | Description | Template |
+|--------|------|-------------|----------|
+| `GET` | `/` | Redirect to `/todos` | — |
+| `GET` | `/todos` | List todos | `TodoList.tsx` (React) |
+| `GET` | `/welcome` | Welcome page | `welcome.html` (Rendu) |
+| `GET` | `/about` | This page | `About.mdx` (MDX) |
