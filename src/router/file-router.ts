@@ -25,6 +25,10 @@ import { join, basename } from 'node:path'
 import { Elysia, t } from 'elysia'
 import type { Controller } from '../base/controller'
 import type { DbClient } from '../db/drizzle'
+import type { Cache } from '../helpers/cache'
+import type { Queue } from '../helpers/queue'
+import type { Upload } from '../helpers/upload'
+import type { Mail } from '../helpers/mail'
 import { Session } from '../helpers/session'
 
 export interface FileRouterOptions {
@@ -36,6 +40,18 @@ export interface FileRouterOptions {
 
 	/** Database instance to inject into controllers. */
 	db?: DbClient
+
+	/** Cache instance. */
+	cache?: Cache
+
+	/** Queue instance. */
+	queue?: Queue
+
+	/** Upload instance. */
+	upload?: Upload
+
+	/** Mail instance. */
+	mail?: Mail
 
 	/** Called when a controller is registered (for DI/decoration). */
 	onRegister?: (controller: Controller) => void
@@ -144,10 +160,34 @@ export async function registerFileRoutes(app: Elysia, options: FileRouterOptions
 
 		const controller = new ControllerClass() as Controller
 
-		// Inject db
+		// Inject services
 		if (options.db) {
 			Object.defineProperty(controller, 'db', {
 				value: options.db,
+				writable: false,
+			})
+		}
+		if (options.cache) {
+			Object.defineProperty(controller, 'cache', {
+				value: options.cache,
+				writable: false,
+			})
+		}
+		if (options.queue) {
+			Object.defineProperty(controller, 'queue', {
+				value: options.queue,
+				writable: false,
+			})
+		}
+		if (options.upload) {
+			Object.defineProperty(controller, 'upload', {
+				value: options.upload,
+				writable: false,
+			})
+		}
+		if (options.mail) {
+			Object.defineProperty(controller, 'mail', {
+				value: options.mail,
 				writable: false,
 			})
 		}

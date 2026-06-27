@@ -22,6 +22,10 @@ import { loadEnv } from './helpers/env'
 import { sessionMiddleware, authMiddleware } from './helpers/session-middleware'
 import { applyMiddleware } from './helpers/middleware'
 import type { MiddlewareConfig } from './helpers/middleware'
+import { createCache, Cache } from './helpers/cache'
+import { createQueue, Queue } from './helpers/queue'
+import { createUpload, Upload } from './helpers/upload'
+import { createMail, Mail } from './helpers/mail'
 
 export { Controller, Service } from './base/index'
 export { DbClient } from './db/drizzle'
@@ -78,6 +82,16 @@ async function main() {
 	app.use(sessionMiddleware({ key: config.app?.key }))
 	app.use(authMiddleware())
 
+	// ─── Services (Cache, Queue, Upload, Mail) ─────────────────
+	const cache = createCache()
+	const queue = createQueue()
+	const upload = createUpload()
+	const mail = createMail({
+		transport: process.env.NODE_ENV === 'production'
+			? undefined // SMTP in production
+			: undefined, // Null in dev (set via env)
+	})
+
 	// ─── File-based Routes ────────────────────────────────────
 	const routerPrefix = config.router?.prefix ?? '/api'
 	const pagesDir = config.router?.directory ?? 'pages'
@@ -86,6 +100,10 @@ async function main() {
 		directory: pagesDir,
 		prefix: routerPrefix,
 		db,
+		cache,
+		queue,
+		upload,
+		mail,
 	})
 
 	// ─── Health Check ─────────────────────────────────────────

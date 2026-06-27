@@ -19,6 +19,10 @@ import type { DbClient } from '../db/drizzle'
 import { validate, validateStringRules, validateZod, type ValidationResult, type ValidationErrors, type rules } from '../helpers/validator'
 import type { z } from 'zod'
 import type { Session } from '../helpers/session'
+import type { Cache } from '../helpers/cache'
+import type { Queue } from '../helpers/queue'
+import type { Upload } from '../helpers/upload'
+import type { Mail } from '../helpers/mail'
 
 export class Controller {
 	/** Active request context — set by the router before each handler call. */
@@ -37,6 +41,18 @@ export class Controller {
 		logout: () => void
 		check: () => boolean
 	}
+
+	/** Cache — `this.cache.get/set/delete/remember`. */
+	declare cache: Cache
+
+	/** Queue — `this.queue.dispatch/process`. */
+	declare queue: Queue
+
+	/** Upload — `this.upload.file/files/store`. */
+	declare upload: Upload
+
+	/** Mail — `this.mail.send()`. */
+	declare mail: Mail
 
 	// ─── Request Shortcuts ───────────────────────────────────────
 
