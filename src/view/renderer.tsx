@@ -153,8 +153,8 @@ function renderFallback(name: string, props: Record<string, any>, options: { tit
 }
 
 /**
- * Compile an MDX file at runtime into a React component.
- * Writes compiled JS to a temp file, imports it, returns the default export.
+ * Compile an MDX file into a React component using Bun's built-in
+ * markdown parser (Bun.markdown.react()). No external packages needed.
  */
 async function compileMDX(filePath: string, name: string, props: Record<string, any>): Promise<any> {
 	const cacheKey = filePath
@@ -163,41 +163,34 @@ async function compileMDX(filePath: string, name: string, props: Record<string, 
 	try {
 		const source = readFileSync(filePath, 'utf-8')
 
-		// Compile MDX → JSX function using @mdx-js/mdx
-		const { compile } = await import('@mdx-js/mdx')
-		const compiled = await compile(source, {
-			development: false,
-			jsx: true,
-			jsxImportSource: 'react',
-		})
+		// Extract frontmatter (optional)
+		const content = source.replace(/^---[\s\S]*?---\n?/, '')
 
-		const code = String(compiled)
-
-		// Write to a temp .jsx file and import it
-		const { writeFileSync, mkdirSync } = await import('node:fs')
-		const tmpDir = join(process.cwd(), '.nexus', 'mdx-cache')
-		const tmpFile = join(tmpDir, name.replace(/[^a-zA-Z0-9_]/g, '_') + '.jsx')
-		mkdirSync(tmpDir, { recursive: true })
-
-		// Add the jsx import so the compiled MDX works standalone
-		const wrapped = `import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
-${code}`
-		writeFileSync(tmpFile, wrapped, 'utf-8')
-
-		// Import the compiled module (add cache buster)
-		const cacheBuster = Date.now()
-		const mod = await import(tmpFile + '?v=' + cacheBuster)
-		const MdxContent = mod.default
-
-		if (!MdxContent) {
-			console.error('[view] MDX compiled but no default export found')
-			return null
+		// Use Bun's built-in Markdown → React parser
+		const MdxContent = (overrideProps: any) => {
+			const merged = { ...props, ...overrideProps }
+			return Bun.markdown.react(content, {
+				h1: ({ children, id }: any) =>
+					React.createElement('h1', { id, style: { color: '#e94560' } }, children),
+				a: ({ href, children }: any) =>
+					React.createElement('a', { href, style: { color: '#70a1ff' } }, children),
+				pre: ({ children }: any) =>
+					React.createElement('pre', { style: { background: '#1a1a3e', padding: 16, borderRadius: 8, overflow: 'auto' } }, children),
+				code: ({ children }: any) =>
+					React.createElement('code', { style: { background: '#333', padding: '2px 6px', borderRadius: 3, fontSize: '0.9em' } }, children),
+			}, {
+				tables: true,
+				strikethrough: true,
+				tasklists: true,
+				autolinks: true,
+				headings: { ids: true },
+			})
 		}
 
 		mdxCache.set(cacheKey, MdxContent)
 		return MdxContent
 	} catch (err: any) {
-		console.error('[view] MDX compile error:', err.message)
+		console.error('[view] MDX error:', err.message)
 		return null
 	}
 }
