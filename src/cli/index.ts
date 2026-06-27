@@ -18,7 +18,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 
 const CWD = process.cwd()
 
-const PAGES_DIR = join(CWD, 'pages')
+const PAGES_DIR = join(CWD, 'routes')
 const DB_DIR = join(CWD, 'db')
 const SCHEMA_DIR = join(CWD, 'db/schema')
 
@@ -128,14 +128,14 @@ ${cols.map((c: any) => `\t${c.name}: ${c.type === 'number' ? `integer('${c.name}
 		run: async () => {
 			console.log('\n  NexusTS Routes')
 			console.log('  ─────────────────────────────────')
-			// Scan pages directory for controllers
-			const pagesDir = join(CWD, 'pages')
-			if (!existsSync(pagesDir)) {
-				console.log('  No pages directory found.')
+			// Scan routes directory for controllers
+			const routesDir = join(CWD, 'routes')
+			if (!existsSync(routesDir)) {
+				console.log('  No routes directory found.')
 				return
 			}
 			const { readdirSync, statSync } = await import('node:fs')
-			const files = readdirSync(pagesDir)
+			const files = readdirSync(routesDir)
 			for (const file of files.sort()) {
 				if (file.endsWith('.ts') && !file.endsWith('.server.ts')) {
 					const name = file.replace(/\.ts$/, '')

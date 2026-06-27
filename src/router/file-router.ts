@@ -35,7 +35,7 @@ import { ViewResponse } from '../view/view-response'
 import { renderView } from '../view/renderer'
 
 export interface FileRouterOptions {
-	/** Directory containing page files. Default: `pages` */
+	/** Directory containing route files. Default: `routes` */
 	directory?: string
 
 	/** URL prefix for all routes. Default: `/api` */
@@ -116,7 +116,7 @@ const ID_METHODS = new Set(['show', 'update', 'destroy', 'edit'])
  *
  * @example
  * ```ts
- * // pages/users.ts — handles GET /api/users, POST /api/users
+ * // routes/users.ts — handles GET /api/users, POST /api/users
  * export class Users extends Controller {
  *   async index() { return this.json(await this.db.query('SELECT * FROM users')) }
  *   async show(id: number) { return this.json(await this.db.query('SELECT * FROM users WHERE id = ?', [id])) }
@@ -125,12 +125,12 @@ const ID_METHODS = new Set(['show', 'update', 'destroy', 'edit'])
  * ```
  */
 export async function registerFileRoutes(app: Elysia, options: FileRouterOptions = {}): Promise<void> {
-	const dir = options.directory ?? 'pages'
+	const dir = options.directory ?? 'routes'
 	const prefix = options.prefix ?? '/api'
 
 	// Ensure directory exists
 	try { statSync(dir) } catch {
-		console.warn(`[router] pages directory not found: ${dir}`)
+		console.warn(`[router] routes directory not found: ${dir}`)
 		return
 	}
 
@@ -379,7 +379,7 @@ function registerRoute(
 
 				// Inject client-side app script before </body>
 				if (html.includes('</body>')) {
-					// Look for a public/app.js in the pages directory
+					// Look for a public/app.js for client-side boot
 					const publicPath = join(process.cwd(), 'public', 'app.js')
 					if (existsSync(publicPath)) {
 						html = html.replace('</body>', '<script src="/public/app.js"></script>\n</body>')

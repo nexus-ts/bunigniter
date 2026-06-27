@@ -1,7 +1,7 @@
 /**
  * Server Router — Void-style file-based routing with method exports.
  *
- * Scans `routes/` directory (alongside `pages/`). Each file exports
+ * Scans `routes/` directory. Each file exports
  * HTTP method constants (`GET`, `POST`, etc.) created via `defineHandler`.
  *
  * Directory structure:

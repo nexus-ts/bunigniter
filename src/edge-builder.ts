@@ -34,7 +34,7 @@ export async function buildEdgeRoutes(): Promise<void> {
 		const content = readFileSync(fullPath, 'utf-8')
 		const classMatch = content.match(/export class (\w+) extends Controller/)
 		const name = classMatch ? classMatch[1] : 'UnknownController'
-		const importPath = `./pages/${file}`
+		const importPath = `./routes/${file}`
 		const isIndex = basename(file, '.ts') === 'index'
 		const prefix = process.env.ROUTER_PREFIX ?? '/api'
 

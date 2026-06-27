@@ -112,7 +112,7 @@ async function main() {
 
 	// ─── File-based Routes ────────────────────────────────────
 	const routerPrefix = config.router?.prefix ?? '/api'
-	const pagesDir = config.router?.directory ?? 'pages'
+	const pagesDir = config.router?.directory ?? 'routes'
 
 	await registerFileRoutes(app, {
 		directory: pagesDir,
@@ -160,7 +160,7 @@ async function main() {
 	// ─── Start Server ─────────────────────────────────────────
 	app.listen(port, () => {
 		console.log(`\n  🚀 NexusTS ready at http://localhost:${port}`)
-		console.log(`  📁 Pages:    ./${pagesDir}/`)
+		console.log(`  📁 Routes:   ./${pagesDir}/`)
 		console.log(`  🔗 Routes:   ${routerPrefix}/*`)
 		console.log(`  💾 Database: ${dbConfig?.dialect ?? 'none'}\n`)
 	})
