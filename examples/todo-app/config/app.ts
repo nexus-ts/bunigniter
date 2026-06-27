@@ -17,7 +17,7 @@ export default {
 
 	router: {
 		prefix: '',
-		directory: 'pages',
+		directory: 'routes',
 	},
 
 	view: {

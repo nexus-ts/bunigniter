@@ -232,7 +232,7 @@ export async function renderHTML(filePath: string, props: Record<string, any> = 
 		const layoutStream = await layoutFn({
 			htmlspecialchars: (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
 			slot: html,
-			title: (props as any).title ?? 'NexusTS',
+			...props,
 		})
 		const layoutReader = layoutStream.getReader()
 		const layoutChunks: Uint8Array[] = []
@@ -356,7 +356,7 @@ export async function renderMDXView(filePath: string, props: Record<string, any>
 		const layoutStream = await layoutFn({
 			htmlspecialchars: (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
 			slot: finalHtml,
-			title: (props as any).title ?? 'NexusTS',
+			...props,
 		})
 		const lr = layoutStream.getReader()
 		const lc: Uint8Array[] = []

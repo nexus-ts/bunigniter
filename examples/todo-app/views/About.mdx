@@ -12,7 +12,9 @@ A full-stack Todo application built with **NexusTS**.
 - **SQLite Database** — Lightweight, zero-config persistence
 - **CRUD Operations** — Create, read, update, delete todos
 - **Rendu Templates** — PHP-style `<?= expr ?>` in HTML files
-- **MDX + Rendu** — Markdown with `<?= ?>` interpolation (this page!)
+- **Sub-template support** — `include('_copyright.html')` in any template
+
+<?= await include('_copyright.html') ?>
 
 ## Tech Stack
 

@@ -32,7 +32,7 @@ export default {
 	/**
 	 * Server port. Reads PORT environment variable, defaults to 3000.
 	 */
-	port: env('PORT', 3000),
+	port: Number(process.env.PORT) || env('PORT', 3000),
 
 	/**
 	 * Database configuration.
@@ -50,7 +50,7 @@ export default {
 	 */
 	router: {
 		prefix: env('ROUTER_PREFIX', '/api'),
-		directory: 'pages',
+		directory: 'routes',
 	},
 
 	/**

@@ -18,11 +18,12 @@ export class About extends Controller {
 		} catch {}
 
 		return this.view('About', {
+			title: 'About Todo App',
 			total,
 			active,
 			completed,
 			uptime: `${Math.floor(process.uptime())}s`,
 			generatedAt: new Date().toLocaleString(),
-		}, { title: 'About Todo App' })
+		})
 	}
 }
