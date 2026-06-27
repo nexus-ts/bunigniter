@@ -92,6 +92,7 @@ async function main() {
 	app.use(sessionMiddleware({ key: config.app?.key }))
 	app.use(authMiddleware())
 
+
 	// ─── Services (Cache, Queue, Upload, Mail) ─────────────────
 	const cache = createCache()
 	const queue = createQueue()

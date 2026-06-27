@@ -74,6 +74,27 @@ function escapeHtml(s: string): string {
 	return s.replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
+/** Generate an inline debug toolbar snippet. */
+function debugToolbarHtml(): string {
+	const mem = ((process as any).memoryUsage?.()?.rss ?? 0) / (1024 * 1024)
+	return `<!-- NexusTS Debug -->
+<style>
+.nexus-debug{font-family:monospace;font-size:12px;color:#ccc;background:#1a1a2e;border-top:2px solid #e94560;position:fixed;bottom:0;left:0;right:0;z-index:9999;max-height:32px;overflow:hidden;cursor:pointer;transition:max-height .2s}
+.nexus-debug:hover{max-height:50vh;overflow-y:auto}
+.nexus-debug .bar{display:flex;align-items:center;gap:12px;padding:6px 12px;background:#16213e;border-bottom:1px solid #0f3460}
+.nexus-debug .title{font-weight:bold;color:#e94560}
+.nexus-debug .stat{color:#ccc}
+.nexus-debug .stat strong{color:#fff}
+</style>
+<div class="nexus-debug">
+  <div class="bar">
+    <span class="title">NexusTS</span>
+    <span class="stat">💾 ${mem.toFixed(1)} MB</span>
+    <span class="stat">⏱ ${new Date().toLocaleTimeString()}</span>
+  </div>
+</div>`
+}
+
 /** Default method-to-verb mapping (CodeIgniter-style). */
 const METHOD_MAP: Record<string, string> = Object.assign(Object.create(null), {
 	index: 'GET',
@@ -336,7 +357,17 @@ function registerRoute(
 
 				// First load: return full HTML shell
 				const url = _ctx.request?.url ?? '/'
-				return new Response(result.toHtml(controller?._sharedProps, url), {
+				let html = result.toHtml(controller?._sharedProps, url)
+
+				// Inject debug toolbar if enabled
+				const reqUrl = new URL(url || 'http://localhost')
+				const debugParam = reqUrl.searchParams.get('debug')
+				const isDebug = debugParam === '1' || process.env.DEBUG === 'true'
+				if (isDebug && html.includes('</body>')) {
+					html = html.replace('</body>', debugToolbarHtml() + '\n</body>')
+				}
+
+				return new Response(html, {
 					status: result.options.status ?? 200,
 					headers: { 'content-type': 'text/html; charset=utf-8' }
 				})
