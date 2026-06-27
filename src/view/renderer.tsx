@@ -178,12 +178,35 @@ export async function renderHTML(filePath: string, props: Record<string, any> = 
 
 	// Compile template using Rendu
 	const { compileTemplate } = await import('rendu')
-	const fn = compileTemplate(source)
 
-	// Rendu needs htmlspecialchars and other context keys
+	/** Include a sub-template (partial) file. */
+	const includeSub = async (name: string): Promise<string> => {
+		const dir = filePath.substring(0, filePath.lastIndexOf('/'))
+		let subPath = join(dir, name)
+		if (!existsSync(subPath)) {
+			const ext = name.endsWith('.html') ? '' : '.html'
+			subPath = join(dir, name + ext)
+		}
+		if (!existsSync(subPath)) return `<!-- missing partial: ${name} -->`
+
+		const subSource = readFileSync(subPath, 'utf-8')
+		const subFn = compileTemplate(subSource)
+		const subStream = await subFn(ctx)
+		const reader = subStream.getReader()
+		let result = ''
+		while (true) {
+			const { done, value } = await reader.read()
+			if (done) break
+			result += new TextDecoder().decode(value)
+		}
+		return result
+	}
+
+	const fn = compileTemplate(source)
 	const ctx = {
-		htmlspecialchars: (s: string) =>
-			String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
+		htmlspecialchars: (s: unknown) =>
+			String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
+		include: async (name: string) => await includeSub(name),
 		...props,
 	}
 
@@ -199,7 +222,27 @@ export async function renderHTML(filePath: string, props: Record<string, any> = 
 		chunks.push(value)
 	}
 
-	const html = new TextDecoder().decode(concatUint8Arrays(chunks))
+	let html = new TextDecoder().decode(concatUint8Arrays(chunks))
+
+	// Auto-layout: wrap with _layout.html from same directory
+	const layoutPath = join(filePath.substring(0, filePath.lastIndexOf('/')), '_layout.html')
+	if (existsSync(layoutPath)) {
+		const layoutSource = readFileSync(layoutPath, 'utf-8')
+		const layoutFn = compileTemplate(layoutSource)
+		const layoutStream = await layoutFn({
+			htmlspecialchars: (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
+			slot: html,
+			title: (props as any).title ?? 'NexusTS',
+		})
+		const layoutReader = layoutStream.getReader()
+		const layoutChunks: Uint8Array[] = []
+		while (true) {
+			const { done, value } = await layoutReader.read()
+			if (done) break
+			layoutChunks.push(value)
+		}
+		html = new TextDecoder().decode(concatUint8Arrays(layoutChunks))
+	}
 
 	return new Response(html, {
 		headers: { 'content-type': 'text/html; charset=utf-8' }
@@ -231,24 +274,27 @@ function concatUint8Arrays(arrays: Uint8Array[]): Uint8Array {
  */
 export async function renderMDXView(filePath: string, props: Record<string, any> = {}): Promise<Response> {
 	const source = readFileSync(filePath, 'utf-8')
-	const content = source.replace(/^---[\s\S]*?---\n?/, '')
+	let content = source.replace(/^---[\s\S]*?---\n?/, '')
 
-	// Step 1: Pre-process content — escape <? inside code blocks so Rendu
-	// doesn't try to evaluate them as template expressions
-	let safeContent = content
-		.replace(/`<\?=(.+?)`/g, '`&lt;?=$1`')
+	// Step 1: Pre-render partials (_*.html) and replace include() calls
+	// with their rendered HTML (added AFTER markdown rendering to avoid conflicts)
+	const renderedPartials: string[] = []
+	let processed = content.replace(
+		/<\?=\s*await\s+include\s*\(\s*['"]([^'"]+)['"]\s*\)\s*\?>/g,
+		(_match: string, partialName: string) => {
+			const placeholder = `<!--INCLUDE_PLACEHOLDER_${renderedPartials.length}-->`
+			renderedPartials.push(partialName)
+			return placeholder
+		}
+	)
+	.replace(/`<\?=(.+?)`/g, '`&lt;?=$1`')
 		.replace(/`<\?js(.+?)\?>`/g, '`&lt;?js$1?&gt;`')
 
-	// Step 2: Interpolate <?= ?> and {{ }} via Rendu
+	// Step 2: Render through Rendu for <?= ?> and {{ }} interpolation
 	const { compileTemplate } = await import('rendu')
-	const fn = compileTemplate(safeContent)
-
-	// Rendu needs htmlspecialchars for {{ }} escaping
+	const fn = compileTemplate(processed)
 	const ctx = {
-		htmlspecialchars: (s: unknown) => {
-			const str = String(s ?? '')
-			return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-		},
+		htmlspecialchars: (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
 		...props,
 	}
 	const stream = await fn(ctx)
@@ -260,31 +306,53 @@ export async function renderMDXView(filePath: string, props: Record<string, any>
 		interpolated += new TextDecoder().decode(value)
 	}
 
-	// Step 2: Render markdown to React elements, then to HTML
-	const elements = Bun.markdown.react(interpolated, {
-		h1: ({ children, id }: any) =>
-			React.createElement('h1', { id, style: { color: '#e94560' } }, children),
-		a: ({ href, children }: any) =>
-			React.createElement('a', { href, style: { color: '#70a1ff' } }, children),
-		pre: ({ children }: any) =>
-			React.createElement('pre', { style: { background: '#1a1a3e', padding: 16, borderRadius: 8, overflow: 'auto' } }, children),
-		code: ({ children }: any) =>
-			React.createElement('code', { style: { background: '#333', padding: '2px 6px', borderRadius: 3, fontSize: '0.9em' } }, children),
-	}, {
-		tables: true,
-		strikethrough: true,
-		tasklists: true,
-		autolinks: true,
-		headings: { ids: true },
-	})
+	// Step 3: Split at placeholders, render markdown parts, insert rendered partials
+	const parts = interpolated.split(/<!--INCLUDE_PLACEHOLDER_\d+-->/)
+	let finalHtml = ''
 
-	const html = renderToString(elements)
-	return new Response(html, {
+	const mdOverrides = {
+		h1: function(p: any) { return React.createElement('h1', { id: p.id, style: { color: '#e94560' } }, p.children) },
+		a: function(p: any) { return React.createElement('a', { href: p.href, style: { color: '#70a1ff' } }, p.children) },
+		pre: function(p: any) { return React.createElement('pre', { style: { background: '#1a1a3e', padding: 16, borderRadius: 8, overflow: 'auto' } }, p.children) },
+		code: function(p: any) { return React.createElement('code', { style: { background: '#333', padding: '2px 6px', borderRadius: 3, fontSize: '0.9em' } }, p.children) },
+	}
+	const mdOptions = { tables: true, strikethrough: true, tasklists: true, autolinks: true, headings: { ids: true } }
+
+	for (let i = 0; i < parts.length; i++) {
+		const mdPart = parts[i].trim()
+		if (mdPart) {
+			const elements = Bun.markdown.react(mdPart, mdOverrides, mdOptions)
+			finalHtml += renderToString(elements)
+		}
+
+		// Insert rendered partial after each markdown part (except the last)
+		if (i < renderedPartials.length) {
+			const partialName = renderedPartials[i]
+			const dir = filePath.substring(0, filePath.lastIndexOf('/'))
+			let subPath = join(dir, partialName)
+			if (!existsSync(subPath)) subPath = join(dir, partialName + (partialName.endsWith('.html') ? '' : '.html'))
+
+			if (existsSync(subPath)) {
+				const subSource = readFileSync(subPath, 'utf-8')
+				const subFn = compileTemplate(subSource)
+				const subStream = await subFn(ctx)
+				const subReader = subStream.getReader()
+				let subHtml = ''
+				while (true) {
+					const { done, value } = await subReader.read()
+					if (done) break
+					subHtml += new TextDecoder().decode(value)
+				}
+				finalHtml += subHtml
+			}
+		}
+	}
+
+	// Wrap in full HTML document
+	return new Response(finalHtml, {
 		headers: { 'content-type': 'text/html; charset=utf-8' }
 	})
 }
-
-
 
 /** Error page. */
 function renderError(err: Error, name: string, props: Record<string, any>): string {

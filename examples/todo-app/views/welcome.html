@@ -1,33 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= title ?></title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f23; color: #e0e0e0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .welcome { text-align: center; }
-    h1 { font-size: 48px; color: #e94560; margin-bottom: 16px; }
-    p { font-size: 18px; color: #888; margin-bottom: 8px; }
-    .links { margin-top: 32px; display: flex; gap: 16px; justify-content: center; }
-    a { color: #70a1ff; text-decoration: none; font-size: 16px; padding: 10px 24px; border: 1px solid #333; border-radius: 8px; transition: all 0.2s; }
-    a:hover { background: #1a1a3e; border-color: #e94560; }
-    .stats { margin-top: 24px; color: #666; font-size: 14px; }
-  </style>
-</head>
-<body>
-  <div class="welcome">
-    <h1>🚀 NexusTS</h1>
-    <p><?= message ?></p>
-    <p><strong><?= total ?></strong> todos in database</p>
-    <div class="links">
-      <a href="/todos">📋 View Todos</a>
-      <a href="/about">ℹ️ About</a>
-    </div>
-    <div class="stats">
-      Server uptime: <?= uptime ?> | Generated: <?= generatedAt ?>
-    </div>
+<div class="welcome" style="text-align: center;">
+  <h1 style="font-size: 48px; color: #e94560; margin-bottom: 16px;">🚀 NexusTS</h1>
+  <p style="font-size: 18px; color: #888; margin-bottom: 8px;"><?= message ?></p>
+  <p><strong><?= total ?></strong> todos in database</p>
+  <div style="margin-top: 32px; display: flex; gap: 16px; justify-content: center;">
+    <a href="/todos" style="color: #70a1ff; padding: 10px 24px; border: 1px solid #333; border-radius: 8px; text-decoration: none;">📋 View Todos</a>
+    <a href="/about" style="color: #70a1ff; padding: 10px 24px; border: 1px solid #333; border-radius: 8px; text-decoration: none;">ℹ️ About</a>
   </div>
-</body>
-</html>
+  <div style="margin-top: 24px; color: #666; font-size: 14px;">
+    Server uptime: <?= uptime ?> | Generated: <?= generatedAt ?>
+  </div>
+</div>
