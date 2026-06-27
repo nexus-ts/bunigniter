@@ -20,8 +20,8 @@
  * - Method names map to HTTP verbs: `index`=GET, `show`=GET/:id, `create`=POST, `update`=PUT, `destroy`=DELETE
  */
 
-import { readdirSync, statSync } from 'node:fs'
-import { join, relative, extname, basename, dirname } from 'node:path'
+import { readdirSync, statSync, existsSync } from 'node:fs'
+import { join, basename } from 'node:path'
 import { Elysia, t } from 'elysia'
 import type { Controller } from '../base/controller'
 import type { DbClient } from '../db/drizzle'
@@ -38,6 +38,22 @@ export interface FileRouterOptions {
 
 	/** Called when a controller is registered (for DI/decoration). */
 	onRegister?: (controller: Controller) => void
+}
+
+interface LoaderExport {
+	loader?: (ctx: any) => Promise<Record<string, any>>
+	action?: ((ctx: any, args?: any) => Promise<void>) | { config?: any; fn?: any }
+}
+
+/** Render a page component to HTML (server-side). */
+function renderPage(component: string, props: Record<string, any>): string {
+	// Build props JSON to embed in HTML shell
+	const propsJson = escapeHtml(JSON.stringify(props))
+	return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escapeHtml(component)}</title></head><body><div id="app" data-page='${propsJson}'></div></body></html>`
+}
+
+function escapeHtml(s: string): string {
+	return s.replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 /** Default method-to-verb mapping (CodeIgniter-style). */
@@ -77,9 +93,47 @@ export async function registerFileRoutes(app: Elysia, options: FileRouterOptions
 		return
 	}
 
+	// First pass: register .server.ts loader/action routes
+	const serverFiles = scanDir(dir, '.server.ts')
+	for (const file of serverFiles) {
+		const fullPath = join(dir, file)
+		const serverMod = await import(/* @vite-ignore */ join(process.cwd(), fullPath)) as LoaderExport
+		const componentName = file.replace(/\.server\.ts$/, '')
+		const urlPath = filePathToUrl(componentName + '.ts', prefix)
+
+		if (serverMod.loader) {
+			const handler = async (_ctx: any) => {
+				const props = await (serverMod.loader as Function)(_ctx)
+				// Serve as HTML shell (SSR placeholder) + JSON props
+				return new Response(renderPage(componentName, props), {
+					headers: { 'content-type': 'text/html; charset=utf-8' }
+				})
+			}
+			registerRoute(app, 'GET', urlPath, handler, null as any, options)
+		}
+
+		if (serverMod.action) {
+			const action = serverMod.action as any
+			const handler = async (_ctx: any) => {
+				let body
+				try { body = await _ctx.request.json() } catch { body = {} }
+				if (action.fn) {
+					await action.fn(_ctx, { body })
+				} else {
+					await action(_ctx, { body })
+				}
+				return new Response(null, { status: 204 })
+			}
+			registerRoute(app, 'POST', urlPath, handler, null as any, options)
+		}
+	}
+
+	// Second pass: register Controller routes
 	const files = scanDir(dir, '.ts')
 
 	for (const file of files) {
+		if (file.endsWith('.server.ts')) continue
+
 		const fullPath = join(dir, file)
 		const mod = await import(/* @vite-ignore */ join(process.cwd(), fullPath))
 
@@ -103,15 +157,12 @@ export async function registerFileRoutes(app: Elysia, options: FileRouterOptions
 		// Convert file path to URL path
 		const urlPath = filePathToUrl(file, prefix)
 
-		// Register routes for each method
-		const proto = Object.getOwnPropertyNames(Object.getPrototypeOf(controller))
+		// Register routes for each Controller method
 		const isIndex = basename(file, '.ts') === 'index'
 
-		for (const method of proto) {
-			if (!Object.hasOwn(METHOD_MAP, method)) continue
-			const verb = METHOD_MAP[method]
+		for (const method of ['index', 'show', 'create', 'update', 'destroy']) {
 			if (typeof (controller as any)[method] !== 'function') continue
-
+			const verb = METHOD_MAP[method]
 			const handler = (controller as any)[method].bind(controller)
 			const methodPath = ID_METHODS.has(method)
 				? (isIndex ? `${prefix}/:id` : `${urlPath}/:id`)
@@ -177,9 +228,11 @@ function registerRoute(
 	// Determine if this route needs an ID param based on the path
 	const needsId = path.endsWith('/:id')
 
-	// Wrap handler: inject ctx, handle async, pass through Response
+	// Wrap handler: inject ctx if controller exists, handle async
 	const wrappedHandler = async (_ctx: any) => {
-		;(controller as any).ctx = _ctx
+		if (controller) {
+			;(controller as any).ctx = _ctx
+		}
 		try {
 			// Parse JSON body once
 			if (!_ctx._bodyParsed) {
@@ -190,13 +243,17 @@ function registerRoute(
 				}
 			}
 
-			// Call handler — with ID param if route path has :id
+			// Call handler — pass context for server routes, ID for Controller routes
 			const id = _ctx.params?.id ? Number(_ctx.params.id) : undefined
-			const result = needsId ? await handler(id) : await handler()
+			let result
+			if (controller) {
+				result = needsId ? await handler(id) : await handler()
+			} else {
+				result = await handler(_ctx)
+			}
 
 			if (result instanceof Response) return result
 			if (result !== undefined && result !== null) {
-				// If result has a _status property, use it (Controller.json() passes it)
 				const status = (result as any)._status ?? 200
 				return new Response(JSON.stringify(result), {
 					status,
