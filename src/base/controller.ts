@@ -23,6 +23,7 @@ import type { Cache } from '../helpers/cache'
 import type { Queue } from '../helpers/queue'
 import type { Upload } from '../helpers/upload'
 import type { Mail } from '../helpers/mail'
+import { PageResponse, type PageOptions } from '../view/page'
 
 export class Controller {
 	/** Active request context — set by the router before each handler call. */
@@ -53,6 +54,9 @@ export class Controller {
 
 	/** Mail — `this.mail.send()`. */
 	declare mail: Mail
+
+	/** Shared props for page rendering. */
+	protected _sharedProps: Record<string, any> = {}
 
 	// ─── Request Shortcuts ───────────────────────────────────────
 
@@ -131,6 +135,48 @@ export class Controller {
 	}
 
 	// ─── Validation Shortcuts ────────────────────────────────────
+
+	// ─── Page Rendering ────────────────────────────────────────
+
+	/**
+	 * Render a page with Inertia-style protocol.
+	 *
+	 * First request returns full HTML. Subsequent Inertia navigation
+	 * returns JSON with component name + props.
+	 *
+	 * @param component - Component name (e.g. 'Users/Index')
+	 * @param props - Component props (data from loader)
+	 * @param options - Page options (status, title, layout, flash)
+	 *
+	 * @example
+	 * ```ts
+	 * async index() {
+	 *   const users = await this.db.query('SELECT * FROM users')
+	 *   return this.page('Users/Index', { users }, {
+	 *     title: 'Users List',
+	 *     flash: { type: 'success', message: 'Loaded!' },
+	 *   })
+	 * }
+	 * ```
+	 */
+	protected page(
+		component: string,
+		props: Record<string, any> = {},
+		options: PageOptions = {}
+	): PageResponse {
+		return new PageResponse(component, props, options)
+	}
+
+	/** Share a prop across all pages (like Inertia.share). */
+	protected share(key: string, value: any): void
+	protected share(props: Record<string, any>): void
+	protected share(keyOrProps: string | Record<string, any>, value?: any): void {
+		if (typeof keyOrProps === 'string') {
+			this._sharedProps[keyOrProps] = value
+		} else {
+			Object.assign(this._sharedProps, keyOrProps)
+		}
+	}
 
 	/**
 	 * Validate request body against rules or a Zod schema.

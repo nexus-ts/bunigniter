@@ -30,6 +30,7 @@ import type { Queue } from '../helpers/queue'
 import type { Upload } from '../helpers/upload'
 import type { Mail } from '../helpers/mail'
 import { Session } from '../helpers/session'
+import { PageResponse } from '../view/page'
 
 export interface FileRouterOptions {
 	/** Directory containing page files. Default: `pages` */
@@ -316,6 +317,31 @@ function registerRoute(
 			}
 
 			if (result instanceof Response) return result
+
+			// Handle PageResponse — render HTML for first load, JSON for Inertia
+			if (result instanceof PageResponse) {
+				const isInertia = _ctx.headers?.['x-inertia'] === 'true' ||
+					_ctx.request?.headers?.get('X-Inertia') === 'true'
+
+				if (isInertia) {
+					// Inertia protocol: return JSON page object
+					return new Response(result.toInertiaJson(controller?._sharedProps), {
+						status: result.options.status ?? 200,
+						headers: {
+							'content-type': 'application/json',
+							'x-inertia': 'true',
+						}
+					})
+				}
+
+				// First load: return full HTML shell
+				const url = _ctx.request?.url ?? '/'
+				return new Response(result.toHtml(controller?._sharedProps, url), {
+					status: result.options.status ?? 200,
+					headers: { 'content-type': 'text/html; charset=utf-8' }
+				})
+			}
+
 			if (result !== undefined && result !== null) {
 				const status = (result as any)._status ?? 200
 				return new Response(JSON.stringify(result), {
