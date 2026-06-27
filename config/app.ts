@@ -61,4 +61,32 @@ export default {
 		key: env('APP_KEY', ''),
 		debug: env('DEBUG', false),
 	},
+
+	/**
+	 * Middleware configuration.
+	 */
+	middleware: {
+		// CORS — allow all origins in development
+		cors: {
+			origin: env('CORS_ORIGIN', '*'),
+			credentials: true,
+		},
+
+		// Logger — show requests in console
+		logger: {
+			enabled: env('DEBUG', false),
+			showQuery: true,
+		},
+
+		// CSRF protection
+		csrf: {
+			secret: env('APP_KEY', ''),
+		},
+
+		// Rate limiter — 100 requests/minute by default
+		throttle: {
+			max: 100,
+			window: 60000,
+		},
+	},
 }

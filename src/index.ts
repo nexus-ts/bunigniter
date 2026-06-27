@@ -20,6 +20,8 @@ import { DbClient } from './db/drizzle'
 import { registerFileRoutes } from './router/file-router'
 import { loadEnv } from './helpers/env'
 import { sessionMiddleware, authMiddleware } from './helpers/session-middleware'
+import { applyMiddleware } from './helpers/middleware'
+import type { MiddlewareConfig } from './helpers/middleware'
 
 export { Controller, Service } from './base/index'
 export { DbClient } from './db/drizzle'
@@ -30,6 +32,7 @@ interface AppConfig {
 	db?: { dialect: string; connection: Record<string, any>; logging?: boolean }
 	router?: { prefix?: string; directory?: string }
 	app?: { key?: string; debug?: boolean }
+	middleware?: MiddlewareConfig
 }
 
 async function loadConfig(): Promise<AppConfig> {
@@ -67,6 +70,9 @@ async function main() {
 	if (db) {
 		app.decorate('db', db)
 	}
+
+	// Apply global middleware (CORS, Logger, CSRF, Rate Limit)
+	applyMiddleware(app, config.middleware)
 
 	// Global middleware: Session + Auth
 	app.use(sessionMiddleware({ key: config.app?.key }))
