@@ -9,6 +9,9 @@
     "dev": "bun --hot run src/index.ts",
     "start": "bun run src/index.ts",
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
+    "nx": "bun run src/cli/index.ts",
+    "make:controller": "bun run src/cli/index.ts make:controller",
+    "make:model": "bun run src/cli/index.ts make:model",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
