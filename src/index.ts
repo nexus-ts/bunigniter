@@ -24,6 +24,7 @@ import { loadEnv } from './helpers/env'
 import { sessionMiddleware, authMiddleware } from './helpers/session-middleware'
 import { applyMiddleware } from './helpers/middleware'
 import type { MiddlewareConfig } from './helpers/middleware'
+import { loadMiddleware, applyMiddlewareToApp } from './helpers/middleware-loader'
 import { createCache, Cache } from './helpers/cache'
 import { createQueue, Queue } from './helpers/queue'
 import { createUpload, Upload } from './helpers/upload'
@@ -79,6 +80,13 @@ async function main() {
 
 	// Apply global middleware (CORS, Logger, CSRF, Rate Limit)
 	applyMiddleware(app, config.middleware)
+
+	// Load Void-style middleware/ directory
+	const mwDir = 'middleware'
+	if (existsSync(mwDir)) {
+		const middlewareFns = await loadMiddleware(mwDir)
+		applyMiddlewareToApp(app, middlewareFns)
+	}
 
 	// Global middleware: Session + Auth
 	app.use(sessionMiddleware({ key: config.app?.key }))
