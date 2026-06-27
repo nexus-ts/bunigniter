@@ -24,6 +24,9 @@ import type { Queue } from '../helpers/queue'
 import type { Upload } from '../helpers/upload'
 import type { Mail } from '../helpers/mail'
 import { PageResponse, type PageOptions } from '../view/page'
+import { HttpClient, createHttp } from '../helpers/http'
+import { Image } from '../helpers/image'
+import { paginate as paginateFn, addPaginationToDb, type PaginateResult, type PaginateOptions } from '../helpers/pagination'
 
 export class Controller {
 	/** Active request context — set by the router before each handler call. */
@@ -55,8 +58,23 @@ export class Controller {
 	/** Mail — `this.mail.send()`. */
 	declare mail: Mail
 
+	/** HTTP Client — `this.http.get/post/put/delete`. */
+	declare http: HttpClient
+
+	/** Image — `this.image.open(file).resize(w,h).save(path)`. */
+	declare image: typeof Image
+
+	/** Pagination — `this.paginate(data, total, options)`. */
+	declare paginate: typeof paginateFn
+
 	/** Shared props for page rendering. */
 	protected _sharedProps: Record<string, any> = {}
+
+	/** Default HTTP client instance. */
+	private _http: HttpClient = createHttp()
+
+	/** Paginate helper bound to this controller. */
+	protected paginate = paginateFn
 
 	// ─── Request Shortcuts ───────────────────────────────────────
 
@@ -135,6 +153,39 @@ export class Controller {
 	}
 
 	// ─── Validation Shortcuts ────────────────────────────────────
+
+	// ─── HTTP Client Shortcut ─────────────────────────────────
+
+	/** Make an HTTP GET request. */
+	protected async httpGet<T = any>(url: string, options?: any): Promise<T> {
+		const res = await this._http.get<T>(url, options)
+		return res.data
+	}
+
+	/** Make an HTTP POST request. */
+	protected async httpPost<T = any>(url: string, body?: any, options?: any): Promise<T> {
+		const res = await this._http.post<T>(url, body, options)
+		return res.data
+	}
+
+	/** Make an HTTP PUT request. */
+	protected async httpPut<T = any>(url: string, body?: any, options?: any): Promise<T> {
+		const res = await this._http.put<T>(url, body, options)
+		return res.data
+	}
+
+	/** Make an HTTP DELETE request. */
+	protected async httpDelete<T = any>(url: string, options?: any): Promise<T> {
+		const res = await this._http.delete<T>(url, options)
+		return res.data
+	}
+
+	// ─── Image Manipulation ────────────────────────────────────
+
+	/** Open an image for manipulation. */
+	protected imageOpen(path: string): Image {
+		return Image.open(path)
+	}
 
 	// ─── Page Rendering ────────────────────────────────────────
 
