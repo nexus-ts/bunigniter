@@ -92,7 +92,8 @@ export async function renderView(
 				// HTML templates use Rendu engine (PHP-like <?= ?> syntax)
 				return renderHTML(targetPath, props)
 			} else if (ext === '.mdx' || ext === '.md') {
-				Component = await compileMDX(targetPath, name, props)
+				// MDX with Rendu support (<?= ?>, {{ }}) + markdown rendering
+				return renderMDXView(targetPath, props)
 			} else {
 				const mod = await import(targetPath)
 				Component = mod.default ?? mod[name]
@@ -179,8 +180,15 @@ export async function renderHTML(filePath: string, props: Record<string, any> = 
 	const { compileTemplate } = await import('rendu')
 	const fn = compileTemplate(source)
 
-	// Execute with props
-	const stream = await fn(props)
+	// Rendu needs htmlspecialchars and other context keys
+	const ctx = {
+		htmlspecialchars: (s: string) =>
+			String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
+		...props,
+	}
+
+	// Execute with props + rendu context
+	const stream = await fn(ctx)
 
 	// Collect stream into string
 	const reader = stream.getReader()
@@ -210,55 +218,70 @@ function concatUint8Arrays(arrays: Uint8Array[]): Uint8Array {
 }
 
 /**
- * Compile an MDX file into a React component using Bun's built-in
- * markdown parser (Bun.markdown.react()). No external packages needed.
+ * Render an MDX view file to HTML using Rendu for interpolation
+ * and Bun.markdown.react() for markdown rendering.
+ *
+ * Supports:
+ *   <?= expr ?>   — PHP-style output (Rendu)
+ *   {{ expr }}    — Jinja-style escaped output (Rendu)
+ *   {{{ expr }}}  — Jinja-style raw output (Rendu)
+ *   <?js code ?>  — JavaScript control flow (Rendu)
+ *
+ * Then standard markdown via Bun.markdown.react().
  */
-async function compileMDX(filePath: string, name: string, props: Record<string, any>): Promise<any> {
-	const cacheKey = filePath
-	if (mdxCache.has(cacheKey)) return mdxCache.get(cacheKey)
+export async function renderMDXView(filePath: string, props: Record<string, any> = {}): Promise<Response> {
+	const source = readFileSync(filePath, 'utf-8')
+	const content = source.replace(/^---[\s\S]*?---\n?/, '')
 
-	try {
-		const source = readFileSync(filePath, 'utf-8')
+	// Step 1: Pre-process content — escape <? inside code blocks so Rendu
+	// doesn't try to evaluate them as template expressions
+	let safeContent = content
+		.replace(/`<\?=(.+?)`/g, '`&lt;?=$1`')
+		.replace(/`<\?js(.+?)\?>`/g, '`&lt;?js$1?&gt;`')
 
-		// Extract frontmatter (optional)
-		const content = source.replace(/^---[\s\S]*?---\n?/, '')
+	// Step 2: Interpolate <?= ?> and {{ }} via Rendu
+	const { compileTemplate } = await import('rendu')
+	const fn = compileTemplate(safeContent)
 
-		// Use Bun's built-in Markdown → React parser
-		const MdxContent = (overrideProps: any) => {
-			const merged = { ...props, ...overrideProps }
-
-			// Jinja-style template interpolation: {{ key }} → prop value
-			const hasTemplate = /\{\{/.test(content)
-			const rendered = content.replace(/\{\{\s*(\w+(?:\.\w+)*)\s*\}\}/g, (match, keyPath) => {
-				const value = keyPath.split('.').reduce((obj: any, key: string) => obj?.[key], merged)
-				return value !== undefined ? String(value) : '**MISSING: ' + keyPath + '**'
-			})
-			if (hasTemplate) console.log('[mdx] Interpolated template vars')
-
-			return Bun.markdown.react(rendered, {
-				h1: ({ children, id }: any) =>
-					React.createElement('h1', { id, style: { color: '#e94560' } }, children),
-				a: ({ href, children }: any) =>
-					React.createElement('a', { href, style: { color: '#70a1ff' } }, children),
-				pre: ({ children }: any) =>
-					React.createElement('pre', { style: { background: '#1a1a3e', padding: 16, borderRadius: 8, overflow: 'auto' } }, children),
-				code: ({ children }: any) =>
-					React.createElement('code', { style: { background: '#333', padding: '2px 6px', borderRadius: 3, fontSize: '0.9em' } }, children),
-			}, {
-				tables: true,
-				strikethrough: true,
-				tasklists: true,
-				autolinks: true,
-				headings: { ids: true },
-			})
-		}
-
-		mdxCache.set(cacheKey, MdxContent)
-		return MdxContent
-	} catch (err: any) {
-		console.error('[view] MDX error:', err.message)
-		return null
+	// Rendu needs htmlspecialchars for {{ }} escaping
+	const ctx = {
+		htmlspecialchars: (s: unknown) => {
+			const str = String(s ?? '')
+			return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+		},
+		...props,
 	}
+	const stream = await fn(ctx)
+	const reader = stream.getReader()
+	let interpolated = ''
+	while (true) {
+		const { done, value } = await reader.read()
+		if (done) break
+		interpolated += new TextDecoder().decode(value)
+	}
+
+	// Step 2: Render markdown to React elements, then to HTML
+	const elements = Bun.markdown.react(interpolated, {
+		h1: ({ children, id }: any) =>
+			React.createElement('h1', { id, style: { color: '#e94560' } }, children),
+		a: ({ href, children }: any) =>
+			React.createElement('a', { href, style: { color: '#70a1ff' } }, children),
+		pre: ({ children }: any) =>
+			React.createElement('pre', { style: { background: '#1a1a3e', padding: 16, borderRadius: 8, overflow: 'auto' } }, children),
+		code: ({ children }: any) =>
+			React.createElement('code', { style: { background: '#333', padding: '2px 6px', borderRadius: 3, fontSize: '0.9em' } }, children),
+	}, {
+		tables: true,
+		strikethrough: true,
+		tasklists: true,
+		autolinks: true,
+		headings: { ids: true },
+	})
+
+	const html = renderToString(elements)
+	return new Response(html, {
+		headers: { 'content-type': 'text/html; charset=utf-8' }
+	})
 }
 
 
