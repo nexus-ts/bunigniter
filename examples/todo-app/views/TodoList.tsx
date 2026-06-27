@@ -48,7 +48,10 @@ export default function TodoList({ todos, stats, filter, priority }: Props) {
 				.delete-btn:hover{color:#e94560}
 			`}</style>
 
-			<h1 style={{ color: '#e94560', fontSize: 28, marginBottom: 8 }}>📋 Todo App</h1>
+			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+				<h1 style={{ color: '#e94560', fontSize: 28 }}>📋 Todo App</h1>
+				<a href="/about" style={{ color: '#70a1ff', fontSize: 14, textDecoration: 'none' }}>About →</a>
+			</div>
 			<p style={{ color: '#888', fontSize: 14, marginBottom: 24 }}>NexusTS + React SSR</p>
 
 			{/* Stats */}

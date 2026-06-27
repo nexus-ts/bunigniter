@@ -33,6 +33,9 @@ import { renderToString } from 'react-dom/server'
 /** Registry of view components. */
 const registry = new Map<string, any>()
 
+/** MDX modules cache. */
+const mdxCache = new Map<string, any>()
+
 /** Views directory. */
 let viewsDir = 'views'
 
@@ -69,14 +72,29 @@ export async function renderView(
 	let Component = registry.get(name)
 
 	if (!Component) {
-		// Auto-load from views/
-		const viewPath = join(process.cwd(), viewsDir, `${name}.tsx`)
-		const viewPath2 = join(process.cwd(), viewsDir, name, 'index.tsx')
+		// Auto-load .tsx (React), .mdx (MDX), or index.tsx from subdir
+		const candidates = [
+			join(process.cwd(), viewsDir, `${name}.tsx`),
+			join(process.cwd(), viewsDir, `${name}.mdx`),
+			join(process.cwd(), viewsDir, `${name}.md`),
+			join(process.cwd(), viewsDir, name, 'index.tsx'),
+			join(process.cwd(), viewsDir, name, 'page.mdx'),
+		]
 
-		const targetPath = existsSync(viewPath) ? viewPath : existsSync(viewPath2) ? viewPath2 : null
+		let targetPath: string | null = null
+		for (const p of candidates) {
+			if (existsSync(p)) { targetPath = p; break }
+		}
+
 		if (targetPath) {
-			const mod = await import(targetPath)
-			Component = mod.default ?? mod[name]
+			const ext = extname(targetPath)
+			if (ext === '.mdx' || ext === '.md') {
+				// Compile MDX at runtime
+				Component = await compileMDX(targetPath, name, props)
+			} else {
+				const mod = await import(targetPath)
+				Component = mod.default ?? mod[name]
+			}
 			if (Component) {
 				registry.set(name, Component)
 			}
@@ -133,6 +151,58 @@ function renderFallback(name: string, props: Record<string, any>, options: { tit
 </body>
 </html>`
 }
+
+/**
+ * Compile an MDX file at runtime into a React component.
+ * Writes compiled JS to a temp file, imports it, returns the default export.
+ */
+async function compileMDX(filePath: string, name: string, props: Record<string, any>): Promise<any> {
+	const cacheKey = filePath
+	if (mdxCache.has(cacheKey)) return mdxCache.get(cacheKey)
+
+	try {
+		const source = readFileSync(filePath, 'utf-8')
+
+		// Compile MDX → JSX function using @mdx-js/mdx
+		const { compile } = await import('@mdx-js/mdx')
+		const compiled = await compile(source, {
+			development: false,
+			jsx: true,
+			jsxImportSource: 'react',
+		})
+
+		const code = String(compiled)
+
+		// Write to a temp .jsx file and import it
+		const { writeFileSync, mkdirSync } = await import('node:fs')
+		const tmpDir = join(process.cwd(), '.nexus', 'mdx-cache')
+		const tmpFile = join(tmpDir, name.replace(/[^a-zA-Z0-9_]/g, '_') + '.jsx')
+		mkdirSync(tmpDir, { recursive: true })
+
+		// Add the jsx import so the compiled MDX works standalone
+		const wrapped = `import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+${code}`
+		writeFileSync(tmpFile, wrapped, 'utf-8')
+
+		// Import the compiled module (add cache buster)
+		const cacheBuster = Date.now()
+		const mod = await import(tmpFile + '?v=' + cacheBuster)
+		const MdxContent = mod.default
+
+		if (!MdxContent) {
+			console.error('[view] MDX compiled but no default export found')
+			return null
+		}
+
+		mdxCache.set(cacheKey, MdxContent)
+		return MdxContent
+	} catch (err: any) {
+		console.error('[view] MDX compile error:', err.message)
+		return null
+	}
+}
+
+
 
 /** Error page. */
 function renderError(err: Error, name: string, props: Record<string, any>): string {
