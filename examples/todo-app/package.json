@@ -1,0 +1,18 @@
+{
+  "name": "todo-app",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun --hot run ../../src/index.ts",
+    "start": "bun run ../../src/index.ts",
+    "seed": "bun run db/seed.ts",
+    "nx": "bun run ../../src/cli/index.ts"
+  },
+  "dependencies": {
+    "elysia": "../../../tmp/pi-github-repos/elysiajs/elysia@kiana",
+    "drizzle-orm": "^0.45.0",
+    "zod": "^4.4.3",
+    "nexusts": "../.."
+  }
+}
