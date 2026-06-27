@@ -1,6 +1,14 @@
+---
+title: About Todo App
+---
+
 # 📋 About Todo App
 
 A full-stack Todo application built with **NexusTS** — a Bun-native framework inspired by CodeIgniter.
+
+**Current stats:** {{ total }} todos ({{ active }} active, {{ completed }} completed)
+**Server uptime:** {{ uptime }}
+**Generated at:** {{ generatedAt }}
 
 ## Features
 
@@ -21,15 +29,20 @@ A full-stack Todo application built with **NexusTS** — a Bun-native framework 
 | Database | SQLite via `bun:sqlite` |
 | Page format | **MDX** — Markdown + JSX |
 
+## Live Data from Controller
+
+This page receives **{{ total }} todos** from the database.
+{{ active }} tasks are still active, {{ completed }} are done.
+
 ## Built With MDX
 
-This page itself is written in **MDX** format — Markdown with embedded React components. Bun compiles it at runtime.
+This page itself is written in **MDX** format — Markdown with embedded React components. Bun compiles it at runtime using `Bun.markdown.react()`.
 
-```mdx
+```
 # Title
 Regular Markdown here...
 
-<Button label="Click me" />
+Data from controller: {{ variableName }}
 ```
 
 ## Routes

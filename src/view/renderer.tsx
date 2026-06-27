@@ -169,7 +169,16 @@ async function compileMDX(filePath: string, name: string, props: Record<string, 
 		// Use Bun's built-in Markdown → React parser
 		const MdxContent = (overrideProps: any) => {
 			const merged = { ...props, ...overrideProps }
-			return Bun.markdown.react(content, {
+
+			// Jinja-style template interpolation: {{ key }} → prop value
+			const hasTemplate = /\{\{/.test(content)
+			const rendered = content.replace(/\{\{\s*(\w+(?:\.\w+)*)\s*\}\}/g, (match, keyPath) => {
+				const value = keyPath.split('.').reduce((obj: any, key: string) => obj?.[key], merged)
+				return value !== undefined ? String(value) : '**MISSING: ' + keyPath + '**'
+			})
+			if (hasTemplate) console.log('[mdx] Interpolated template vars')
+
+			return Bun.markdown.react(rendered, {
 				h1: ({ children, id }: any) =>
 					React.createElement('h1', { id, style: { color: '#e94560' } }, children),
 				a: ({ href, children }: any) =>
