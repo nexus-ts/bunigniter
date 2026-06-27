@@ -1,0 +1,28 @@
+{
+  "name": "nexus-ts",
+  "version": "0.1.0",
+  "description": "Bun-native fullstack framework \u2014 CodeIgniter spirit \u00d7 Elysia performance \u00d7 Edge-ready",
+  "type": "module",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "scripts": {
+    "dev": "bun --hot run src/index.ts",
+    "start": "bun run src/index.ts",
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.0",
+    "zod": "^4.4.3",
+    "elysia": "file:/tmp/pi-github-repos/elysiajs/elysia@kiana"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  },
+  "license": "MIT"
+}
