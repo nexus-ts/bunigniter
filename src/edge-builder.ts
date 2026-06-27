@@ -12,20 +12,21 @@ import { join, basename } from 'node:path'
 const CWD = process.cwd()
 
 export async function buildEdgeRoutes(): Promise<void> {
-	const pagesDir = join(CWD, 'pages')
-	if (!existsSync(pagesDir)) {
-		console.error('[build] No pages/ directory found.')
+	// Scan routes/ for controllers (was pages/, now routes/)
+	const routesDir = join(CWD, 'routes')
+	if (!existsSync(routesDir)) {
+		console.error('[build] No routes/ directory found.')
 		return
 	}
 
-	const files = scanDir(pagesDir)
+	const files = scanDir(routesDir)
 	const imports: string[] = []
 	const routes: string[] = []
 
 	for (const file of files) {
 		if (file.endsWith('.server.ts')) continue
 
-		const fullPath = join(pagesDir, file)
+		const fullPath = join(routesDir, file)
 		const s = statSync(fullPath)
 		if (!s.isFile()) continue
 
