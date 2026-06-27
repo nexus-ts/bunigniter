@@ -25,8 +25,5 @@ export default {
 		logger: { enabled: true, showQuery: true },
 	},
 
-	app: {
-		key: env('APP_KEY', 'dev-key-todo-app-2026'),
-		debug: env('DEBUG', true),
-	},
+
 }

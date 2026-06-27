@@ -359,6 +359,15 @@ function registerRoute(
 				const url = _ctx.request?.url ?? '/'
 				let html = result.toHtml(controller?._sharedProps, url)
 
+				// Inject client-side app script before </body>
+				if (html.includes('</body>')) {
+					// Look for a public/app.js in the pages directory
+					const publicPath = join(process.cwd(), 'public', 'app.js')
+					if (existsSync(publicPath)) {
+						html = html.replace('</body>', '<script src="/public/app.js"></script>\n</body>')
+					}
+				}
+
 				// Inject debug toolbar if enabled
 				const reqUrl = new URL(url || 'http://localhost')
 				const debugParam = reqUrl.searchParams.get('debug')

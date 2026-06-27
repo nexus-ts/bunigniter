@@ -117,6 +117,24 @@ async function main() {
 		mail,
 	})
 
+	// ─── Static Files ────────────────────────────────────────
+	const publicDir = join(process.cwd(), 'public')
+	if (existsSync(publicDir)) {
+		const { readFileSync } = await import('node:fs')
+		app.get('/public/:file', async (ctx: any) => {
+			const file = ctx.params?.file
+			if (!file || file.includes('..')) return new Response('Not Found', { status: 404 })
+			try {
+				const content = readFileSync(join(publicDir, file))
+				const ext = file.split('.').pop()
+				const types: Record<string, string> = { js: 'application/javascript', css: 'text/css', html: 'text/html', png: 'image/png', svg: 'image/svg+xml' }
+				return new Response(content, { headers: { 'content-type': types[ext] ?? 'application/octet-stream' } })
+			} catch {
+				return new Response('Not Found', { status: 404 })
+			}
+		})
+	}
+
 	// ─── Server Routes (Void-style) ───────────────────────────
 	const routesDir = 'routes'
 	if (existsSync(routesDir)) {
