@@ -36,9 +36,11 @@ export class Users extends Controller {
 	/** POST /api/users */
 	async create() {
 		const body = this.body
-		if (!body?.name || !body?.email) {
-			return this.badRequest({ name: 'required', email: 'required' })
-		}
+		const v = this.validate(this.body, {
+			name: 'required|min:1',
+			email: 'required|email',
+		})
+		if (v.fails()) return this.badRequest(v.errors)
 
 		const result = await this.db.query<User>(
 			'INSERT INTO users (name, email) VALUES (?, ?) RETURNING *',

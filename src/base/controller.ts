@@ -18,6 +18,7 @@ import type { Context } from 'elysia'
 import type { DbClient } from '../db/drizzle'
 import { validate, validateStringRules, validateZod, type ValidationResult, type ValidationErrors, type rules } from '../helpers/validator'
 import type { z } from 'zod'
+import type { Session } from '../helpers/session'
 
 export class Controller {
 	/** Active request context — set by the router before each handler call. */
@@ -25,6 +26,17 @@ export class Controller {
 
 	/** Database client. Configured via `app.use(DrizzleModule)`. */
 	declare db: DbClient
+
+	/** Session — cookie-based, `this.session.get/set/delete/clear`. */
+	declare session: Session
+
+	/** Auth — `this.auth.user()`, `this.auth.login()`, `this.auth.logout()`. */
+	declare auth: {
+		user: () => any
+		login: (user: any) => void
+		logout: () => void
+		check: () => boolean
+	}
 
 	// ─── Request Shortcuts ───────────────────────────────────────
 
@@ -38,9 +50,9 @@ export class Controller {
 		return (this.ctx.params as Record<string, string | undefined>)?.[name]
 	}
 
-	/** Request body (parsed JSON). */
+	/** Request body (parsed JSON by Elysia). */
 	protected get body(): any {
-		return (this.ctx as any)._body ?? {}
+		return (this.ctx as any).body ?? {}
 	}
 
 	/** Request headers. */

@@ -25,6 +25,7 @@ import { join, basename } from 'node:path'
 import { Elysia, t } from 'elysia'
 import type { Controller } from '../base/controller'
 import type { DbClient } from '../db/drizzle'
+import { Session } from '../helpers/session'
 
 export interface FileRouterOptions {
 	/** Directory containing page files. Default: `pages` */
@@ -228,20 +229,32 @@ function registerRoute(
 	// Determine if this route needs an ID param based on the path
 	const needsId = path.endsWith('/:id')
 
-	// Wrap handler: inject ctx if controller exists, handle async
+	// Wrap handler: inject ctx + session + auth into controller
 	const wrappedHandler = async (_ctx: any) => {
+		let session: Session | null = null
+		const cookieName = 'nexus_session'
+
 		if (controller) {
 			;(controller as any).ctx = _ctx
-		}
-		try {
-			// Parse JSON body once
-			if (!_ctx._bodyParsed) {
-				_ctx._bodyParsed = true
-				const ct = _ctx.request?.headers?.get('content-type') ?? ''
-				if (ct.includes('json') && _ctx.request?.body) {
-					try { _ctx._body = await _ctx.request.json() } catch {}
-				}
+
+			// Create session from cookie
+			session = new Session()
+			const cookieHeader = _ctx.request?.headers?.get('cookie') ?? ''
+			const match = cookieHeader.match(new RegExp(cookieName + '=([^;]+)'))
+			session.load(match?.[1])
+			;(controller as any).session = session
+
+			// Create auth facade
+			;(controller as any).auth = {
+				user: () => session?.get('user'),
+				login: (user: any) => { session?.set('user', user); session?.regenerate() },
+				logout: () => { session?.delete('user'); session?.clear() },
+				check: () => !!session?.get('user'),
 			}
+		}
+
+		try {
+			// Body is already parsed by Elysia — available at _ctx.body
 
 			// Call handler — pass context for server routes, ID for Controller routes
 			const id = _ctx.params?.id ? Number(_ctx.params.id) : undefined
@@ -250,6 +263,16 @@ function registerRoute(
 				result = needsId ? await handler(id) : await handler()
 			} else {
 				result = await handler(_ctx)
+			}
+
+			// Save session cookie AFTER handler runs
+			if (session) {
+				const serialized = session.serialize()
+				if (serialized) {
+					if (!_ctx.set.headers) _ctx.set.headers = {}
+					_ctx.set.headers['Set-Cookie'] = 
+						`${cookieName}=${serialized.value}; Max-Age=${serialized.maxAge}; Path=/; HttpOnly; SameSite=Lax`
+				}
 			}
 
 			if (result instanceof Response) return result

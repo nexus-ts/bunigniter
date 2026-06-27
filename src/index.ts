@@ -19,6 +19,7 @@ import { Elysia } from 'elysia'
 import { DbClient } from './db/drizzle'
 import { registerFileRoutes } from './router/file-router'
 import { loadEnv } from './helpers/env'
+import { sessionMiddleware, authMiddleware } from './helpers/session-middleware'
 
 export { Controller, Service } from './base/index'
 export { DbClient } from './db/drizzle'
@@ -61,6 +62,15 @@ async function main() {
 
 	// ─── Elysia App ────────────────────────────────────────────
 	const app = new Elysia()
+
+	// Make db available in Elysia context
+	if (db) {
+		app.decorate('db', db)
+	}
+
+	// Global middleware: Session + Auth
+	app.use(sessionMiddleware({ key: config.app?.key }))
+	app.use(authMiddleware())
 
 	// ─── File-based Routes ────────────────────────────────────
 	const routerPrefix = config.router?.prefix ?? '/api'
