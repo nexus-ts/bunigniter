@@ -16,6 +16,8 @@
  */
 import type { Context } from 'elysia'
 import type { DbClient } from '../db/drizzle'
+import { validate, validateStringRules, validateZod, type ValidationResult, type ValidationErrors, type rules } from '../helpers/validator'
+import type { z } from 'zod'
 
 export class Controller {
 	/** Active request context — set by the router before each handler call. */
@@ -98,5 +100,34 @@ export class Controller {
 	/** Return 400 with validation errors. */
 	protected badRequest(errors?: any): Response {
 		return this.json({ error: 'Bad Request', details: errors ?? null }, 400)
+	}
+
+	// ─── Validation Shortcuts ────────────────────────────────────
+
+	/**
+	 * Validate request body against rules or a Zod schema.
+	 *
+	 * @example
+	 * ```ts
+	 * // String rules (CodeIgniter style)
+	 * const v = this.validate(this.body, {
+	 *   name: 'required|min:2',
+	 *   email: 'required|email',
+	 * })
+	 * if (v.fails()) return this.badRequest(v.errors())
+	 *
+	 * // Zod schema (TypeScript style)
+	 * import { z } from 'zod'
+	 * const v = this.validate(this.body, z.object({
+	 *   name: z.string().min(2),
+	 *   email: z.string().email(),
+	 * }))
+	 * ```
+	 */
+	protected validate<T extends Record<string, any>>(
+		data: unknown,
+		schemaOrRules: z.ZodSchema<T> | Record<string, string>
+	): ValidationResult<T> {
+		return validate(data as any, schemaOrRules as any)
 	}
 }
