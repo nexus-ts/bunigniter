@@ -103,18 +103,7 @@ export function loadEnv(): Record<string, string> {
  * const required = env('DATABASE_URL')  // string | undefined
  * ```
  */
-export function env<T extends string | number | boolean>(
-	key: string,
-	defaultValue?: T
-): T {
-	const all = loadEnv()
-	const value = all[key]
-
-	if (value === undefined || value === '') {
-		return defaultValue as T
-	}
-
-	// Cast to the type of defaultValue
+function castValue<T>(value: string, defaultValue?: T): T {
 	if (typeof defaultValue === 'boolean') {
 		return (value === 'true' || value === '1' || value === 'yes') as unknown as T
 	}
@@ -122,6 +111,27 @@ export function env<T extends string | number | boolean>(
 		return Number(value) as unknown as T
 	}
 	return value as unknown as T
+}
+
+export function env<T extends string | number | boolean>(
+	key: string,
+	defaultValue?: T
+): T {
+	// Check actual process.env FIRST (it takes priority over .env files)
+	const processValue = (process.env as Record<string, string>)[key]
+	if (processValue !== undefined && processValue !== '') {
+		return castValue(processValue, defaultValue)
+	}
+
+	// Then check .env file values
+	const all = loadEnv()
+	const value = all[key]
+
+	if (value === undefined || value === '') {
+		return defaultValue as T
+	}
+
+	return castValue(value, defaultValue)
 }
 
 /**

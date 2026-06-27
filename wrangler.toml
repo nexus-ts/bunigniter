@@ -1,0 +1,9 @@
+name = "nexus-app"
+main = "edge-worker.ts"
+compatibility_date = "2026-06-01"
+
+[build]
+command = "bun run nx build:edge"
+
+[[build.uploads]]
+pattern = "edge-app.ts"

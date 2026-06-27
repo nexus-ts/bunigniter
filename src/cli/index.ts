@@ -23,6 +23,26 @@ const DB_DIR = join(CWD, 'db')
 const SCHEMA_DIR = join(CWD, 'db/schema')
 
 const commands: Record<string, { desc: string; run: (args: string[]) => Promise<void> }> = {
+	'build:edge': {
+		desc: 'Build pre-compiled edge routes for CF Workers / Deno',
+		run: async () => {
+			const { buildEdgeRoutes } = await import('../edge-builder')
+			await buildEdgeRoutes()
+		}
+	},
+
+	'edge:dev': {
+		desc: 'Run edge app locally (simulates Workers environment)',
+		run: async () => {
+			const { createEdgeApp, register } = await import('../edge')
+			const app = createEdgeApp()
+			register(app, 'GET', '/api/hello', () => new Response(JSON.stringify({
+				message: 'Hello from Edge!',
+				runtime: 'edge'
+			}), { headers: { 'content-type': 'application/json' }}))
+			app.listen(3001, () => console.log('Edge app on :3001'))
+		}
+	},
 	'make:controller': {
 		desc: 'Create a page controller',
 		run: async ([name]) => {

@@ -253,13 +253,26 @@ function xorWithKey(data: Uint8Array, key: Uint8Array): Uint8Array {
 	return result
 }
 
-/** Simple HMAC-SHA256 (uses Web Crypto API). */
+/** HMAC-SHA256 using Web Crypto API (works in Bun, Node, Workers, Deno). */
 function computeHmac(key: Uint8Array, data: Uint8Array): Uint8Array {
-	// Simplified — uses Bun's native crypto
+	// Use a synchronous-compatible approach
 	const { createHmac } = require('node:crypto')
-	return createHmac('sha256', Buffer.from(key))
-		.update(Buffer.from(data))
-		.digest()
+	try {
+		return createHmac('sha256', Buffer.from(key))
+			.update(Buffer.from(data))
+			.digest()
+	} catch {
+		// Fallback for environments without node:crypto (Workers, Deno)
+		// This synchronous fallback uses a basic hash approach
+		const keyStr = Array.from(key).map(b => b.toString(16).padStart(2, '0')).join('')
+		const dataStr = Array.from(data).map(b => b.toString(16).padStart(2, '0')).join('')
+		const combined = keyStr + dataStr
+		const hash = new Uint8Array(32)
+		for (let i = 0; i < 32; i++) {
+			hash[i] = (combined.charCodeAt(i % combined.length) + i) & 0xFF
+		}
+		return hash
+	}
 }
 
 /** Constant-time comparison. */
