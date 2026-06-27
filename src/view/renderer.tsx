@@ -348,6 +348,22 @@ export async function renderMDXView(filePath: string, props: Record<string, any>
 		}
 	}
 
+	// Auto-layout: wrap with _layout.html from same directory
+	const mdxLayoutPath = join(filePath.substring(0, filePath.lastIndexOf('/')), '_layout.html')
+	if (existsSync(mdxLayoutPath)) {
+		const layoutSource = readFileSync(mdxLayoutPath, 'utf-8')
+		const layoutFn = compileTemplate(layoutSource)
+		const layoutStream = await layoutFn({
+			htmlspecialchars: (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
+			slot: finalHtml,
+			title: (props as any).title ?? 'NexusTS',
+		})
+		const lr = layoutStream.getReader()
+		const lc: Uint8Array[] = []
+		while (true) { const { done, value } = await lr.read(); if (done) break; lc.push(value) }
+		finalHtml = new TextDecoder().decode(concatUint8Arrays(lc))
+	}
+
 	// Wrap in full HTML document
 	return new Response(finalHtml, {
 		headers: { 'content-type': 'text/html; charset=utf-8' }
