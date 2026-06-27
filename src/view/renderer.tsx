@@ -72,13 +72,13 @@ export async function renderView(
 	let Component = registry.get(name)
 
 	if (!Component) {
-		// Auto-load .tsx (React), .mdx (MDX), or index.tsx from subdir
+		// Auto-load .tsx (React), .mdx (MDX), .html (plain HTML), or index
 		const candidates = [
 			join(process.cwd(), viewsDir, `${name}.tsx`),
 			join(process.cwd(), viewsDir, `${name}.mdx`),
 			join(process.cwd(), viewsDir, `${name}.md`),
+			join(process.cwd(), viewsDir, `${name}.html`),
 			join(process.cwd(), viewsDir, name, 'index.tsx'),
-			join(process.cwd(), viewsDir, name, 'page.mdx'),
 		]
 
 		let targetPath: string | null = null
@@ -89,8 +89,9 @@ export async function renderView(
 		if (targetPath) {
 			const ext = extname(targetPath)
 			if (ext === '.mdx' || ext === '.md') {
-				// Compile MDX at runtime
 				Component = await compileMDX(targetPath, name, props)
+			} else if (ext === '.html') {
+				Component = compileHTML(targetPath, props)
 			} else {
 				const mod = await import(targetPath)
 				Component = mod.default ?? mod[name]
@@ -150,6 +151,28 @@ function renderFallback(name: string, props: Record<string, any>, options: { tit
   ${scripts}
 </body>
 </html>`
+}
+
+/**
+ * Compile a plain HTML file into a React component.
+ * Supports {{ variable }} interpolation, no JSX needed.
+ */
+function compileHTML(filePath: string, props: Record<string, any>): any {
+	const source = readFileSync(filePath, 'utf-8')
+
+	// Interpolate {{ variable }} with prop values
+	const html = source.replace(/\{\{\s*(\w+(?:\.\w+)*)\s*\}\}/g, (match, keyPath) => {
+		const value = keyPath.split('.').reduce((obj: any, key: string) => obj?.[key], props)
+		return value !== undefined ? String(value) : match
+	})
+
+	// Return a React component that renders the HTML via dangerouslySetInnerHTML
+	const HtmlComponent = () =>
+		React.createElement('div', {
+			dangerouslySetInnerHTML: { __html: html }
+		})
+
+	return HtmlComponent
 }
 
 /**
