@@ -25,6 +25,7 @@ import { sessionMiddleware, authMiddleware } from './helpers/session-middleware'
 import { applyMiddleware } from './helpers/middleware'
 import type { MiddlewareConfig } from './helpers/middleware'
 import { loadMiddleware, applyMiddlewareToApp } from './helpers/middleware-loader'
+import { setViewsDir } from './view/renderer'
 import { createCache, Cache } from './helpers/cache'
 import { createQueue, Queue } from './helpers/queue'
 import { createUpload, Upload } from './helpers/upload'
@@ -38,6 +39,7 @@ interface AppConfig {
 	host?: string
 	db?: { dialect: string; connection: Record<string, any>; logging?: boolean }
 	router?: { prefix?: string; directory?: string }
+	view?: { directory?: string; scripts?: string[] }
 	app?: { key?: string; debug?: boolean }
 	middleware?: MiddlewareConfig
 }
@@ -92,6 +94,11 @@ async function main() {
 	app.use(sessionMiddleware({ key: config.app?.key }))
 	app.use(authMiddleware())
 
+
+	// ─── View Engine ───────────────────────────────────────────
+	if (config.view?.directory) {
+		setViewsDir(config.view.directory)
+	}
 
 	// ─── Services (Cache, Queue, Upload, Mail) ─────────────────
 	const cache = createCache()

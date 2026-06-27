@@ -31,6 +31,8 @@ import type { Upload } from '../helpers/upload'
 import type { Mail } from '../helpers/mail'
 import { Session } from '../helpers/session'
 import { PageResponse } from '../view/page'
+import { ViewResponse } from '../view/view-response'
+import { renderView } from '../view/renderer'
 
 export interface FileRouterOptions {
 	/** Directory containing page files. Default: `pages` */
@@ -316,7 +318,12 @@ function registerRoute(
 		}
 
 		try {
-			// Body is already parsed by Elysia — available at _ctx.body
+			// Handle _method override for HTML forms (PUT/DELETE via POST)
+			const body = _ctx.body ?? {}
+			const overrideMethod = body?._method?.toUpperCase()
+			if (overrideMethod && _ctx.request.method === 'POST' && ['PUT', 'DELETE', 'PATCH'].includes(overrideMethod)) {
+				_ctx.request.method = overrideMethod
+			}
 
 			// Call handler — pass context for server routes, ID for Controller routes
 			const id = _ctx.params?.id ? Number(_ctx.params.id) : undefined
@@ -340,6 +347,15 @@ function registerRoute(
 			if (result instanceof Response) return result
 
 			// Handle PageResponse — render HTML for first load, JSON for Inertia
+			// Handle ViewResponse — SSR render a React component
+			if (result instanceof ViewResponse) {
+				const html = await renderView(result.name, result.props, result.options)
+				return new Response(html, {
+					status: 200,
+					headers: { 'content-type': 'text/html; charset=utf-8' }
+				})
+			}
+
 			if (result instanceof PageResponse) {
 				const isInertia = _ctx.headers?.['x-inertia'] === 'true' ||
 					_ctx.request?.headers?.get('X-Inertia') === 'true'

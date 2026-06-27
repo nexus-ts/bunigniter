@@ -24,6 +24,7 @@ import type { Queue } from '../helpers/queue'
 import type { Upload } from '../helpers/upload'
 import type { Mail } from '../helpers/mail'
 import { PageResponse, type PageOptions } from '../view/page'
+import { ViewResponse } from '../view/view-response'
 import { HttpClient, createHttp } from '../helpers/http'
 import { Image } from '../helpers/image'
 import { paginate as paginateFn, addPaginationToDb, type PaginateResult, type PaginateOptions } from '../helpers/pagination'
@@ -185,6 +186,31 @@ export class Controller {
 	/** Open an image for manipulation. */
 	protected imageOpen(path: string): Image {
 		return Image.open(path)
+	}
+
+	// ─── View (SSR React) ─────────────────────────────────────
+
+	/**
+	 * Render a React view component to HTML (server-side).
+	 *
+	 * The component is loaded from views/ directory and SSR-rendered.
+	 *
+	 * @param name - View file name (e.g. 'TodoList' → views/TodoList.tsx)
+	 * @param props - Props passed to the React component
+	 * @param options - Options (title, scripts)
+	 *
+	 * @example
+	 * ```ts
+	 * const todos = await this.db.query('SELECT * FROM users')
+	 * return this.view('TodoList', { todos: todos.rows }, { title: 'My Todos' })
+	 * ```
+	 */
+	protected view(
+		name: string,
+		props: Record<string, any> = {},
+		options: { title?: string; scripts?: string[] } = {}
+	): ViewResponse {
+		return new ViewResponse(name, props, options)
 	}
 
 	// ─── Page Rendering ────────────────────────────────────────

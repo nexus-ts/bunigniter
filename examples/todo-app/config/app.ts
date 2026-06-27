@@ -20,10 +20,13 @@ export default {
 		directory: 'pages',
 	},
 
+	view: {
+		directory: 'views',
+		scripts: [],
+	},
+
 	middleware: {
 		cors: { origin: '*', credentials: true },
 		logger: { enabled: true, showQuery: true },
 	},
-
-
 }
