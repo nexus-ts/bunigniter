@@ -18,6 +18,7 @@ import { join } from 'node:path'
 import { Elysia } from 'elysia'
 import { DbClient } from './db/drizzle'
 import { registerFileRoutes } from './router/file-router'
+import { loadEnv } from './helpers/env'
 
 export { Controller, Service } from './base/index'
 export { DbClient } from './db/drizzle'
@@ -27,9 +28,12 @@ interface AppConfig {
 	host?: string
 	db?: { dialect: string; connection: Record<string, any>; logging?: boolean }
 	router?: { prefix?: string; directory?: string }
+	app?: { key?: string; debug?: boolean }
 }
 
 async function loadConfig(): Promise<AppConfig> {
+	// Load .env files first
+	loadEnv()
 	try {
 		const mod = await import(/* @vite-ignore */ join(process.cwd(), 'config/app.ts'))
 		return (mod as any).default ?? {}
@@ -43,7 +47,7 @@ async function loadConfig(): Promise<AppConfig> {
  */
 async function main() {
 	const config: AppConfig = await loadConfig()
-	const port = Number(config.port ?? process.env.PORT ?? 3000)
+	const port = Number(config.port ?? 3000)
 	const dbConfig = config.db
 
 	// ─── Database ─────────────────────────────────────────────
