@@ -92,7 +92,28 @@ export class DbClient {
 		if (!this.rawExecutor) {
 			throw new Error(`[db] dialect "${this.dialect}" does not support raw queries`)
 		}
-		return this.rawExecutor.query(sql, params)
+		const start = performance.now()
+		const result = await this.rawExecutor.query(sql, params)
+		const duration = performance.now() - start
+
+		// Log to debug toolbar if active
+		try {
+			const ctx = getRequestContext()
+			if (ctx) {
+				const { getStore } = await import('../helpers/debug')
+				const data = getStore(ctx)
+				data.queries.push({
+					id: data.queries.length + 1,
+					sql,
+					duration: Math.round(duration * 100) / 100,
+					rows: result.rows.length,
+					params,
+					time: new Date().toLocaleTimeString(),
+				})
+			}
+		} catch {}
+
+		return result
 	}
 
 	/**

@@ -33,6 +33,8 @@ import { Session } from '../helpers/session'
 import { PageResponse } from '../view/page'
 import { ViewResponse } from '../view/view-response'
 import { renderView } from '../view/renderer'
+import { generateToolbar, getStore } from '../helpers/debug'
+import { setRequestContext } from '../helpers/request-context'
 
 export interface FileRouterOptions {
 	/** Directory containing route files. Default: `routes` */
@@ -76,26 +78,7 @@ function escapeHtml(s: string): string {
 	return s.replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
-/** Generate an inline debug toolbar snippet. */
-function debugToolbarHtml(): string {
-	const mem = ((process as any).memoryUsage?.()?.rss ?? 0) / (1024 * 1024)
-	return `<!-- NexusTS Debug -->
-<style>
-.nexus-debug{font-family:monospace;font-size:12px;color:#ccc;background:#1a1a2e;border-top:2px solid #e94560;position:fixed;bottom:0;left:0;right:0;z-index:9999;max-height:32px;overflow:hidden;cursor:pointer;transition:max-height .2s}
-.nexus-debug:hover{max-height:50vh;overflow-y:auto}
-.nexus-debug .bar{display:flex;align-items:center;gap:12px;padding:6px 12px;background:#16213e;border-bottom:1px solid #0f3460}
-.nexus-debug .title{font-weight:bold;color:#e94560}
-.nexus-debug .stat{color:#ccc}
-.nexus-debug .stat strong{color:#fff}
-</style>
-<div class="nexus-debug">
-  <div class="bar">
-    <span class="title">NexusTS</span>
-    <span class="stat">💾 ${mem.toFixed(1)} MB</span>
-    <span class="stat">⏱ ${new Date().toLocaleTimeString()}</span>
-  </div>
-</div>`
-}
+
 
 /** Default method-to-verb mapping (CodeIgniter-style). */
 const METHOD_MAP: Record<string, string> = Object.assign(Object.create(null), {
@@ -240,6 +223,46 @@ export async function registerFileRoutes(app: Elysia, options: FileRouterOptions
 
 // ─── Internal Helpers ──────────────────────────────────────────
 
+let startTime = 0
+
+function formatBytes2(bytes: number): string {
+	if (bytes === 0) return '0 MB'
+	const mb = bytes / (1024 * 1024)
+	return `${mb.toFixed(1)} MB`
+}
+
+/** Inject debug toolbar into HTML if enabled. */
+async function injectDebug(html: string, ctx: any, controller: any, status: number): Promise<string> {
+	const dbgParam = new URL(ctx.request?.url ?? 'http://localhost').searchParams.get('debug')
+	const isDebug = dbgParam === '1' || process.env.DEBUG === 'true'
+	if (!isDebug || !html.includes('</body>')) return html
+
+	try {
+		const debugData = getStore(ctx)
+		debugData.status = status
+		debugData.duration = Math.round((performance.now() - startTime) * 100) / 100
+		debugData.memory = formatBytes2((process as any).memoryUsage?.()?.rss ?? 0)
+		debugData.timestamp = new Date().toLocaleString()
+		if (controller?.session) debugData.session = controller.session.all()
+		if (ctx.request?.headers) {
+			const h: Record<string, string> = {}
+			for (const [k, v] of ctx.request.headers.entries()) h[k] = v
+			debugData.headers = h
+		}
+		const toolbar = await generateToolbar(debugData)
+		if (toolbar && toolbar.length > 50) {
+			const bodyIdx = html.lastIndexOf('</body>')
+			if (bodyIdx > 0) {
+				return html.slice(0, bodyIdx) + toolbar + '\n' + html.slice(bodyIdx)
+			}
+		}
+		return html
+	} catch (e) {
+		console.error('[debug] toolbar error:', e, (e as Error).stack)
+	}
+	return html
+}
+
 function scanDir(dir: string, ext: string, baseDir = ''): string[] {
 	const files: string[] = []
 	const entries = readdirSync(dir, { withFileTypes: true })
@@ -295,6 +318,8 @@ function registerRoute(
 
 	// Wrap handler: inject ctx + session + auth into controller
 	const wrappedHandler = async (_ctx: any) => {
+		setRequestContext(_ctx)
+		startTime = performance.now()
 		let session: Session | null = null
 		const cookieName = 'nexus_session'
 
@@ -346,52 +371,46 @@ function registerRoute(
 
 			if (result instanceof Response) return result
 
-			// Handle PageResponse — render HTML for first load, JSON for Inertia
-			// Handle ViewResponse — SSR render a React component or Rendu HTML template
+			// Handle ViewResponse — SSR render (React or Rendu HTML)
 			if (result instanceof ViewResponse) {
-				const html = await renderView(result.name, result.props, result.options)
-				// html can be a string (React SSR) or a Response (Rendu HTML)
-				if (html instanceof Response) return html
+				const htmlOrRes = await renderView(result.name, result.props, result.options)
+				if (htmlOrRes instanceof Response) {
+					let text = await htmlOrRes.text()
+					text = await injectDebug(text, _ctx, controller, htmlOrRes.status)
+								return new Response(text, {
+						status: htmlOrRes.status,
+						headers: { 'content-type': 'text/html; charset=utf-8' },
+					})
+				}
+				const html = await injectDebug(htmlOrRes, _ctx, controller, 200)
 				return new Response(html, {
-					status: 200,
 					headers: { 'content-type': 'text/html; charset=utf-8' }
 				})
 			}
 
+			// Handle PageResponse — Inertia-style page
 			if (result instanceof PageResponse) {
 				const isInertia = _ctx.headers?.['x-inertia'] === 'true' ||
 					_ctx.request?.headers?.get('X-Inertia') === 'true'
 
 				if (isInertia) {
-					// Inertia protocol: return JSON page object
 					return new Response(result.toInertiaJson(controller?._sharedProps), {
 						status: result.options.status ?? 200,
-						headers: {
-							'content-type': 'application/json',
-							'x-inertia': 'true',
-						}
+						headers: { 'content-type': 'application/json', 'x-inertia': 'true' }
 					})
 				}
 
-				// First load: return full HTML shell
+				// First load: full HTML shell
 				const url = _ctx.request?.url ?? '/'
 				let html = result.toHtml(controller?._sharedProps, url)
 
-				// Inject client-side app script before </body>
+				// Client script inject
 				if (html.includes('</body>')) {
-					// Look for a public/app.js for client-side boot
 					const publicPath = join(process.cwd(), 'public', 'app.js')
 					if (existsSync(publicPath)) {
 						html = html.replace('</body>', '<script src="/public/app.js"></script>\n</body>')
 					}
-				}
-
-				// Inject debug toolbar if enabled
-				const reqUrl = new URL(url || 'http://localhost')
-				const debugParam = reqUrl.searchParams.get('debug')
-				const isDebug = debugParam === '1' || process.env.DEBUG === 'true'
-				if (isDebug && html.includes('</body>')) {
-					html = html.replace('</body>', debugToolbarHtml() + '\n</body>')
+					html = await injectDebug(html, _ctx, controller, result.options.status ?? 200)
 				}
 
 				return new Response(html, {
