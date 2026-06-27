@@ -15,9 +15,11 @@
  * ```
  */
 import { join } from 'node:path'
+import { existsSync } from 'node:fs'
 import { Elysia } from 'elysia'
 import { DbClient } from './db/drizzle'
 import { registerFileRoutes } from './router/file-router'
+import { registerServerRoutes } from './router/server-router'
 import { loadEnv } from './helpers/env'
 import { sessionMiddleware, authMiddleware } from './helpers/session-middleware'
 import { applyMiddleware } from './helpers/middleware'
@@ -105,6 +107,12 @@ async function main() {
 		upload,
 		mail,
 	})
+
+	// ─── Server Routes (Void-style) ───────────────────────────
+	const routesDir = 'routes'
+	if (existsSync(routesDir)) {
+		await registerServerRoutes(app, routesDir, '')
+	}
 
 	// ─── Health Check ─────────────────────────────────────────
 	app.get('/health', () => new Response(JSON.stringify({
