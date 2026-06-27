@@ -1,0 +1,60 @@
+<style>
+.story { padding: 6px 0; display: flex; gap: 8px; align-items: flex-start; }
+.story .num { color: #828282; font-size: 12px; width: 20px; text-align: right; padding-top: 2px; }
+.story .votearrow { color: #ccc; cursor: pointer; font-size: 10px; width: 16px; text-align: center; padding-top: 2px; }
+.story .votearrow:hover { color: #ff6600; }
+.story .title { font-size: 13px; }
+.story .title a { color: #000; text-decoration: none; }
+.story .title a:hover { text-decoration: underline; }
+.story .title .site { color: #828282; font-size: 11px; }
+.story .meta { font-size: 11px; color: #828282; margin-top: 1px; }
+.story .meta a { color: #828282; text-decoration: none; }
+.story .meta a:hover { text-decoration: underline; }
+.subtext { font-size: 13px; color: #828282; margin: 2px 0 4px 24px; }
+.subtext a { color: #828282; }
+.subtext .score { color: #000; font-weight: bold; }
+.topbar { font-size: 13px; margin-bottom: 8px; }
+.topbar a { color: #ff6600; text-decoration: none; }
+.topbar a:hover { text-decoration: underline; }
+.topbar .active { color: #000; font-weight: bold; }
+</style>
+
+<div class="topbar">
+  <a href="/" class="<?= sort === 'top' ? 'active' : '' ?>">top</a> |
+  <a href="/new" class="<?= sort === 'new' ? 'active' : '' ?>">new</a>
+</div>
+
+<?js for (let i = 0; i < stories.length; i++) { const s = stories[i]; ?>
+  <div class="story">
+    <span class="num"><?= i + 1 ?>.</span>
+    <span class="votearrow">
+      <form action="/vote/<?= s.id ?>" method="POST" style="display:inline">
+        <button type="submit" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0">▲</button>
+      </form>
+    </span>
+    <div>
+      <div class="title">
+        <?js if (s.url) { ?>
+          <a href="<?= s.url ?>"><?= s.title ?></a> <span class="site">(<?= s.host ?>)</span>
+        <?js } else { ?>
+          <a href="/item/<?= s.id ?>"><?= s.title ?></a>
+        <?js } ?>
+      </div>
+      <div class="meta">
+        <b><?= s.points ?></b> points by <b><?= s.username ?></b> <?= s.timeAgo ?>
+        | <a href="/item/<?= s.id ?>"><?= s.comment_count ?> comments</a>
+      </div>
+    </div>
+  </div>
+<?js } ?>
+
+<script>
+function timeAgo(dateStr) {
+  const d = new Date(dateStr + 'Z');
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + ' minutes ago';
+  if (diff < 86400) return Math.floor(diff/3600) + ' hours ago';
+  return Math.floor(diff/86400) + ' days ago';
+}
+</script>

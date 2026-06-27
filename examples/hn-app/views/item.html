@@ -1,0 +1,63 @@
+<style>
+.detail { margin-bottom: 12px; }
+.detail h1 { font-size: 16px; margin-bottom: 2px; }
+.detail h1 a { color: #000; text-decoration: none; }
+.detail h1 a:hover { text-decoration: underline; }
+.detail .site { color: #828282; font-size: 11px; }
+.detail .meta { font-size: 11px; color: #828282; margin-bottom: 6px; }
+.detail .text { font-size: 13px; line-height: 1.5; margin: 8px 0 12px; color: #333; white-space: pre-wrap; }
+.detail .vote-btn { background: none; border: 1px solid #ccc; border-radius: 3px; padding: 2px 10px; cursor: pointer; font-size: 12px; color: #666; }
+.detail .vote-btn:hover { border-color: #ff6600; color: #ff6600; }
+.comments { margin-top: 16px; }
+.comments h2 { font-size: 14px; margin-bottom: 8px; color: #666; }
+.comment { padding: 8px 0; border-bottom: 1px solid #eee; }
+.comment .meta { font-size: 11px; color: #828282; margin-bottom: 3px; }
+.comment .text { font-size: 13px; line-height: 1.4; color: #333; }
+.comment-form { margin-top: 16px; }
+.comment-form textarea { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px; font-family: inherit; min-height: 60px; resize: vertical; }
+.comment-form button { margin-top: 6px; background: #ff6600; color: #fff; border: none; padding: 6px 16px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+</style>
+
+<div class="detail">
+  <h1>
+    <?js if (story.url) { ?>
+      <a href="<?= story.url ?>"><?= story.title ?></a> <span class="site">(<?= story.host ?>)</span>
+    <?js } else { ?>
+      <?= story.title ?>
+    <?js } ?>
+  </h1>
+  <div class="meta">
+    <b><?= story.points ?></b> points by <b><?= story.username ?></b> <?= story.timeAgo ?>
+    | <?= comments.length ?> comments
+  </div>
+
+  <?js if (story.text) { ?>
+    <div class="text"><?= story.text ?></div>
+  <?js } ?>
+
+  <?js if (user) { ?>
+    <form action="/vote/<?= story.id ?>" method="POST" style="display:inline">
+      <button class="vote-btn">▲ Upvote</button>
+    </form>
+  <?js } ?>
+</div>
+
+<div class="comments">
+  <h2><?= comments.length ?> Comments</h2>
+
+  <?js if (user) { ?>
+    <form action="/item/<?= story.id ?>" method="POST" class="comment-form">
+      <textarea name="text" placeholder="Add a comment..."></textarea>
+      <button type="submit">Comment</button>
+    </form>
+  <?js } else { ?>
+    <p style="font-size:13px;color:#828282;margin-bottom:12px"><a href="/login">Login</a> to comment</p>
+  <?js } ?>
+
+  <?js for (const c of comments) { ?>
+    <div class="comment">
+      <div class="meta"><b><?= c.username ?></b> <?= c.timeAgo ?></div>
+      <div class="text"><?= c.text ?></div>
+    </div>
+  <?js } ?>
+</div>
