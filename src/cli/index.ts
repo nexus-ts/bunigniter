@@ -155,6 +155,14 @@ ${cols.map((c: any) => `\t${c.name}: ${c.type === 'number' ? `integer('${c.name}
 		}
 	},
 
+	'repl': {
+		desc: 'Start interactive console',
+		run: async () => {
+			const { startRepl } = await import('./repl')
+			await startRepl()
+		}
+	},
+
 	'help': {
 		desc: 'Show this help',
 		run: async () => {
