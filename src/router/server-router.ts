@@ -47,7 +47,13 @@ export async function registerServerRoutes(app: Elysia, dir: string = 'routes', 
 
 	for (const file of files) {
 		const fullPath = join(process.cwd(), dir, file)
-		const mod = await import(fullPath)
+		let mod
+		try {
+			mod = await import(fullPath)
+		} catch (e: any) {
+			console.error('[server-router] Error importing', file, ':', e.message)
+			continue
+		}
 
 		// Build URL path from file path
 		const urlPath = routeFilePathToUrl(file, prefix)

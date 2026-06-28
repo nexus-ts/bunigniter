@@ -88,13 +88,6 @@ async function main() {
 	// Apply global middleware (CORS, Logger, CSRF, Rate Limit)
 	applyMiddleware(app, config.middleware)
 
-	// Load Void-style middleware/ directory
-	const mwDir = 'middleware'
-	if (existsSync(mwDir)) {
-		const middlewareFns = await loadMiddleware(mwDir)
-		applyMiddlewareToApp(app, middlewareFns)
-	}
-
 	// Global middleware: Session + Auth
 	app.use(sessionMiddleware({ key: config.app?.key }))
 	app.use(authMiddleware())
