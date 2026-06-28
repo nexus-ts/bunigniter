@@ -87,6 +87,22 @@ export class DbClient {
 	 * const result = await db.query('INSERT INTO users (name) VALUES (?)', ['Alice'])
 	 * ```
 	 */
+	/**
+	 * Tagged template SQL — Drizzle-style `sql\`...\``.
+	 * Inline parameters, no need for separate params array.
+	 *
+	 * @example
+	 * ```ts
+	 * await db.sql\`SELECT * FROM users WHERE id = ${id}\`
+	 * await db.sql\`UPDATE posts SET title = ${title} WHERE id = ${id}\`
+	 * ```
+	 */
+	async sql(strings: TemplateStringsArray, ...values: unknown[]): Promise<QueryResult<any>> {
+		let s = strings[0] ?? ''
+		for (let i = 1; i < strings.length; i++) s += '?' + strings[i]
+		return this.query(s, values)
+	}
+
 	async query<T = any>(sql: string, params: unknown[] = []): Promise<QueryResult<T>> {
 		this.assertOpen()
 		if (!this.rawExecutor) {
