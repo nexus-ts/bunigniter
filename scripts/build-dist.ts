@@ -7,7 +7,7 @@
  *
  * Usage: `bun run scripts/build-dist.ts`
  */
-import { cpSync, rmSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { cpSync, rmSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = join(import.meta.dirname, "..");
@@ -89,14 +89,24 @@ for (const path of ALLOWLIST) {
 	}
 }
 
-// Also copy package.json (for version info), README, LICENSE at dist root
-const filesToCopy = ["package.json", "README.md", "LICENSE"];
-for (const file of filesToCopy) {
-	const srcPath = join(ROOT, file);
-	if (existsSync(srcPath)) {
-		cpSync(srcPath, join(DIST, file));
+// Copy package.json and rewrite exports paths for dist
+const pkgSrc = join(ROOT, "package.json");
+if (existsSync(pkgSrc)) {
+	const pkg = JSON.parse(readFileSync(pkgSrc, "utf-8"));
+	if (pkg.main) pkg.main = pkg.main.replace(/^(?:\.\/)?src\//, "./");
+	if (pkg.module) pkg.module = pkg.module.replace(/^(?:\.\/)?src\//, "./");
+	if (pkg.exports) {
+		for (const [key, val] of Object.entries(pkg.exports)) {
+			if (typeof val === "string") {
+				(pkg.exports as Record<string, string>)[key] = val.replace(/^(?:\.\/)?src\//, "./");
+			}
+		}
 	}
+	writeFileSync(join(DIST, "package.json"), JSON.stringify(pkg, null, 2) + "\n");
 }
+
+// Copy README and LICENSE
+
 
 // Count files
 let fileCount = 0;
