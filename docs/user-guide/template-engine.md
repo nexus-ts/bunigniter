@@ -11,11 +11,11 @@ NexusTS uses **Rendu** as its primary template engine — a PHP-style syntax eng
 | Output variable | `<?= $title ?>` | `<?= title ?>` |
 | Escaped output | `<?= htmlspecialchars($x) ?>` | `{{ x }}` |
 | Raw output | — | `{{{ x }}}` |
-| Control flow | `<?php if(...) { ?>` | `<?js if(...) { ?>` |
+| Control flow | `<?php if(...) { ?>` | `<? if(...) { ?>` |
 | Template file | `views/about.php` | `views/about.html` |
 | Layout | `extends 'layout'` | Auto `_layout.html` |
 | Partial include | `include 'footer'` | `include('_footer.html')` |
-| Loop | `<?php foreach($items as $i) ?>` | `<?js for (const i of items) { ?>` |
+| Loop | `<?php foreach($items as $i) ?>` | `<? for (const i of items) { ?>` |
 
 ---
 
@@ -177,6 +177,7 @@ Supports both `.html` and `.mdx` partials. The partial is rendered with the same
 ```
 
 Features:
+
 - Full GitHub-Flavored Markdown (tables, code blocks, lists, bold, links)
 - `<?= expr ?>` and `{{ expr }}` interpolation (via Rendu pre-processing)
 - `include()` support for partials
