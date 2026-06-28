@@ -23,7 +23,8 @@
 		"./helpers/openapi": "./src/helpers/openapi.ts",
 		"./helpers/jwt": "./src/helpers/jwt.ts",
 		"./helpers/ws": "./src/helpers/ws.ts",
-		"./helpers/sse": "./src/helpers/sse.ts"
+		"./helpers/sse": "./src/helpers/sse.ts",
+		"./helpers/schedule": "./src/helpers/schedule.ts"
 },
   "scripts": {
     "dev": "bun --hot run src/index.ts",
