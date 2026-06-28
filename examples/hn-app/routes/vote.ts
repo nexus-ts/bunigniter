@@ -3,7 +3,7 @@
  *
  * POST /vote/:id
  */
-import { Controller } from '../../../src/base/index'
+import { Controller } from '@nexusts/core'
 
 export class Vote extends Controller {
 	async create(id: number) {

@@ -4,7 +4,7 @@
  * GET  /submit → show form
  * POST /submit → create story
  */
-import { Controller } from '../../../src/base/index'
+import { Controller } from '@nexusts/core'
 
 export class Submit extends Controller {
 	async index() {

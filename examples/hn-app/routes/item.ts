@@ -4,7 +4,7 @@
  * GET  /item/:id → show story + comments
  * POST /item/:id → add comment
  */
-import { Controller } from '../../../src/base/index'
+import { Controller } from '@nexusts/core'
 
 function timeago(dateStr: string): string {
 	const d = new Date(dateStr + 'Z')

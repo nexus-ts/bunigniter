@@ -7,7 +7,7 @@
  *   PUT    /:id       → Update todo (toggle completed / edit title)
  *   DELETE /:id       → Delete todo
  */
-import { Controller } from '../../../src/base/index'
+import { Controller } from '@nexusts/core'
 
 interface Todo {
 	id: number

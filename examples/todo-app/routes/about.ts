@@ -3,7 +3,7 @@
  *
  * GET /about → renders views/About.mdx with {{ variable }} interpolation
  */
-import { Controller } from '../../../src/base/index'
+import { Controller } from '@nexusts/core'
 
 export class About extends Controller {
 	async index() {

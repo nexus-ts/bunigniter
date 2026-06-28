@@ -1,5 +1,5 @@
 {
-"name": "nexusts",
+"name": "@nexusts/core",
 "version": "0.1.0",
 "description": "Bun-native fullstack framework — CodeIgniter spirit × Elysia performance × Edge-ready",
 "type": "module",

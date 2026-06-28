@@ -4,7 +4,7 @@
  * GET  /login → show login form
  * POST /login → authenticate
  */
-import { Controller } from '../../../src/base/index'
+import { Controller } from '@nexusts/core'
 
 export class Login extends Controller {
 	async index() {

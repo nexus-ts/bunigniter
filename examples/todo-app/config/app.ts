@@ -3,7 +3,7 @@
  *
  * SQLite database with page rendering (Inertia-style).
  */
-import { env } from '../../../src/helpers/env'
+import { env } from '@nexusts/core/helpers/env'
 
 export default {
 	port: env('PORT', 3000),

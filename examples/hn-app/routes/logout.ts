@@ -3,7 +3,7 @@
  *
  * GET /logout
  */
-import { Controller } from '../../../src/base/index'
+import { Controller } from '@nexusts/core'
 
 export class Logout extends Controller {
 	async index() {
