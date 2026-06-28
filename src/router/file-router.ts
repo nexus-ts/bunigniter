@@ -169,6 +169,9 @@ export async function registerFileRoutes(app: Elysia, options: FileRouterOptions
 
 		// Find the Controller subclass
 		const ControllerClass = findController(mod)
+
+		// If file has ws.handle() calls without a Controller, still import it
+		// (WS handlers register via side-effect at module load time)
 		if (!ControllerClass) continue
 
 		const controller = new ControllerClass() as Controller
