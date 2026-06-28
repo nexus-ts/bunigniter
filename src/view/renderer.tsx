@@ -66,19 +66,20 @@ export function registerView(name: string, component: any): void {
 export async function renderView(
 	name: string,
 	props: Record<string, any> = {},
-	options: { title?: string; scripts?: string[] } = {}
+	options: { title?: string; scripts?: string[] } = {},
+	viewBase?: string
 ): Promise<string | Response> {
 	// Try to load the component from views/ directory
 	let Component = registry.get(name)
 
 	if (!Component) {
-		// Auto-load .tsx (React), .mdx (MDX), .html (plain HTML via rendu), or index
+		const base = viewBase ?? join(process.cwd(), viewsDir)
 		const candidates = [
-			join(process.cwd(), viewsDir, `${name}.tsx`),
-			join(process.cwd(), viewsDir, `${name}.mdx`),
-			join(process.cwd(), viewsDir, `${name}.md`),
-			join(process.cwd(), viewsDir, `${name}.html`),
-			join(process.cwd(), viewsDir, name, 'index.tsx'),
+			join(base, `${name}.tsx`),
+			join(base, `${name}.mdx`),
+			join(base, `${name}.md`),
+			join(base, `${name}.html`),
+			join(base, name, 'index.tsx'),
 		]
 
 		let targetPath: string | null = null

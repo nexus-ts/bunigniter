@@ -40,6 +40,9 @@ export interface FileRouterOptions {
 	/** Directory containing route files. Default: `routes` */
 	directory?: string
 
+	/** Views directory for module support. Overrides global views. */
+	viewsDir?: string
+
 	/** URL prefix for all routes. Default: `/api` */
 	prefix?: string
 
@@ -124,7 +127,7 @@ export async function registerFileRoutes(app: Elysia, options: FileRouterOptions
 	const serverFiles = scanDir(dir, '.server.ts')
 	for (const file of serverFiles) {
 		const fullPath = join(dir, file)
-		const serverMod = await import(/* @vite-ignore */ join(process.cwd(), fullPath)) as LoaderExport
+		const serverMod = await import(/* @vite-ignore */ join(process.cwd(), dir, file)) as LoaderExport
 		const componentName = file.replace(/\.server\.ts$/, '')
 		const urlPath = filePathToUrl(componentName + '.ts', prefix)
 
@@ -161,8 +164,8 @@ export async function registerFileRoutes(app: Elysia, options: FileRouterOptions
 	for (const file of files) {
 		if (file.endsWith('.server.ts')) continue
 
-		const fullPath = join(dir, file)
-		const mod = await import(/* @vite-ignore */ join(process.cwd(), fullPath))
+		const fullPath = join(process.cwd(), dir, file)
+		const mod = await import(/* @vite-ignore */ fullPath)
 
 		// Find the Controller subclass
 		const ControllerClass = findController(mod)
@@ -390,7 +393,8 @@ function registerRoute(
 
 			// Handle ViewResponse — SSR render (React or Rendu HTML)
 			if (result instanceof ViewResponse) {
-				const htmlOrRes = await renderView(result.name, result.props, result.options)
+				const viewBase = options.viewsDir ? join(process.cwd(), options.viewsDir) : undefined
+				const htmlOrRes = await renderView(result.name, result.props, result.options, viewBase)
 				if (htmlOrRes instanceof Response) {
 					let text = await htmlOrRes.text()
 					text = await injectDebug(text, _ctx, controller, htmlOrRes.status)

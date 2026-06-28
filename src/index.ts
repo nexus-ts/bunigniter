@@ -27,6 +27,7 @@ import { applyMiddleware } from './helpers/middleware'
 import type { MiddlewareConfig } from './helpers/middleware'
 import { loadMiddleware, applyMiddlewareToApp } from './helpers/middleware-loader'
 import { setViewsDir } from './view/renderer'
+import { registerModules } from './helpers/modules'
 import { openapi } from './helpers/openapi'
 import { createCache, Cache } from './helpers/cache'
 import { createQueue, Queue } from './helpers/queue'
@@ -160,6 +161,9 @@ async function main() {
 			}
 		})
 	}
+
+	// ─── HMVC Modules ──────────────────────────────────────────
+	await registerModules(app, { db, dbs: namedDbs, cache, queue, upload, mail })
 
 	// ─── Server Routes (Void-style) ───────────────────────────
 	const routesDir = 'routes'

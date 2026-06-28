@@ -1,0 +1,22 @@
+<h1 style="font-size:24px;margin-bottom:16px">📊 Admin Dashboard</h1>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+<div style="background:#dfe6e9;padding:20px;border-radius:8px;text-align:center">
+<div style="font-size:32px;font-weight:bold"><?= dbStats.posts ?></div><div style="font-size:13px;color:#636e72">Blog Posts</div></div>
+<div style="background:#dfe6e9;padding:20px;border-radius:8px;text-align:center">
+<div style="font-size:32px;font-weight:bold"><?= dbStats.products ?></div><div style="font-size:13px;color:#636e72">Products</div></div>
+<div style="background:#dfe6e9;padding:20px;border-radius:8px;text-align:center">
+<div style="font-size:32px;font-weight:bold"><?= dbStats.posts + dbStats.products ?></div><div style="font-size:13px;color:#636e72">Total Items</div></div>
+</div>
+
+<h2 style="font-size:18px;margin-bottom:8px">📝 Latest Blog Posts</h2>
+<? if (blogCount > 0) { ?><p style="font-size:14px;color:#636e72"><?= blogCount ?> posts published</p>
+<? } else { ?><p style="font-size:14px;color:#636e72">No posts yet</p><? } ?>
+
+<h2 style="font-size:18px;margin:16px 0 8px">🛒 Products</h2>
+<? if (productCount > 0) { ?><p style="font-size:14px;color:#636e72"><?= productCount ?> products in catalog</p>
+<? } else { ?><p style="font-size:14px;color:#636e72">No products yet</p><? } ?>
+
+<div style="margin-top:20px;display:flex;gap:12px">
+<a href="/blog/posts" style="padding:8px 20px;background:#0984e3;color:#fff;border-radius:6px;text-decoration:none;font-size:14px">📝 Manage Blog</a>
+<a href="/shop/products" style="padding:8px 20px;background:#e17055;color:#fff;border-radius:6px;text-decoration:none;font-size:14px">🛒 Manage Shop</a>
+</div>

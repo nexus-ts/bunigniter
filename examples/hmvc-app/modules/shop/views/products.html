@@ -1,0 +1,8 @@
+<h1 style="font-size:24px;margin-bottom:16px">🛒 Shop</h1>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px">
+<? for (const p of products) { ?>
+<div style="background:#fff;padding:16px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+<div style="font-size:16px;font-weight:600"><a href="/shop/products/<?= p.id ?>" style="color:#2d3436;text-decoration:none"><?= p.name ?></a></div>
+<div style="font-size:20px;color:#e17055;font-weight:bold;margin:8px 0">$<?= Number(p.price).toFixed(2) ?></div>
+<div style="font-size:12px;color:#888">Stock: <?= p.stock ?></div>
+</div><? } ?></div>
