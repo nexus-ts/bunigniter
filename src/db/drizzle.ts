@@ -218,6 +218,32 @@ export class DbClient {
 		return result.rows
 	}
 
+	// ─── Pagination ─────────────────────────────────────────────
+
+	/**
+	 * Paginated query with automatic count.
+	 *
+	 * @example
+	 * const result = await db.paginate('SELECT * FROM users', { page: 2, perPage: 20 })
+	 * const result = await db.paginate('SELECT * FROM posts WHERE status = ?', ['published'], { page: 1, perPage: 10 })
+	 */
+	async paginate<T = any>(
+		sql: string,
+		params: unknown[] = [],
+		options: { page?: number; perPage?: number } = {}
+	): Promise<{ data: T[]; total: number; page: number; perPage: number; pages: number }> {
+		const page = Math.max(1, options.page ?? 1)
+		const perPage = Math.max(1, options.perPage ?? 20)
+		const offset = (page - 1) * perPage
+
+		const countResult = await this.query<{ count: number }>(`SELECT count(*) as count FROM (${sql})`, params)
+		const total = Number(countResult.rows[0]?.count ?? 0)
+
+		const data = await this.all<T>(`${sql} LIMIT ? OFFSET ?`, [...params, perPage, offset])
+
+		return { data, total, page, perPage, pages: Math.ceil(total / perPage) }
+	}
+
 	// ─── Transactions ────────────────────────────────────────────
 
 	/**
