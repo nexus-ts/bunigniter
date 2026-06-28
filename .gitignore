@@ -3,3 +3,9 @@ dist/
 *.db
 .env
 .env.local
+\n# SQLite WAL/journal files\n*.db-shm\n*.db-wal\n*.db-journal
+
+# SQLite WAL/journal files
+*.db-shm
+*.db-wal
+*.db-journal
