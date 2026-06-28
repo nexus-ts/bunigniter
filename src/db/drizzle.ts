@@ -103,6 +103,63 @@ export class DbClient {
 		return this.query(s, values)
 	}
 
+	// ─── CodeIgniter-style Active Record ─────────────────────────
+
+	/**
+	 * Insert a record. Pass table name + data object.
+	 *
+	 * @example await db.insert('users', { name: 'Alice', email: 'a@b.com' })
+	 */
+	async insert(table: string, data: Record<string, any>): Promise<QueryResult> {
+		const keys = Object.keys(data)
+		const vals = Object.values(data)
+		const cols = keys.join(', ')
+		const ph = keys.map(() => '?').join(', ')
+		return this.query(`INSERT INTO ${table} (${cols}) VALUES (${ph})`, vals)
+	}
+
+	/**
+	 * Update records. Pass table name + data object + where conditions.
+	 *
+	 * @example await db.update('users', { name: 'Bob' }, { id: 1 })
+	 */
+	async update(table: string, data: Record<string, any>, where: Record<string, any>): Promise<QueryResult> {
+		const setCols = Object.keys(data).map(k => `${k} = ?`).join(', ')
+		const setVals = Object.values(data)
+		const whereKeys = Object.keys(where)
+		const whereVals = Object.values(where)
+		const whereClause = whereKeys.map(k => `${k} = ?`).join(' AND ')
+		return this.query(`UPDATE ${table} SET ${setCols} WHERE ${whereClause}`, [...setVals, ...whereVals])
+	}
+
+	/**
+	 * Delete records. Pass table name + where conditions.
+	 *
+	 * @example await db.delete('users', { id: 1 })
+	 */
+	async delete(table: string, where: Record<string, any>): Promise<QueryResult> {
+		const keys = Object.keys(where)
+		const vals = Object.values(where)
+		const clause = keys.map(k => `${k} = ?`).join(' AND ')
+		return this.query(`DELETE FROM ${table} WHERE ${clause}`, vals)
+	}
+
+	/**
+	 * Select records. Simple where query.
+	 *
+	 * @example const rows = await db.get('users', { id: 1 })
+	 * @example const all = await db.get('users')
+	 */
+	async get<T = any>(table: string, where?: Record<string, any>): Promise<{ rows: T[] }> {
+		if (!where || Object.keys(where).length === 0) {
+			return this.query<T>(`SELECT * FROM ${table}`)
+		}
+		const keys = Object.keys(where)
+		const vals = Object.values(where)
+		const clause = keys.map(k => `${k} = ?`).join(' AND ')
+		return this.query<T>(`SELECT * FROM ${table} WHERE ${clause}`, vals)
+	}
+
 	async query<T = any>(sql: string, params: unknown[] = []): Promise<QueryResult<T>> {
 		this.assertOpen()
 		if (!this.rawExecutor) {
@@ -146,28 +203,6 @@ export class DbClient {
 	async all<T = any>(sql: string, params: unknown[] = []): Promise<T[]> {
 		const result = await this.query<T>(sql, params)
 		return result.rows
-	}
-
-	// ─── Query Builders (Drizzle ORM) ────────────────────────────
-
-	/** Start a SELECT query. */
-	select<T = any>(fields?: any): any {
-		return fields ? this.client.select(fields) : this.client.select()
-	}
-
-	/** Start an INSERT query. */
-	insert(table: any): any {
-		return this.client.insert(table)
-	}
-
-	/** Start an UPDATE query. */
-	update(table: any): any {
-		return this.client.update(table)
-	}
-
-	/** Start a DELETE query. */
-	delete(table: any): any {
-		return this.client.delete(table)
 	}
 
 	// ─── Transactions ────────────────────────────────────────────

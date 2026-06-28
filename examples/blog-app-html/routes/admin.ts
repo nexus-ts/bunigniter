@@ -6,8 +6,8 @@ export class Admin extends Controller {
 	}
 
 	async index() {
-		const posts = await this.db.sql`SELECT p.*, u.username FROM posts p JOIN users u ON u.id = p.user_id ORDER BY p.created_at DESC`
-		return this.view('admin', { title: 'Admin', posts: posts.rows, user: this.auth.user() })
+		const posts = await this.db.all('SELECT p.*, u.username FROM posts p JOIN users u ON u.id = p.user_id ORDER BY p.created_at DESC')
+		return this.view('admin', { title: 'Admin', posts, user: this.auth.user() })
 	}
 
 	async show(id: number) {
@@ -20,12 +20,23 @@ export class Admin extends Controller {
 		if (v.fails()) return this.redirect('/admin')
 		const slug = this.body?.slug || v.data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 		const user = this.auth.user()!
-		await this.db.sql`INSERT INTO posts (title, slug, content, excerpt, user_id) VALUES (${v.data.title}, ${slug}, ${this.body?.content || ''}, ${this.body?.excerpt || ''}, ${user.id})`
+		await this.db.insert('posts', {
+			title: v.data.title,
+			slug,
+			content: this.body?.content || '',
+			excerpt: this.body?.excerpt || '',
+			user_id: user.id,
+		})
 		return this.redirect('/admin')
 	}
 
 	async update(id: number) {
-		await this.db.sql`UPDATE posts SET title = ${this.body?.title}, slug = ${this.body?.slug}, content = ${this.body?.content || ''}, excerpt = ${this.body?.excerpt || ''} WHERE id = ${id}`
+		await this.db.update('posts', {
+			title: this.body?.title,
+			slug: this.body?.slug,
+			content: this.body?.content || '',
+			excerpt: this.body?.excerpt || '',
+		}, { id })
 		return this.redirect('/admin')
 	}
 }
