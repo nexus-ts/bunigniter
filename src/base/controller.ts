@@ -153,6 +153,17 @@ export class Controller {
 		return this.json({ error: 'Bad Request', details: errors ?? null }, 400)
 	}
 
+	// ─── Lifecycle Hooks ────────────────────────────────────────
+
+	/**
+	 * Called before every controller method.
+	 * Return a Response to short-circuit (e.g. redirect unauthenticated users).
+	 * Return undefined to continue normally.
+	 */
+	protected _before(): Response | undefined {
+		return undefined
+	}
+
 	// ─── Validation Shortcuts ────────────────────────────────────
 
 	// ─── HTTP Client Shortcut ─────────────────────────────────

@@ -350,6 +350,14 @@ function registerRoute(
 				_ctx.__method = overrideMethod
 			}
 
+			// Call _before() lifecycle hook (can short-circuit with a Response)
+			if (controller) {
+				const beforeResult = (controller as any)._before?.()
+				if (beforeResult instanceof Response) {
+					return beforeResult
+				}
+			}
+
 			// Call handler — pass context for server routes, ID for Controller routes
 			const id = _ctx.params?.id ? Number(_ctx.params.id) : undefined
 			let result
