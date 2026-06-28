@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun run dev.ts",
     "start": "bun run dev.ts",
-    "seed": "bun run ../../examples/blog-core/db/seed.ts"
+    "seed": "bun run ../blog-app-html/db/seed.ts"
   },
   "dependencies": {
     "@nexusts/core": "../../",
