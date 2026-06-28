@@ -17,7 +17,9 @@ config/app.ts  ← Single config file
 middleware/    ← Global middleware (01_*.ts)
 src/helpers/   ← 25 helper modules
 src/cli/       ← 25 CLI commands
-docs/          ← 15 documentation files
+docs/
+├── user-guide/  ← 13 user-facing docs
+└── analysis/   ← 3 analysis docs
 examples/      ← 7 example apps
 ```
 
@@ -156,7 +158,7 @@ bun x vitest run tests/   # Vitest suite
 
 ## Documentation
 
-See `docs/` — 15 files covering all features.
+See `docs/user-guide/` and `docs/analysis/` — 16 files covering all features.
 
 ## Skills
 
