@@ -36,6 +36,9 @@ export class Controller {
 	/** Database client. Configured via `app.use(DrizzleModule)`. */
 	declare db: DbClient
 
+	/** Named databases (multi-database support). */
+	declare dbs: Record<string, DbClient>
+
 	/** Session — cookie-based, `this.session.get/set/delete/clear`. */
 	declare session: Session
 

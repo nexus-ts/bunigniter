@@ -21,6 +21,7 @@ import { DbClient } from './db/drizzle'
 import { registerFileRoutes } from './router/file-router'
 import { registerServerRoutes } from './router/server-router'
 import { loadEnv } from './helpers/env'
+import { DbClient } from './db/drizzle'
 import { sessionMiddleware, authMiddleware } from './helpers/session-middleware'
 import { applyMiddleware } from './helpers/middleware'
 import type { MiddlewareConfig } from './helpers/middleware'
@@ -39,6 +40,7 @@ interface AppConfig {
 	port?: number | string
 	host?: string
 	db?: { dialect: string; connection: Record<string, any>; logging?: boolean }
+	databases?: Record<string, { dialect: string; connection: Record<string, any>; logging?: boolean }>
 	router?: { prefix?: string; directory?: string }
 	view?: { directory?: string; scripts?: string[] }
 	app?: { key?: string; debug?: boolean }
@@ -101,6 +103,21 @@ async function main() {
 		setViewsDir(config.view.directory)
 	}
 
+	// ─── Named Databases ───────────────────────────────────────
+	const namedDbs: Record<string, DbClient> = {}
+	if (config.databases) {
+		for (const [name, dbConfig] of Object.entries(config.databases)) {
+			try {
+				const namedDb = new DbClient(dbConfig)
+				await namedDb.open()
+				namedDbs[name] = namedDb
+				console.log(`[db] ${name}: ${dbConfig.dialect}`)
+			} catch (e: any) {
+				console.error(`[db] ${name}: failed - ${e.message}`)
+			}
+		}
+	}
+
 	// ─── Services (Cache, Queue, Upload, Mail) ─────────────────
 	const cache = createCache()
 	const queue = createQueue()
@@ -119,6 +136,7 @@ async function main() {
 		directory: pagesDir,
 		prefix: routerPrefix,
 		db,
+		dbs: namedDbs,
 		cache,
 		queue,
 		upload,

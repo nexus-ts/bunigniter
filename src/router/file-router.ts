@@ -46,6 +46,9 @@ export interface FileRouterOptions {
 	/** Database instance to inject into controllers. */
 	db?: DbClient
 
+	/** Named databases (multi-database support). */
+	dbs?: Record<string, DbClient>
+
 	/** Cache instance. */
 	cache?: Cache
 
@@ -171,6 +174,12 @@ export async function registerFileRoutes(app: Elysia, options: FileRouterOptions
 		if (options.db) {
 			Object.defineProperty(controller, 'db', {
 				value: options.db,
+				writable: false,
+			})
+		}
+		if (options.dbs) {
+			Object.defineProperty(controller, 'dbs', {
+				value: options.dbs,
 				writable: false,
 			})
 		}
