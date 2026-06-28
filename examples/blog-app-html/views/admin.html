@@ -1,0 +1,8 @@
+<div class="page-title">Admin Dashboard</div>
+<p>Welcome, <?= user.username ?>! <a href="/logout" style="font-size:13px">Logout</a></p>
+<a href="/admin/new" class="btn btn-p" style="margin:16px 0;display:inline-block">+ New Post</a>
+<table><tr><th>Title</th><th>Date</th><th></th></tr>
+<? for (const p of posts) { ?>
+<tr><td><a href="/posts/<?= p.id ?>"><?= p.title ?></a></td><td><?= p.created_at?.slice(0,10) ?></td>
+<td><a href="/admin/edit/<?= p.id ?>" style="color:#ff7675">Edit</a></td></tr>
+<? } ?></table>

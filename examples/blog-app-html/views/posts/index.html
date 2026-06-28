@@ -1,0 +1,8 @@
+<div class="page-title">Blog</div>
+<? for (const p of posts) { ?>
+<div class="post"><div class="post-body">
+<div class="post-title"><a href="/posts/<?= p.id ?>"><?= p.title ?></a></div>
+<div class="post-meta">By <?= p.username ?> · <?= p.created_at?.slice(0,10) ?></div>
+<div class="post-excerpt"><?= p.excerpt ?? p.content?.slice(0,200) ?></div>
+</div></div>
+<? } ?>

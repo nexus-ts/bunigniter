@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title><?= title ?? 'Blog' ?></title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8f9fa;color:#333}
+.top{background:#2d3436;color:#fff;padding:12px 0}
+.inner{max-width:900px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:16px}
+.top a{color:#fff;text-decoration:none;font-size:14px}
+.logo{font-size:18px;font-weight:bold;color:#ff7675}
+.nav{display:flex;gap:14px;flex:1}
+.content{max-width:900px;margin:0 auto;padding:24px 20px}
+.post{border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;margin-bottom:20px}
+.post-body{padding:20px}
+.post-title{font-size:18px;margin-bottom:6px}
+.post-title a{color:#2d3436;text-decoration:none}
+.post-title a:hover{color:#ff7675}
+.post-meta{font-size:12px;color:#888;margin-bottom:8px}
+.post-excerpt{font-size:14px;color:#555;line-height:1.6}
+.btn{display:inline-block;padding:8px 20px;border-radius:6px;text-decoration:none;font-size:14px;border:none;cursor:pointer}
+.btn-p{background:#ff7675;color:#fff}
+.btn-p:hover{background:#e17055}
+.page-title{font-size:26px;margin-bottom:20px;color:#2d3436}
+.detail h1{font-size:26px;margin-bottom:6px}
+.detail .meta{font-size:13px;color:#888;margin-bottom:20px}
+.detail .body{font-size:15px;line-height:1.8;color:#444}
+.detail .body pre{background:#2d3436;color:#dfe6e9;padding:16px;border-radius:6px;overflow:auto;font-size:13px;margin:16px 0}
+.detail .body code{background:#eee;padding:2px 6px;border-radius:3px;font-size:0.9em}
+.comment{padding:12px 0;border-bottom:1px solid #eee}
+.comment .author{font-weight:600;font-size:13px}
+.comment .text{font-size:13px;color:#555;margin-top:4px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.form-group input,.form-group textarea{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+input:focus,textarea:focus{border-color:#ff7675;outline:none}
+.flash{padding:12px;border-radius:6px;margin-bottom:16px;background:#d4edda;color:#155724}
+</style></head><body>
+<div class="top"><div class="inner">
+<a href="/" class="logo">📝 NexusTS Blog</a>
+<div class="nav"><a href="/">Home</a></div>
+<? if (typeof user !== 'undefined' && user) { ?><a href="/admin">Admin</a><span style="font-size:13px;color:#888"><?= user.username ?></span><a href="/logout">Logout</a>
+<? } else { ?><a href="/login">Login</a><? } ?>
+</div></div>
+<div class="content">
+<? if (typeof flash !== 'undefined' && flash) { ?><div class="flash"><?= flash ?></div><? } ?>
+<?= slot ?>
+</div></body></html>

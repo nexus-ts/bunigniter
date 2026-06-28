@@ -1,0 +1,13 @@
+<div class="detail">
+<h1><?= post.title ?></h1>
+<div class="meta">By <?= post.username ?> · <?= post.created_at?.slice(0,10) ?></div>
+<div class="body"><?= post.content ?></div>
+<h3 style="margin-top:30px">Comments (<?= comments.length ?>)</h3>
+<? for (const c of comments) { ?><div class="comment"><b><?= c.author ?></b> <?= c.content ?></div><? } ?>
+<? if (typeof user !== 'undefined' && user) { ?>
+<form action="/posts/<?= post.id ?>/comment" method="POST" style="margin-top:16px">
+<textarea name="content" placeholder="Comment..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px" required></textarea>
+<button class="btn btn-p" style="margin-top:6px">Post Comment</button></form>
+<? } else { ?><p style="margin-top:12px"><a href="/login">Login to comment</a></p><? } ?>
+<a href="/" style="color:#888;font-size:13px">← Back</a>
+</div>
