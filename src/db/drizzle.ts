@@ -106,58 +106,71 @@ export class DbClient {
 	// ─── CodeIgniter-style Active Record ─────────────────────────
 
 	/**
-	 * Insert a record. Pass table name + data object.
+	 * Insert a record.
 	 *
 	 * @example await db.insert('users', { name: 'Alice', email: 'a@b.com' })
 	 */
 	async insert(table: string, data: Record<string, any>): Promise<QueryResult> {
 		const keys = Object.keys(data)
 		const vals = Object.values(data)
-		const cols = keys.join(', ')
-		const ph = keys.map(() => '?').join(', ')
-		return this.query(`INSERT INTO ${table} (${cols}) VALUES (${ph})`, vals)
+		return this.query(
+			`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${keys.map(() => '?').join(', ')})`,
+			vals
+		)
 	}
 
 	/**
-	 * Update records. Pass table name + data object + where conditions.
+	 * Update records.
 	 *
-	 * @example await db.update('users', { name: 'Bob' }, { id: 1 })
+	 * @example
+	 * await db.update('users', { name: 'Bob' }, { id: 1 })
+	 * await db.update('posts', { views: 0 }, { views: ['<', 0] }) // views < 0
 	 */
 	async update(table: string, data: Record<string, any>, where: Record<string, any>): Promise<QueryResult> {
-		const setCols = Object.keys(data).map(k => `${k} = ?`).join(', ')
-		const setVals = Object.values(data)
-		const whereKeys = Object.keys(where)
-		const whereVals = Object.values(where)
-		const whereClause = whereKeys.map(k => `${k} = ?`).join(' AND ')
-		return this.query(`UPDATE ${table} SET ${setCols} WHERE ${whereClause}`, [...setVals, ...whereVals])
+		const setCols = Object.keys(data).map(k => `${k} = ?`)
+		const { clause, vals } = buildWhere(where)
+		return this.query(`UPDATE ${table} SET ${setCols.join(', ')} WHERE ${clause}`, [...Object.values(data), ...vals])
 	}
 
 	/**
-	 * Delete records. Pass table name + where conditions.
+	 * Delete records.
 	 *
 	 * @example await db.delete('users', { id: 1 })
+	 * @example await db.delete('posts', { createdAt: ['<', '2024-01-01'] })
 	 */
 	async delete(table: string, where: Record<string, any>): Promise<QueryResult> {
-		const keys = Object.keys(where)
-		const vals = Object.values(where)
-		const clause = keys.map(k => `${k} = ?`).join(' AND ')
+		const { clause, vals } = buildWhere(where)
 		return this.query(`DELETE FROM ${table} WHERE ${clause}`, vals)
 	}
 
 	/**
-	 * Select records. Simple where query.
+	 * Select records with ordering and limits.
 	 *
-	 * @example const rows = await db.get('users', { id: 1 })
-	 * @example const all = await db.get('users')
+	 * @example
+	 * const all = await db.get('users')
+	 * const user = await db.get('users', { id: 1 })
+	 * const recent = await db.get('posts', { status: 'published' }, { orderBy: 'created_at DESC', limit: 10 })
+	 * const admins = await db.get('users', { role: 'admin', age: ['>=', 18] })
 	 */
-	async get<T = any>(table: string, where?: Record<string, any>): Promise<{ rows: T[] }> {
-		if (!where || Object.keys(where).length === 0) {
-			return this.query<T>(`SELECT * FROM ${table}`)
+	async get<T = any>(table: string, where?: Record<string, any> | null, options?: {
+		orderBy?: string
+		limit?: number
+		offset?: number
+	}): Promise<T[]> {
+		let sql = `SELECT * FROM ${table}`
+		const params: unknown[] = []
+
+		if (where && Object.keys(where).length > 0) {
+			const r = buildWhere(where)
+			sql += ` WHERE ${r.clause}`
+			params.push(...r.vals)
 		}
-		const keys = Object.keys(where)
-		const vals = Object.values(where)
-		const clause = keys.map(k => `${k} = ?`).join(' AND ')
-		return this.query<T>(`SELECT * FROM ${table} WHERE ${clause}`, vals)
+		if (options?.orderBy) sql += ` ORDER BY ${options.orderBy}`
+		if (options?.limit) sql += ` LIMIT ${options.limit}`
+		if (options?.offset) sql += ` OFFSET ${options.offset}`
+
+		const result = await this.query<T>(sql, params)
+		return result.rows
 	}
 
 	async query<T = any>(sql: string, params: unknown[] = []): Promise<QueryResult<T>> {
@@ -262,6 +275,32 @@ interface RawExecutor {
 interface DriverResult {
 	db: any
 	rawExecutor?: RawExecutor
+}
+
+/** Build WHERE clause with operator support. */
+function buildWhere(where: Record<string, any>): { clause: string; vals: unknown[] } {
+	const parts: string[] = []
+	const vals: unknown[] = []
+
+	for (const [key, val] of Object.entries(where)) {
+		if (Array.isArray(val)) {
+			const op = val[0] ?? '='
+			const v = val[1] ?? val[0]
+			if (op.toUpperCase() === 'IN') {
+				const items = Array.isArray(v) ? v : [v]
+				parts.push(`${key} IN (${items.map(() => '?').join(', ')})`)
+				vals.push(...items)
+			} else {
+				parts.push(`${key} ${op} ?`)
+				vals.push(v)
+			}
+		} else {
+			parts.push(`${key} = ?`)
+			vals.push(val)
+		}
+	}
+
+	return { clause: parts.join(' AND '), vals }
 }
 
 async function resolveDriver(dialect: Dialect, config: DbConfig): Promise<DriverResult> {
