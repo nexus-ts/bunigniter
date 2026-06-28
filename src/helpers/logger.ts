@@ -5,92 +5,78 @@
  *
  * @example
  * ```ts
- * app.use(loggerMiddleware())
- * // [2026-06-27 14:30:00] GET /api/users 200 12ms
+ * import { Elysia } from 'elysia'
+ * import { loggerMiddleware } from 'bunigniter/helpers/logger'
+ *
+ * const app = new Elysia()
+ *   .use(loggerMiddleware())
  * ```
  */
-import { Elysia } from 'elysia'
+import { Elysia } from "elysia";
 
 export interface LoggerOptions {
-	/** Enable/disable logging. Default: true */
-	enabled?: boolean
-
-	/** Show query strings. Default: false */
-	showQuery?: boolean
-
-	/** Show request body (truncated). Default: false */
-	showBody?: boolean
-
-	/** Custom log function. Default: console.log */
-	logFn?: (message: string, data?: any) => void
-
-	/** Skip logging for certain paths. */
-	skip?: string[]
+	enabled?: boolean;
+	showQuery?: boolean;
+	showBody?: boolean;
+	logFn?: (message: string, data?: any) => void;
+	skip?: string[];
 }
 
-/** Default status colors (ANSI). */
 const STATUS_COLORS: Record<string, string> = {
-	'2': '\x1b[32m', // green
-	'3': '\x1b[36m', // cyan
-	'4': '\x1b[33m', // yellow
-	'5': '\x1b[31m', // red
-}
-
-const RESET = '\x1b[0m'
-const DIM = '\x1b[2m'
+	"2": "\x1b[32m",
+	"3": "\x1b[36m",
+	"4": "\x1b[33m",
+	"5": "\x1b[31m",
+};
+const RESET = "\x1b[0m";
+const DIM = "\x1b[2m";
 
 /**
- * Create a request logger middleware.
+ * Create a request logger middleware for Elysia v2.
+ *
+ * Uses `derive('global')` to capture start time without affecting response,
+ * `afterResponse('global')` to log after response is sent.
  */
 export function loggerMiddleware(options: LoggerOptions = {}) {
-	const {
-		enabled = true,
-		showQuery = false,
-		showBody = false,
-		logFn = console.log,
-		skip = ['/health'],
-	} = options
+	const enabled = options.enabled ?? true;
+	const showQuery = options.showQuery ?? false;
+	const logFn = options.logFn ?? console.log;
+	const skip = options.skip ?? ["/health"];
 
-	if (!enabled) {
-		const app = new Elysia({ name: 'nexus-logger' })
-		return app
-	}
+	if (!enabled) return new Elysia({ name: "bunigniter-logger" });
 
-	const app = new Elysia({ name: 'nexus-logger' })
+	return new Elysia({ name: "bunigniter-logger" })
+		.derive("global", ({ request }: any) => {
+			const url = new URL(request.url);
+			const path = url.pathname;
+			if (skip.some((s: string) => path.startsWith(s))) return {};
 
-	// Elysia v2: use 'request' lifecycle instead of 'onRequest'
-	app.request((ctx: any) => {
-		const url = ctx.request.url
-		const urlObj = new URL(url)
-		const path = urlObj.pathname
+			return {
+				_logStart: performance.now(),
+				_logMethod: request.method,
+				_logPath: path + (showQuery ? url.search : ""),
+			};
+		})
+		.afterHandle(
+			"global" as any,
+			({ _logStart, _logMethod, _logPath, set, response }: any) => {
+				if (!_logStart) return response;
 
-		// Skip logging for certain paths
-		if (skip.some((s) => path.startsWith(s))) return
+				const duration =
+					Math.round((performance.now() - _logStart) * 100) / 100;
+				const status = set?.status ?? 200;
+				const statusGroup = String(status)[0];
+				const color = STATUS_COLORS[statusGroup] ?? "";
+				const timestamp = new Date()
+					.toISOString()
+					.replace("T", " ")
+					.slice(0, 19);
+				const methodPad = (_logMethod ?? "?").padEnd(7);
 
-		const start = performance.now()
-		const method = ctx.request.method
-		const query = showQuery ? urlObj.search : ''
-
-		ctx._logStart = start
-		ctx._logMethod = method
-		ctx._logPath = path + query
-	})
-
-	app.afterResponse((ctx: any) => {
-		if (!ctx._logStart) return
-
-		const duration = Math.round((performance.now() - ctx._logStart) * 100) / 100
-		const status = ctx.set.status ?? 200
-		const statusGroup = String(status)[0]
-		const color = STATUS_COLORS[statusGroup] ?? ''
-
-		const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19)
-		const methodPad = ctx._logMethod.padEnd(7)
-
-		logFn(
-			`${DIM}${timestamp}${RESET} ${methodPad} ${color}${status}${RESET} ${ctx._logPath} ${DIM}${duration}ms${RESET}`
-		)
-	})
-
-	return app
+				logFn(
+					`${DIM}${timestamp}${RESET} ${methodPad} ${color}${status}${RESET} ${_logPath ?? "?"} ${DIM}${duration}ms${RESET}`,
+				);
+				return response;
+			},
+		);
 }
