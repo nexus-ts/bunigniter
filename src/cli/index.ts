@@ -134,21 +134,54 @@ ${cols.map((c: any) => `\t${c.name}: ${c.type === 'number' ? `integer('${c.name}
 				console.log('  No routes directory found.')
 				return
 			}
-			const { readdirSync, statSync } = await import('node:fs')
+			const { readdirSync, statSync, readFileSync } = await import('node:fs')
 			const files = readdirSync(routesDir)
+			const prefix = process.env.ROUTER_PREFIX ?? '/api'
+
 			for (const file of files.sort()) {
-				if (file.endsWith('.ts') && !file.endsWith('.server.ts')) {
-					const name = file.replace(/\.ts$/, '')
-					const prefix = process.env.ROUTER_PREFIX ?? '/api'
-					if (name === 'index') {
-						console.log(`  GET  ${prefix}`)
-					} else {
-						console.log(`  GET  ${prefix}/${name}`)
-						console.log(`  GET  ${prefix}/${name}/:id`)
-						console.log(`  POST ${prefix}/${name}`)
-						console.log(`  PUT  ${prefix}/${name}/:id`)
-						console.log(`  DELETE ${prefix}/${name}/:id`)
+				if (!file.endsWith('.ts') || file.endsWith('.server.ts')) continue
+
+				const fullPath = join(routesDir, file)
+				if (!statSync(fullPath).isFile()) continue
+
+				const content = readFileSync(fullPath, 'utf-8')
+				const name = file.replace(/\.ts$/, '')
+				const isIndex = name === 'index'
+
+				// Find exported controller class name
+				const classMatch = content.match(/export (default )?class (\w+) extends Controller/)
+				const className = classMatch ? classMatch[2] : name
+
+				// Handle both Controller class methods and defineHandler exports
+				const handlerMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
+				let hasHandler = false
+
+				for (const verb of handlerMethods) {
+					if (content.includes(`export const ${verb} =`)) {
+						hasHandler = true
+						const path = isIndex ? prefix : `${prefix}/${name}`
+						console.log(`  ${verb.padEnd(6)} ${path.padEnd(25)} ${className}.${verb}()`)
 					}
+				}
+
+				// Skip Controller method scan if already handled as defineHandler
+				if (hasHandler) continue
+
+				// Controller class methods
+				const methods = ['index', 'show', 'create', 'update', 'destroy']
+				const methodVerbs: Record<string, string> = {
+					index: 'GET', show: 'GET', create: 'POST',
+					update: 'PUT', destroy: 'DELETE',
+				}
+				const idMethods = new Set(['show', 'update', 'destroy'])
+
+				for (const method of methods) {
+					if (!content.includes(`async ${method}`)) continue
+					const verb = methodVerbs[method]
+					const path = idMethods.has(method)
+						? (isIndex ? `${prefix}/:id` : `${prefix}/${name}/:id`)
+						: (isIndex ? prefix : `${prefix}/${name}`)
+					console.log(`  ${verb.padEnd(6)} ${path.padEnd(25)} ${className}.${method}()`)
 				}
 			}
 			console.log()
