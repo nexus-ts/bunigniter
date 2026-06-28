@@ -153,17 +153,26 @@ export class DbClient {
 	 * const admins = await db.get('users', { role: 'admin', age: ['>=', 18] })
 	 */
 	async get<T = any>(table: string, where?: Record<string, any> | null, options?: {
+		select?: string
 		orderBy?: string
 		limit?: number
 		offset?: number
+		groupBy?: string
+		having?: Record<string, any>
 	}): Promise<T[]> {
-		let sql = `SELECT * FROM ${table}`
+		let sql = `SELECT ${options?.select ?? '*'} FROM ${table}`
 		const params: unknown[] = []
 
 		if (where && Object.keys(where).length > 0) {
 			const r = buildWhere(where)
 			sql += ` WHERE ${r.clause}`
 			params.push(...r.vals)
+		}
+		if (options?.groupBy) sql += ` GROUP BY ${options.groupBy}`
+		if (options?.having && Object.keys(options.having).length > 0) {
+			const h = buildWhere(options.having)
+			sql += ` HAVING ${h.clause}`
+			params.push(...h.vals)
 		}
 		if (options?.orderBy) sql += ` ORDER BY ${options.orderBy}`
 		if (options?.limit) { sql += ' LIMIT ?'; params.push(options.limit) }
@@ -192,6 +201,8 @@ export class DbClient {
 			limit?: number
 			offset?: number
 			select?: string
+			groupBy?: string
+			having?: Record<string, any>
 		}
 	): Promise<T[]> {
 		let sql = `SELECT ${options?.select ?? '*'} FROM ${from}`
@@ -210,12 +221,55 @@ export class DbClient {
 			sql += ` WHERE ${r.clause}`
 			params.push(...r.vals)
 		}
+		if (options?.groupBy) sql += ` GROUP BY ${options.groupBy}`
+		if (options?.having && Object.keys(options.having).length > 0) {
+			const h = buildWhere(options.having)
+			sql += ` HAVING ${h.clause}`
+			params.push(...h.vals)
+		}
 		if (options?.orderBy) sql += ` ORDER BY ${options.orderBy}`
 		if (options?.limit) { sql += ' LIMIT ?'; params.push(options.limit) }
 		if (options?.offset) { sql += ' OFFSET ?'; params.push(options.offset) }
 
 		const result = await this.query<T>(sql, params)
 		return result.rows
+	}
+
+	/**
+	 * Count records in a table, optionally with WHERE.
+	 * @example await db.count('users') // → 42
+	 * @example await db.count('users', { role: 'admin' }) // → 5
+	 */
+	async count(table: string, where?: Record<string, any>): Promise<number> {
+		let sql = `SELECT count(*) as c FROM ${table}`
+		const params: unknown[] = []
+		if (where && Object.keys(where).length > 0) {
+			const r = buildWhere(where)
+			sql += ` WHERE ${r.clause}`
+			params.push(...r.vals)
+		}
+		const result = await this.query<{ c: number }>(sql, params)
+		return Number(result.rows[0]?.c ?? 0)
+	}
+
+	/**
+	 * Batch insert multiple rows at once.
+	 * @example await db.insertBatch('users', [{name:'A'},{name:'B'},{name:'C'}])
+	 */
+	async insertBatch(table: string, data: Record<string, any>[]): Promise<QueryResult> {
+		if (data.length === 0) return { rows: [], affectedRows: 0 }
+		const keys = Object.keys(data[0])
+		const placeholders = data.map(() => `(${keys.map(() => '?').join(',')})`).join(',')
+		const vals = data.flatMap(d => keys.map(k => d[k]))
+		return this.query(`INSERT INTO ${table} (${keys.join(',')}) VALUES ${placeholders}`, vals)
+	}
+
+	/**
+	 * Delete all rows from a table (Drizzle truncate).
+	 * @example await db.truncate('logs')
+	 */
+	async truncate(table: string): Promise<QueryResult> {
+		return this.query(`DELETE FROM ${table}`)
 	}
 
 	async query<T = any>(sql: string, params: unknown[] = []): Promise<QueryResult<T>> {
