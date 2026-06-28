@@ -68,4 +68,4 @@ src/helpers/*.ts     → 25 helper modules
 
 ## Import Convention
 
-Always use `@nexusts/core` — NOT relative paths like `../../src/`.
+Always use `bunigniter` — NOT relative paths like `../../src/`.

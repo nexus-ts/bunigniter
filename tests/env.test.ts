@@ -7,7 +7,7 @@ import { writeFileSync, unlinkSync, existsSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 
-const TEST_DIR = join(tmpdir(), 'nexus-test-env')
+const TEST_DIR = join(tmpdir(), 'bunigniter-test-env')
 
 function writeEnv(filename: string, content: string) {
 	if (!existsSync(TEST_DIR)) mkdirSync(TEST_DIR, { recursive: true })

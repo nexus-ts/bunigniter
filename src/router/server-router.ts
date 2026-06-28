@@ -19,7 +19,7 @@
  * @example
  * ```ts
  * // routes/api/users.ts
- * import { defineHandler } from 'nexusts'
+ * import { defineHandler } from 'bunigniter'
  *
  * export const GET = defineHandler(async (c) => {
  *   return db.select().from(users)

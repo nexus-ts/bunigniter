@@ -19,7 +19,7 @@ import { env } from '../helpers/env'
 
 /** Session config. */
 export interface SessionConfig {
-	/** Cookie name. Default: 'nexus_session' */
+	/** Cookie name. Default: 'bunigniter_session' */
 	name?: string
 
 	/** Encryption key (APP_KEY). Must be 32 bytes base64. */
@@ -43,7 +43,7 @@ export interface SessionConfig {
 
 /** Default session config. */
 const defaultConfig: SessionConfig = {
-	name: 'nexus_session',
+	name: 'bunigniter_session',
 	lifetime: 86400,
 	path: '/',
 	httpOnly: true,
@@ -169,7 +169,7 @@ export class Session {
 
 	/** Get the cookie name. */
 	get cookieName(): string {
-		return this.config.name ?? 'nexus_session'
+		return this.config.name ?? 'bunigniter_session'
 	}
 }
 

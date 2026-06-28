@@ -20,12 +20,12 @@ import { Session, type SessionConfig } from "./session";
  * Create an Elysia plugin that injects session into the context.
  */
 export function sessionMiddleware(config?: SessionConfig) {
-	const app = new Elysia({ name: "nexus-session" });
+	const app = new Elysia({ name: "bunigniter-session" });
 
 	app.derive("global" as any, async ({ request, cookie: cookieJar }: any) => {
 		const sessionConfig: SessionConfig = { ...config };
 		const session = new Session(sessionConfig);
-		const cookieName = sessionConfig.name ?? "nexus_session";
+		const cookieName = sessionConfig.name ?? "bunigniter_session";
 
 		// Load session from cookie
 		const rawCookie =
@@ -73,7 +73,7 @@ export function sessionMiddleware(config?: SessionConfig) {
  * Simple auth — stores user info in session.
  */
 export function authMiddleware() {
-	const app = new Elysia({ name: "nexus-auth" });
+	const app = new Elysia({ name: "bunigniter-auth" });
 
 	app.derive("global" as any, async ({ session }: any) => {
 		return {

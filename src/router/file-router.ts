@@ -384,7 +384,7 @@ function registerRoute(
 		setRequestContext(_ctx);
 		startTime = performance.now();
 		let session: Session | null = null;
-		const cookieName = "nexus_session";
+		const cookieName = "bunigniter_session";
 
 		if (controller) {
 			(controller as any).ctx = _ctx;

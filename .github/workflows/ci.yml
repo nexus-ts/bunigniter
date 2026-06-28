@@ -20,10 +20,10 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Create @nexusts/core symlink
+      - name: Create bunigniter symlink
         run: |
-          mkdir -p node_modules/@nexusts
-          ln -sf ../.. node_modules/@nexusts/core
+          mkdir -p node_modules/bunigniter
+          ln -sf ../.. node_modules/bunigniter/core
 
       - name: Run unit tests
         run: bun x vitest run tests/ --exclude 'tests/smoke*' --reporter=verbose

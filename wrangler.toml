@@ -1,4 +1,4 @@
-name = "nexus-app"
+name = "bunigniter-app"
 main = "edge-worker.ts"
 compatibility_date = "2026-06-01"
 
