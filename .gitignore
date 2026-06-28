@@ -3,7 +3,9 @@ dist/
 *.db
 .env
 .env.local
-\n# SQLite WAL/journal files\n*.db-shm\n*.db-wal\n*.db-journal
+
+# NexusTS REPL history
+.nexus_repl_history
 
 # SQLite WAL/journal files
 *.db-shm

@@ -2,9 +2,9 @@ import { Controller } from '@nexusts/core'
 
 export class Pets extends Controller {
   async index() {
-    const species = this.ctx.query?.species as string || ''
-    const search = this.ctx.query?.q as string || ''
-    const sort = this.ctx.query?.sort as string || 'newest'
+    const species = this.request.get('species', '')
+    const search = this.request.get('q', '')
+    const sort = this.request.get('sort', 'newest')
 
     let where = "WHERE status = 'available'"
     const params: unknown[] = []
