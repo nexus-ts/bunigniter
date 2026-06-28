@@ -1,0 +1,71 @@
+<div class="card" style="max-width: 500px; margin: 40px auto">
+  <h2 style="margin-bottom: 20px">Profile</h2>
+  <form
+    method="POST"
+    action="/profile"
+    enctype="multipart/form-data"
+    style="display: flex; flex-direction: column; gap: 16px"
+  >
+    <div style="display: flex; align-items: center; gap: 16px">
+      <? if (user.avatar) { ?>
+      <img
+        src="/storage/<?= user.avatar ?>"
+        class="avatar"
+        style="width: 64px; height: 64px"
+      />
+      <? } else { ?>
+      <div
+        style="
+          width: 64px;
+          height: 64px;
+          border-radius: 8px;
+          background: #4da6ff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 28px;
+          color: #fff;
+        "
+      >
+        <?= (user.display_name ?? user.username)[0].toUpperCase() ?>
+      </div>
+      <? } ?>
+      <div>
+        <p style="font-weight: 600">
+          <?= user.display_name ?? user.username ?>
+        </p>
+        <p style="font-size: 13px; color: #9ca3af">@<?= user.username ?></p>
+        <p style="font-size: 13px; color: #9ca3af"><?= user.email ?></p>
+      </div>
+    </div>
+    <div>
+      <label
+        style="
+          display: block;
+          font-size: 13px;
+          color: #9ca3af;
+          margin-bottom: 4px;
+        "
+        >Display Name</label
+      >
+      <input
+        type="text"
+        name="display_name"
+        value="<?= user.display_name ?? '' ?>"
+      />
+    </div>
+    <div>
+      <label
+        style="
+          display: block;
+          font-size: 13px;
+          color: #9ca3af;
+          margin-bottom: 4px;
+        "
+        >Avatar</label
+      >
+      <input type="file" name="avatar" accept="image/*" />
+    </div>
+    <button type="submit" class="btn btn-primary">Update Profile</button>
+  </form>
+</div>

@@ -239,14 +239,19 @@ export async function registerFileRoutes(
 		// Register routes for each Controller method
 		const isIndex = basename(file, ".ts") === "index";
 
+		// Check if URL already has a path parameter (from [param].ts)
+		const hasPathParam = urlPath.includes(":");
+
 		for (const method of ["index", "show", "create", "update", "destroy"]) {
 			if (typeof (controller as any)[method] !== "function") continue;
 			const verb = METHOD_MAP[method];
 			const handler = (controller as any)[method].bind(controller);
 			const methodPath = ID_METHODS.has(method)
-				? isIndex
-					? `${prefix}/:id`
-					: `${urlPath}/:id`
+				? hasPathParam
+					? urlPath
+					: isIndex
+						? `${prefix}/:id`
+						: `${urlPath}/:id`
 				: isIndex
 					? prefix
 					: urlPath;

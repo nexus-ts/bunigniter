@@ -1,0 +1,52 @@
+<div style="display: flex; gap: 20px; margin-top: 20px">
+  <!-- Sidebar -->
+  <div class="card" style="width: 260px; flex-shrink: 0">
+    <h3
+      style="
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      "
+    >
+      Channels
+    </h3>
+    <? for (const ch of channels) { ?>
+    <div style="margin-bottom: 4px">
+      <a
+        href="/channels/<?= ch.id ?>"
+        style="
+          display: block;
+          padding: 6px 10px;
+          border-radius: 4px;
+          color: #d1d5db;
+          font-size: 14px;
+        "
+        ># <?= ch.name ?></a
+      >
+    </div>
+    <? } ?>
+  </div>
+
+  <!-- Main -->
+  <div class="card" style="flex: 1">
+    <h2 style="margin-bottom: 16px">Channels</h2>
+    <? for (const ch of channels) { ?>
+    <div style="padding: 12px 0; border-bottom: 1px solid #2d2f36">
+      <a href="/channels/<?= ch.id ?>" style="font-size: 16px; font-weight: 600"
+        ># <?= ch.name ?></a
+      >
+      <p style="font-size: 13px; color: #9ca3af; margin-top: 4px">
+        <?= ch.topic ?? '' ?>
+      </p>
+      <p style="font-size: 12px; color: #6b7280; margin-top: 4px">
+        <?= ch.msg_count ?? 0 ?>
+        messages
+      </p>
+    </div>
+    <? } ?> <? if (channels.length === 0) { ?>
+    <p style="color: #9ca3af">No channels yet.</p>
+    <? } ?>
+  </div>
+</div>
