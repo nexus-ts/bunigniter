@@ -32,8 +32,10 @@ jobs:
 
       - name: Create bunigniter package link for examples
         run: |
-          ln -sf . node_modules/bunigniter/core
-          ln -sf . node_modules/bunigniter
+          mkdir -p node_modules/bunigniter
+          ROOT=${{ github.workspace }}
+          ln -sf $ROOT node_modules/bunigniter/core
+          ln -sf $ROOT node_modules/bunigniter
 
       - name: Lint check
         run: bun run lint
