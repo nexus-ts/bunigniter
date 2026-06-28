@@ -13,140 +13,190 @@
  *   .env         Show environment variables
  *   .db          Show database status
  *   .clear       Clear screen
+ *   .version     Show version info
  */
-import { readFileSync, existsSync, appendFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { createInterface } from 'node:readline'
-import { Elysia } from 'elysia'
+import { readFileSync, existsSync, appendFileSync } from "node:fs";
+import { join } from "node:path";
+import { createInterface, clearLine, cursorTo } from "node:readline";
+import { inspect } from "node:util";
 
-const HISTORY_FILE = join(process.cwd(), '.nexus_repl_history')
-const HISTORY_MAX = 100
+const HISTORY_FILE = join(process.cwd(), ".nexus_repl_history");
+const HISTORY_MAX = 100;
+const PING_SQL = "SELECT 1 as ok";
+
+/** Build a pretty ASCII box banner. */
+function banner(version: string, runtime: string): string {
+	const lines = [
+		"",
+		"  ╔══════════════════════════════════════════════════════╗",
+		"  ║                                                      ║",
+		"  ║              ◈  NexusTS  ◈                          ║",
+		"  ║        Interactive Development Console               ║",
+		"  ║                                                      ║",
+		`  ║    version  ${version.padEnd(25)}              ║`,
+		`  ║    runtime  ${runtime.padEnd(25)}              ║`,
+		"  ║                                                      ║",
+		"  ║    Type .help for available commands                 ║",
+		"  ║                                                      ║",
+		"  ╚══════════════════════════════════════════════════════╝",
+	];
+	return lines.join("\n");
+}
+
+/** Read version from package.json. */
+function readVersion(): string {
+	try {
+		const pkgPath = join(process.cwd(), "package.json");
+		if (existsSync(pkgPath)) {
+			const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+			return pkg.version ?? "0.0.0";
+		}
+	} catch {
+		// ignore
+	}
+	return "0.0.0";
+}
 
 /**
  * Start the REPL.
  */
 export async function startRepl() {
-	console.log('\n  ╔══════════════════════════════════════════╗')
-	console.log('  ║        NexusTS Interactive Console        ║')
-	console.log('  ║    Type .help for available commands      ║')
-	console.log('  ╚══════════════════════════════════════════╝\n')
+	const version = readVersion();
+	const runtime = typeof Bun !== "undefined" ? `Bun ${Bun.version}` : "Node.js";
 
-	// Try to load app config and initialize services
-	const context = await initializeContext()
+	console.log(banner(version, runtime));
+	console.log("");
+
+	const context = await initializeContext(version, runtime);
 
 	const rl = createInterface({
 		input: process.stdin,
 		output: process.stdout,
-		prompt: 'nexus> ',
-	})
+		prompt: "\x1b[36mnexus> \x1b[0m",
+	});
 
 	// Load history
-	const history: string[] = []
+	const history: string[] = [];
 	try {
 		if (existsSync(HISTORY_FILE)) {
-			const lines = readFileSync(HISTORY_FILE, 'utf-8').split('\n').filter(Boolean)
-			history.push(...lines.slice(-HISTORY_MAX))
+			const lines = readFileSync(HISTORY_FILE, "utf-8")
+				.split("\n")
+				.filter(Boolean);
+			history.push(...lines.slice(-HISTORY_MAX));
 		}
-	} catch {}
+	} catch {
+		// ignore
+	}
 
-	// Track history index for up/down navigation
-	let historyIndex = history.length
+	let historyIndex = history.length;
 
-	// Override history navigation
-	const originalWrite = process.stdout.write.bind(process.stdout)
-
-	rl.on('line', async (input: string) => {
-		const trimmed = input.trim()
+	rl.on("line", async (input: string) => {
+		const trimmed = input.trim();
 
 		if (!trimmed) {
-			rl.prompt()
-			return
+			rl.prompt();
+			return;
 		}
 
-		// Handle commands
-		if (trimmed.startsWith('.')) {
-			await handleCommand(trimmed, context, rl)
-			rl.prompt()
-			return
+		// Handle REPL commands
+		if (trimmed.startsWith(".")) {
+			await handleCommand(trimmed, context);
+			rl.prompt();
+			return;
 		}
 
 		// Save to history
-		history.push(trimmed)
-		historyIndex = history.length
+		history.push(trimmed);
+		historyIndex = history.length;
 		try {
-			appendFileSync(HISTORY_FILE, trimmed + '\n')
-		} catch {}
+			appendFileSync(HISTORY_FILE, trimmed + "\n");
+		} catch {
+			// ignore
+		}
+
+		// Trim history
+		if (history.length > HISTORY_MAX) {
+			history.splice(0, history.length - HISTORY_MAX);
+		}
 
 		// Evaluate the expression
 		try {
-			const result = await evaluateExpression(trimmed, context)
+			const result = await evaluateExpression(trimmed, context);
 			if (result !== undefined) {
-				const output = typeof result === 'object'
-					? inspect(result)
-					: String(result)
-				console.log(`  ${output}`)
+				const output =
+					typeof result === "object" && result !== null
+						? inspect(result, { depth: 3, colors: true, sorted: true })
+						: typeof result === "string"
+							? `\x1b[33m"${result}"\x1b[0m`
+							: String(result);
+				console.log(`  \x1b[90m=>\x1b[0m ${output}`);
 			}
 		} catch (err: any) {
-			console.error(`  \x1b[31m${err.message ?? err}\x1b[0m`)
+			console.error(`  \x1b[31m✗ ${err.message ?? err}\x1b[0m`);
 		}
 
-		rl.prompt()
-	})
+		rl.prompt();
+	});
 
-	// Handle multiline input
-	let multilineBuffer = ''
-	let inMultiline = false
+	rl.on("SIGINT", () => {
+		console.log("\n  \x1b[90mBye!\x1b[0m");
+		process.exit(0);
+	});
 
-	rl.on('SIGINT', () => {
-		if (inMultiline) {
-			// Try to evaluate multiline buffer
-			rl.write('')
-			inMultiline = false
-			multilineBuffer = ''
-			rl.prompt()
-		} else {
-			console.log('\n  Bye!')
-			process.exit(0)
-		}
-	})
-
-	process.stdin.on('keypress', (_key: any, data: any) => {
-		// Up arrow — history back
-		if (data?.name === 'up') {
-			if (historyIndex > 0) {
-				historyIndex--
-				clearLine(rl)
-				rl.write(history[historyIndex] ?? '')
+	// Keypress handling for history navigation and tab completion
+	const stdin = process.stdin;
+	if (stdin.isTTY) {
+		stdin.on("data", (key: Buffer) => {
+			// Up arrow
+			if (key[0] === 0x1b && key[1] === 0x5b && key[2] === 0x41) {
+				if (historyIndex > 0) {
+					historyIndex--;
+					clearLine(process.stdout, 0);
+					cursorTo(process.stdout, 0);
+					rl.write(history[historyIndex] ?? "");
+				}
 			}
-		}
-		// Down arrow — history forward
-		if (data?.name === 'down') {
-			if (historyIndex < history.length - 1) {
-				historyIndex++
-				clearLine(rl)
-				rl.write(history[historyIndex] ?? '')
-			} else {
-				historyIndex = history.length
-				clearLine(rl)
+			// Down arrow
+			if (key[0] === 0x1b && key[1] === 0x5b && key[2] === 0x42) {
+				if (historyIndex < history.length - 1) {
+					historyIndex++;
+					clearLine(process.stdout, 0);
+					cursorTo(process.stdout, 0);
+					rl.write(history[historyIndex] ?? "");
+				} else {
+					historyIndex = history.length;
+					clearLine(process.stdout, 0);
+					cursorTo(process.stdout, 0);
+				}
 			}
-		}
-	})
+			// Tab completion
+			if (key[0] === 0x09) {
+				const line = rl.line;
+				const matches = Object.keys(context).filter(
+					(k) => k.startsWith(line) && !k.startsWith("__"),
+				);
+				if (matches.length === 1) {
+					clearLine(process.stdout, 0);
+					cursorTo(process.stdout, 0);
+					rl.write(matches[0]);
+				} else if (matches.length > 1) {
+					console.log("\n  " + matches.join(", "));
+					rl.prompt();
+					rl.write(line);
+				}
+			}
+		});
+	}
 
-	rl.prompt()
+	rl.prompt();
 }
-
-/** Clear the current line. */
-function clearLine(rl: any) {
-	readline.clearLine(process.stdout, 0)
-	readline.cursorTo(process.stdout, 0)
-}
-
-function readline(rl: any) { return rl }
 
 /** Initialize the REPL context with available services. */
-async function initializeContext(): Promise<Record<string, any>> {
+async function initializeContext(
+	version: string,
+	runtime: string,
+): Promise<Record<string, any>> {
 	const ctx: Record<string, any> = {
-		// Utilities
 		process,
 		console,
 		Date,
@@ -154,234 +204,258 @@ async function initializeContext(): Promise<Record<string, any>> {
 		JSON,
 		setTimeout,
 		setInterval,
+		clearTimeout,
+		clearInterval,
 		crypto,
 		Buffer,
-
-		// REPL metadata
-		__version: '0.1.0',
-		__runtime: typeof Bun !== 'undefined' ? 'Bun' : 'Node.js',
-	}
+		URL,
+		parseInt,
+		parseFloat,
+		__version: version,
+		__runtime: runtime,
+	};
 
 	// Try to load Drizzle DB
 	try {
-		const { DbClient } = await import('../db/drizzle')
-		const dbConfig = loadDbConfig()
+		const { DbClient } = await import("../db/drizzle");
+		const dbConfig = loadDbConfig();
 		if (dbConfig) {
-			const db = new DbClient(dbConfig)
-			await db.open()
-			ctx.db = db
-			ctx.query = (sql: string, params?: any[]) => db.query(sql, params)
-			ctx.first = (sql: string, params?: any[]) => db.first(sql, params)
-			console.log('  [db] connected')
+			const db = new DbClient(dbConfig);
+			await db.open();
+			ctx.db = db;
+			ctx.query = (sql: string, params?: any[]) => db.query(sql, params);
+			ctx.first = (sql: string, params?: any[]) => db.first(sql, params);
+			console.log("  \x1b[32m◈\x1b[0m \x1b[90mdb\x1b[0m  connected");
 		}
-	} catch {}
+	} catch {
+		console.log("  \x1b[33m◈\x1b[0m \x1b[90mdb\x1b[0m  not loaded");
+	}
 
 	// Try to load Cache
 	try {
-		const { createCache } = await import('../helpers/cache')
-		ctx.cache = createCache()
-		console.log('  [cache] ready')
-	} catch {}
+		const { createCache } = await import("../helpers/cache");
+		ctx.cache = createCache();
+		console.log("  \x1b[32m◈\x1b[0m \x1b[90mcache\x1b[0m  ready");
+	} catch {
+		console.log("  \x1b[33m◈\x1b[0m \x1b[90mcache\x1b[0m  not available");
+	}
 
 	// Try to load HTTP client
 	try {
-		const { createHttp } = await import('../helpers/http')
-		ctx.http = createHttp()
-		console.log('  [http] ready')
-	} catch {}
+		const { createHttp } = await import("../helpers/http");
+		ctx.http = createHttp();
+		console.log("  \x1b[32m◈\x1b[0m \x1b[90mhttp\x1b[0m  ready");
+	} catch {
+		console.log("  \x1b[33m◈\x1b[0m \x1b[90mhttp\x1b[0m  not available");
+	}
 
-	return ctx
+	return ctx;
 }
 
 /** Try to load DB config from the app config. */
 function loadDbConfig(): any {
 	try {
-		const configPath = join(process.cwd(), 'config/app.ts')
+		const configPath = join(process.cwd(), "config/app.ts");
 		if (existsSync(configPath)) {
-			const content = readFileSync(configPath, 'utf-8')
-			const dialectMatch = content.match(/dialect:\s*env\([^)]+\)\s*[/][/]\s*['"]([^'"]+)['"]/)
-			const filenameMatch = content.match(/filename:\s*env\([^)]+\)\s*[/][/]\s*['"]([^'"]+)['"]/)
+			const content = readFileSync(configPath, "utf-8");
 
-			if (dialectMatch || filenameMatch) {
-				const dialect = 'bun-sqlite'
-				const filename = 'app.db'
-				return { dialect, connection: { filename } }
-			}
-
-			// Direct config
-			const directDialect = content.match(/dialect:\s*'([^']+)'/)
-			const directFile = content.match(/filename:\s*'([^']+)'/)
-			if (directDialect) {
+			const dialectMatch = content.match(/dialect:\s*'([^']+)'/);
+			const fileMatch = content.match(/filename:\s*'([^']+)'/);
+			if (dialectMatch) {
 				return {
-					dialect: directDialect[1],
-					connection: { filename: directFile?.[1] ?? 'app.db' },
-				}
+					dialect: dialectMatch[1],
+					connection: { filename: fileMatch?.[1] ?? "app.db" },
+				};
 			}
 		}
-	} catch {}
-	return null
+	} catch {
+		// ignore
+	}
+	return null;
+}
+
+/** Describe a service entry for the .services command. */
+function describeService(val: unknown): string {
+	const type = typeof val;
+	if (type === "function") {
+		return `\x1b[33mfn\x1b[0m  ${(val as Function).name || "(anonymous)"}()`;
+	}
+	if (type === "object" && val !== null) {
+		return `\x1b[35mobj\x1b[0m  ${(val as object).constructor?.name || "Object"}`;
+	}
+	return `\x1b[34m${type}\x1b[0m`;
+}
+
+/** Truncate an env value for display. */
+function truncateEnvVal(val: string): string {
+	return val.length > 60 ? val.slice(0, 60) + "\x1b[90m...\x1b[0m" : val;
 }
 
 /** Handle REPL commands. */
-async function handleCommand(cmd: string, ctx: Record<string, any>, rl: any): Promise<void> {
-	const args = cmd.split(/\s+/)
-	const command = args[0].toLowerCase()
+async function handleCommand(
+	cmd: string,
+	ctx: Record<string, any>,
+): Promise<void> {
+	const args = cmd.split(/\s+/);
+	const command = args[0].toLowerCase();
 
 	switch (command) {
-		case '.help':
+		case ".help": {
 			console.log(`
-  Commands:
-    .help        Show this help
-    .exit        Exit the REPL
-    .routes      List registered routes (if app is loaded)
-    .services    List available services in context
-    .env         Show environment variables
-    .db          Show database status
-    .clear       Clear screen
-    .version     Show version info
+  \x1b[36m── Commands ──────────────────────────────────────\x1b[0m
+    \x1b[33m.help\x1b[0m        Show this help
+    \x1b[33m.exit\x1b[0m        Exit the REPL
+    \x1b[33m.quit\x1b[0m        Exit the REPL
+    \x1b[33m.routes\x1b[0m      List registered routes
+    \x1b[33m.services\x1b[0m    List available services in context
+    \x1b[33m.env\x1b[0m         Show environment variables
+    \x1b[33m.db\x1b[0m          Show database status
+    \x1b[33m.clear\x1b[0m       Clear screen
+    \x1b[33m.version\x1b[0m     Show version info
 
-  Available variables:
-    db           Database client (query, first, all)
-    cache        Cache service (get, set, delete)
-    http         HTTP client (get, post)
-    query()      Shortcut for db.query()
-    first()      Shortcut for db.first()
+  \x1b[36m── Available Variables ────────────────────────────\x1b[0m
+    \x1b[33mdb\x1b[0m           Database client (query, first, all)
+    \x1b[33mcache\x1b[0m        Cache service (get, set, delete)
+    \x1b[33mhttp\x1b[0m         HTTP client (get, post)
+    \x1b[33mquery()\x1b[0m      Shortcut for db.query()
+    \x1b[33mfirst()\x1b[0m      Shortcut for db.first()
 
-  Examples:
-    nexus> await query('SELECT * FROM users')
-    nexus> await cache.get('my_key')
-    nexus> 1 + 2
-    nexus> { hello: 'world' }
-`)
-			break
+  \x1b[36m── Examples ──────────────────────────────────────\x1b[0m
+    \x1b[90mnexus>\x1b[0m await query('SELECT * FROM users')
+    \x1b[90mnexus>\x1b[0m await cache.get('my_key')
+    \x1b[90mnexus>\x1b[0m 1 + 2
+    \x1b[90mnexus>\x1b[0m const x = 42; x * 2
+    \x1b[90mnexus>\x1b[0m { hello: 'world' }
+`);
+			break;
+		}
 
-		case '.exit':
-		case '.quit':
-			console.log('  Bye!')
-			process.exit(0)
-			break
+		case ".exit":
+		case ".quit": {
+			console.log("  \x1b[90mBye!\x1b[0m");
+			process.exit(0);
+			break;
+		}
 
-		case '.routes':
-		case '.list':
-			const { listRoutes } = await import('./list-routes')
-			await listRoutes()
-			break
+		case ".routes":
+		case ".list": {
+			const { listRoutes } = await import("./list-routes");
+			await listRoutes();
+			break;
+		}
 
-		case '.services':
-			console.log(`\n  Available services:\n`)
+		case ".services": {
+			console.log(`\n  \x1b[36mAvailable services:\x1b[0m\n`);
 			for (const [key, val] of Object.entries(ctx)) {
-				if (key.startsWith('__')) continue
-				const type = typeof val
-				const typeName = type === 'function' ? val.name || 'Function' :
-					type === 'object' ? (val?.constructor?.name || 'Object') :
-					type
-				console.log(`    ${key.padEnd(15)} ${typeName}`)
+				if (key.startsWith("__")) continue;
+				console.log(`    \x1b[32m${key}\x1b[0m  ${describeService(val)}`);
 			}
-			console.log()
-			break
+			console.log();
+			break;
+		}
 
-		case '.env':
-			const envVars = Object.keys(process.env).sort()
-			console.log(`\n  Environment (${envVars.length} vars):\n`)
+		case ".env": {
+			const envVars = Object.keys(process.env).sort();
+			console.log(
+				`\n  \x1b[36mEnvironment (\x1b[33m${envVars.length}\x1b[36m vars):\x1b[0m\n`,
+			);
 			for (const key of envVars.slice(0, 30)) {
-				const val = process.env[key] ?? ''
-				const display = val.length > 60 ? val.slice(0, 60) + '...' : val
-				console.log(`    ${key.padEnd(25)} ${display}`)
+				console.log(
+					`    \x1b[32m${key.padEnd(25)}\x1b[0m ${truncateEnvVal(process.env[key] ?? "")}`,
+				);
 			}
 			if (envVars.length > 30) {
-				console.log(`    ... and ${envVars.length - 30} more`)
+				console.log(`    \x1b[90m... and ${envVars.length - 30} more\x1b[0m`);
 			}
-			console.log()
-			break
+			console.log();
+			break;
+		}
 
-		case '.db':
+		case ".db": {
 			if (ctx.db) {
 				try {
-					const result = await ctx.db.query('SELECT 1 as ok')
-					console.log(`\n  Database: connected`)
-					console.log(`  Dialect:  ${ctx.db.dialectName ?? 'unknown'}\n`)
+					await ctx.db.query(PING_SQL);
+					console.log(
+						`\n  \x1b[32m◈\x1b[0m Database: \x1b[32mconnected\x1b[0m`,
+					);
+					console.log(
+						`  \x1b[32m◈\x1b[0m Dialect:  ${ctx.db.dialectName ?? "unknown"}\n`,
+					);
 				} catch (e: any) {
-					console.log(`\n  Database: error — ${e.message}\n`)
+					console.log(
+						`\n  \x1b[31m◈\x1b[0m Database: \x1b[31merror\x1b[0m — ${e.message}\n`,
+					);
 				}
 			} else {
-				console.log('  No database connection.')
+				console.log("\n  \x1b[33m◈\x1b[0m No database connection.\n");
 			}
-			break
+			break;
+		}
 
-		case '.clear':
-		case 'clear':
-			console.clear()
-			break
+		case ".clear":
+		case "clear": {
+			console.clear();
+			console.log(banner(ctx.__version, ctx.__runtime));
+			console.log("");
+			break;
+		}
 
-		case '.version':
-			console.log(`  NexusTS REPL v0.1.0 (${ctx.__runtime})`)
-			break
+		case ".version": {
+			console.log(`
+  \x1b[36mNexusTS\x1b[0m  \x1b[33mv${ctx.__version}\x1b[0m
+  \x1b[36mRuntime\x1b[0m  ${ctx.__runtime}
+`);
+			break;
+		}
 
-		default:
-			console.log(`  Unknown command: ${command}. Type .help for available commands.`)
+		default: {
+			console.log(
+				`  \x1b[31mUnknown command:\x1b[0m ${command}. Type \x1b[33m.help\x1b[0m for available commands.`,
+			);
+		}
 	}
 }
 
 /** Evaluate a JavaScript expression in context. */
-async function evaluateExpression(input: string, ctx: Record<string, any>): Promise<any> {
-	// Handle assignments
-	if (input.includes('=') && !input.startsWith('==') && !input.startsWith('===')) {
-		// Simple evaluation
-		const fn = new Function(...Object.keys(ctx), `"use strict"; return (${input})`)
-		return fn(...Object.values(ctx))
-	}
+async function evaluateExpression(
+	input: string,
+	ctx: Record<string, any>,
+): Promise<any> {
+	const hasAwait = input.includes("await ");
+	const keys = Object.keys(ctx);
+	const values = Object.values(ctx);
 
-	// Handle await expressions
-	if (input.startsWith('await ') || input.includes(' await ')) {
-		const fn = new Function(...Object.keys(ctx), `"use strict"; return (async () => { return ${input} })()`)
-		return fn(...Object.values(ctx))
-	}
-
-	// Normal expression
+	// Try as expression first (fast path)
 	try {
-		const fn = new Function(...Object.keys(ctx), `"use strict"; return (${input})`)
-		return fn(...Object.values(ctx))
+		const fn = new Function(...keys, `"use strict"; return (${input})`);
+		return fn(...values);
 	} catch {
-		// Try as statement
-		try {
-			const fn = new Function(...Object.keys(ctx), `"use strict"; ${input}`)
-			return fn(...Object.values(ctx))
-		} catch {
-			// Try as async
-			const fn = new Function(...Object.keys(ctx), `"use strict"; return (async () => { ${input} })()`)
-			return fn(...Object.values(ctx))
-		}
-	}
-}
-
-/** Simple object inspector (like util.inspect). */
-function inspect(obj: any, depth = 2, indent = 0): string {
-	if (obj === null) return 'null'
-	if (obj === undefined) return 'undefined'
-	if (typeof obj !== 'object') return JSON.stringify(obj)
-
-	if (depth <= 0) return Array.isArray(obj) ? `[Array(${obj.length})]` : `{${Object.keys(obj).join(', ')}}`
-
-	const pad = '  '.repeat(indent)
-	const childPad = '  '.repeat(indent + 1)
-
-	if (Array.isArray(obj)) {
-		if (obj.length === 0) return '[]'
-		const items = obj.map((item: any) => `${childPad}${inspect(item, depth - 1, indent + 1)}`)
-		return `[\n${items.join(',\n')}\n${pad}]`
+		// try fallthrough
 	}
 
-	const keys = Object.keys(obj)
-	if (keys.length === 0) return '{}'
+	// Try as async expression (handles top-level await)
+	try {
+		const fn = new Function(
+			...keys,
+			`"use strict"; return (async () => { ${hasAwait ? "" : "return "}${input} })()`,
+		);
+		return fn(...values);
+	} catch {
+		// try fallthrough
+	}
 
-	const entries = keys.map((key) => {
-		const val = obj[key]
-		if (typeof val === 'function') return `${childPad}${key}: [Function: ${val.name || 'anonymous'}]`
-		if (typeof val === 'object' && val !== null) {
-			return `${childPad}${key}: ${inspect(val, depth - 1, indent + 1)}`
-		}
-		return `${childPad}${key}: ${JSON.stringify(val)}`
-	})
+	// Try as statement
+	try {
+		const fn = new Function(...keys, `"use strict"; ${input}`);
+		return fn(...values);
+	} catch {
+		// try fallthrough
+	}
 
-	return `{\n${entries.join(',\n')}\n${pad}}`
+	// Last resort — async statement
+	const fn = new Function(
+		...keys,
+		`"use strict"; return (async () => { ${input} })()`,
+	);
+	return fn(...values);
 }
