@@ -1,0 +1,14 @@
+{
+  "name": "petstore",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run dev.ts",
+    "start": "bun run dev.ts",
+    "seed": "bun run db/seed.ts"
+  },
+  "dependencies": {
+    "@nexusts/core": "../../"
+  }
+}

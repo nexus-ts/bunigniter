@@ -1,17 +1,16 @@
 {
-  "name": "todo-app",
+  "name": "blog-app-inertia-react",
   "version": "1.0.0",
   "type": "module",
   "private": true,
   "scripts": {
     "dev": "bun run dev.ts",
     "start": "bun run dev.ts",
-    "seed": "bun run db/seed.ts",
-    "nx": "bun run ../../src/cli/index.ts"
+    "seed": "bun run ../../examples/blog-core/db/seed.ts"
   },
   "dependencies": {
     "@nexusts/core": "../../",
-    "drizzle-orm": "^0.45.0",
-    "zod": "^4.4.3"
+    "react": "^19",
+    "react-dom": "^19"
   }
 }
