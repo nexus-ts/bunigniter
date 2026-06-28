@@ -1,0 +1,69 @@
+# NexusTS — LLM Context
+
+Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
+83 commits, 80+ source files, 15 docs, 7 example apps.
+
+## Quick Links
+
+- AGENTS.md: Full development guide
+- CLAUDE.md: AI reference
+- README.md: Feature overview
+- docs/helpers.md: 18 helpers reference
+- docs/database.md: Query builder guide
+- docs/template-engine.md: 3 template engines
+- docs/hmvc-modules.md: HMVC module system
+- docs/jwt-auth.md: JWT authentication
+- docs/websocket.md: WebSocket support
+- docs/sse.md: Server-Sent Events
+- docs/openapi.md: OpenAPI documentation
+- docs/cli-reference.md: 25 CLI commands
+- skills/: 8 focused skill files
+
+## Key Files
+
+- package.json: @nexusts/core, exports 22 entry points
+- src/index.ts: App boot, route registration, middleware
+- src/base/controller.ts: Controller base class with _before() hook
+- src/db/drizzle.ts: DbClient with CI-style query builder
+- src/view/renderer.tsx: Template rendering (Rendu/MDX/React)
+- src/router/file-router.ts: Auto file-path routing
+- src/router/server-router.ts: Void-style defineHandler routing
+- src/helpers/: 25 modules (env, validator, jwt, ws, sse, schedule, etc.)
+- src/cli/index.ts: 25 CLI commands
+- src/cli/templates.ts: Shared templates for make:* commands
+- config/app.ts: Single config file
+- routes/: Controllers and API handlers
+- views/: Templates
+- modules/: HMVC modules
+
+## Example Apps
+
+- examples/todo-app/dev.ts: Todo (React SSR)
+- examples/hn-app/dev.ts: Hacker News (Rendu)
+- examples/petstore/dev.ts: Pet Store (Rendu)
+- examples/blog-app-html/dev.ts: Blog CMS (Rendu)
+- examples/blog-app-tsx/dev.ts: Blog CMS (React SSR)
+- examples/blog-app-inertia-react/dev.ts: Blog CMS (Inertia)
+
+## Quick Commands
+
+- bun run dev: Start dev server
+- bun run test: Run tests
+- bun run nx list: List routes
+- bun run nx repl: Interactive console
+- bun run examples/<app>/dev.ts: Run example app
+
+## Architecture
+
+```
+routes/*.ts          → Controllers (extends Controller) + API handlers (defineHandler)
+views/*.html/.mdx/.tsx → Templates (Rendu/MDX/React SSR)
+modules/<name>/      → HMVC modules with own routes/views
+middleware/*.ts      → Global middleware
+config/app.ts        → Single config
+src/helpers/*.ts     → 25 helper modules
+```
+
+## Import Convention
+
+Always use `@nexusts/core` — NOT relative paths like `../../src/`.
