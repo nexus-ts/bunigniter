@@ -1,0 +1,37 @@
+<div class="hero" style="background:linear-gradient(135deg,#2d3436,#636e72);color:#fff;border-radius:12px;padding:40px;margin-bottom:30px;text-align:center">
+<h1 style="font-size:32px;margin-bottom:8px">🐾 Find Your New Best Friend</h1>
+<p style="font-size:16px;color:#dfe6e9;margin-bottom:20px">Browse our selection of loving pets waiting for a home</p>
+<a href="/pets" class="btn btn-primary" style="font-size:16px;padding:12px 32px">Browse All Pets</a>
+</div>
+
+<div class="page-title">Featured Pets</div>
+<div class="grid">
+<? for (const p of pets) { ?>
+<div class="card">
+<a href="/pets/<?= p.id ?>" style="text-decoration:none;color:inherit">
+<img src="<?= p.image_url || 'https://placehold.co/300x200/eee/999?text=No+Image' ?>" alt="<?= p.name ?>" loading="lazy">
+<div class="card-body">
+<span class="badge badge-<?= p.species ?>"><?= p.species ?></span>
+<div class="card-title"><?= p.name ?></div>
+<div class="card-species"><?= p.breed ?? p.species ?> · <?= p.age ?> yr</div>
+<div class="card-price">$<?= p.price.toLocaleString() ?></div>
+</div>
+</a>
+</div>
+<? } ?>
+</div>
+
+<div style="margin-top:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center">
+<div style="background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+<div style="font-size:36px;margin-bottom:8px">🐕</div>
+<div style="font-size:13px;color:#888"><?= speciesCounts.dogs ?> Dogs</div>
+</div>
+<div style="background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+<div style="font-size:36px;margin-bottom:8px">🐱</div>
+<div style="font-size:13px;color:#888"><?= speciesCounts.cats ?> Cats</div>
+</div>
+<div style="background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+<div style="font-size:36px;margin-bottom:8px">🐦</div>
+<div style="font-size:13px;color:#888"><?= speciesCounts.birds ?> Birds</div>
+</div>
+</div>

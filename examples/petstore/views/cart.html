@@ -1,0 +1,22 @@
+<div class="page-title">🛒 Shopping Cart</div>
+<? if (items.length === 0) { ?>
+<div style="text-align:center;padding:60px;color:#888">
+<div style="font-size:48px;margin-bottom:12px">🛒</div>
+<div style="font-size:16px;margin-bottom:20px">Your cart is empty</div>
+<a href="/pets" class="btn btn-primary">Browse Pets</a>
+</div>
+<? } else { ?>
+<table><tr><th>Pet</th><th>Species</th><th>Price</th><th></th></tr>
+<? for (const p of items) { ?>
+<tr>
+<td><a href="/pets/<?= p.id ?>" style="color:#333;text-decoration:none"><b><?= p.name ?></b></a></td>
+<td><span class="badge badge-<?= p.species ?>"><?= p.species ?></span></td>
+<td><b>$<?= Number(p.price).toLocaleString() ?></b></td>
+<td><form action="/cart" method="POST"><input type="hidden" name="pet_id" value="<?= p.id ?>"><input type="hidden" name="_action" value="remove"><button class="btn btn-outline" style="padding:4px 12px;font-size:12px">✕</button></form></td>
+</tr><? } ?>
+<tr style="font-weight:bold"><td colspan="2">Total</td><td>$<?= Number(total).toLocaleString() ?></td><td></td></tr>
+</table>
+<div style="margin-top:20px;display:flex;gap:12px">
+<a href="/pets" class="btn btn-outline">Continue Shopping</a>
+<a href="/checkout" class="btn btn-primary">Proceed to Checkout</a>
+</div><? } ?>

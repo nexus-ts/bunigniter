@@ -1,0 +1,15 @@
+<div class="detail">
+<div><img src="<?= pet.image_url || 'https://placehold.co/500x400/eee/999?text='+pet.name ?>"></div>
+<div><span class="badge badge-<?= pet.species ?>"><?= pet.species ?></span>
+<h1><?= pet.name ?></h1>
+<p><?= pet.breed ? "$pet.breed · " : "" ?><?= pet.age ?> year<?= pet.age !== 1 ? 's' : '' ?> old</p>
+<div class="price">$<?= Number(pet.price).toLocaleString() ?></div>
+<p><?= pet.description || 'No description' ?></p>
+<form action="/cart" <?= pet.id ?> method="POST"><button class="btn btn-primary">🛒 Add to Cart</button></form>
+<a href="/pets">← Back</a>
+</div></div>
+<? if (related.length > 0) { ?>
+<h2>More <?= pet.species ?>s</h2>
+<div class="grid"><? for (const p of related) { ?>
+<div class="card"><a href="/pets/<?= p.id ?>"><div class="card-title"><?= p.name ?></div><div class="card-price">$<?= Number(p.price).toLocaleString() ?></div></a></div>
+<? } ?></div><? } ?>

@@ -1,0 +1,21 @@
+<div class="page-title"><? if (search) { ?>Search: "<?= search ?>"<? } else if (species) { ?><?= species.charAt(0).toUpperCase() + species.slice(1) ?>s<? } else { ?>All Pets<? } ?></div>
+<div class="filters">
+<a href="/pets" class="<?= !species && !search ? 'active' : '' ?>">All</a>
+<a href="/pets?species=dog" class="<?= species === 'dog' ? 'active' : '' ?>">🐕 Dogs</a>
+<a href="/pets?species=cat" class="<?= species === 'cat' ? 'active' : '' ?>">🐱 Cats</a>
+<a href="/pets?species=bird" class="<?= species === 'bird' ? 'active' : '' ?>">🐦 Birds</a>
+<a href="/pets?species=rabbit" class="<?= species === 'rabbit' ? 'active' : '' ?>">🐰 Rabbits</a>
+<span style="flex:1"></span>
+<a href="/pets?sort=newest<?= species ? '&species='+species : '' ?><?= search ? '&q='+search : '' ?>" class="<?= sort === 'newest' ? 'active' : '' ?>">Newest</a>
+<a href="/pets?sort=price_asc<?= species ? '&species='+species : '' ?>" class="<?= sort === 'price_asc' ? 'active' : '' ?>">Price ↑</a>
+<a href="/pets?sort=price_desc<?= species ? '&species='+species : '' ?>" class="<?= sort === 'price_desc' ? 'active' : '' ?>">Price ↓</a>
+</div>
+<form action="/pets" method="GET"><input type="text" name="q" value="<?= search ?>"><button>Search</button></form>
+<? if (pets.length === 0) { ?><div style="padding:60px;text-align:center;color:#888">No pets found</div><? } else { ?>
+<div class="grid"><? for (const p of pets) { ?>
+<div class="card"><a href="/pets/<?= p.id ?>">
+<img src="<?= p.image_url || 'https://placehold.co/300x200/eee/999?text=Pet' ?>">
+<div class="card-body"><span class="badge badge-<?= p.species ?>"><?= p.species ?></span>
+<div class="card-title"><?= p.name ?></div><div class="card-price">$<?= Number(p.price).toLocaleString() ?></div>
+</div></a></div>
+<? } ?></div><? } ?>
