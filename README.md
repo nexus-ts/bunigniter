@@ -45,8 +45,16 @@ export class Users extends Controller {
 
 ```bash
 git clone https://github.com/nexus-ts/bunigniter.git
-cd framework
+cd bunigniter
 bun install
+bun run examples/slack-app/db/seed.ts
+bun run examples/slack-app/dev.ts
+# → http://localhost:3006
+```
+
+Or try a simpler example:
+
+```bash
 bun run examples/todo-app/db/seed.ts
 bun run examples/todo-app/dev.ts
 # → http://localhost:3000
