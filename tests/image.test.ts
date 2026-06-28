@@ -113,6 +113,7 @@ describe("Image", () => {
 	describe("fit()", () => {
 		it("fits within dimensions", async () => {
 			const out = `${TEST_OUTPUT}_fit.jpg`
+			// biome-ignore lint/suspicious/noFocusedTests: Image.fit() is a real method, not a focused test
 			await Image.open(TEST_INPUT).fit(50, 50, "#ffffff").save(out)
 			expect(existsSync(out)).toBe(true)
 		})
