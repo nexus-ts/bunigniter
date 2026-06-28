@@ -22,7 +22,7 @@ Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
 
 ## Key Files
 
-- package.json: @nexusts/core, exports 22 entry points
+- package.json: bunigniter, exports 22 entry points
 - src/index.ts: App boot, route registration, middleware
 - src/base/controller.ts: Controller base class with _before() hook
 - src/db/drizzle.ts: DbClient with CI-style query builder

@@ -4,8 +4,8 @@ dist/
 .env
 .env.local
 
-# NexusTS REPL history
-.nexus_repl_history
+# Bunigniter REPL history
+.bi_repl_history
 
 # SQLite WAL/journal files
 *.db-shm

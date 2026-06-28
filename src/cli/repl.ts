@@ -20,7 +20,7 @@ import { join } from "node:path";
 import { createInterface, clearLine, cursorTo } from "node:readline";
 import { inspect } from "node:util";
 
-const HISTORY_FILE = join(process.cwd(), ".nexus_repl_history");
+const HISTORY_FILE = join(process.cwd(), ".bi_repl_history");
 const HISTORY_MAX = 100;
 const PING_SQL = "SELECT 1 as ok";
 
