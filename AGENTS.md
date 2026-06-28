@@ -42,7 +42,8 @@ export class Posts extends Controller {
   async index() { return this.json(await this.db.get('posts')) }
   async show(id: number) { return this.json(await this.db.first('SELECT * FROM posts WHERE id = ?', [id])) }
   async create() {
-    const v = this.validate(this.body, { title: 'required' })
+    const data = this.request.only(['title', 'content'])
+    const v = this.validate(data, { title: 'required' })
     if (v.fails()) return this.badRequest(v.errors)
     await this.db.insert('posts', { title: v.data.title })
     return this.json({ ok: true }, 201)
@@ -59,6 +60,27 @@ export class Posts extends Controller {
 | `create()` | `POST /posts` | Create |
 | `update(id)` | `PUT /posts/:id` | Replace |
 | `destroy(id)` | `DELETE /posts/:id` | Delete |
+
+## Request Input (CI-style)
+
+```ts
+this.request.input(key, default?)  // POST + GET merged
+this.request.get(key, default?)    // query string only
+this.request.post(key, default?)   // POST body only
+this.request.only(keys)            // mass-assignment protection
+this.request.has(key)              // existence check
+this.request.filled(key)           // non-empty check
+this.request.method()              // HTTP method
+this.request.isAjax()              // AJAX detection
+this.request.ip()                  // client IP
+this.request.boolean(key)          // boolean cast
+this.request.integer(key)          // integer cast
+this.request.json(key?)            // JSON dot-notation
+this.request.bearerToken()         // Bearer token
+this.request.cookie(key)           // cookie value
+this.request.server(key)           // server variable
+this.request.userAgent()           // User-Agent string
+```
 
 ## API Handler (Void-style)
 

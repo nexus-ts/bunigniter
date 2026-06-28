@@ -4,16 +4,24 @@
 
 | Document | Description |
 |----------|-------------|
-| [Template Engine](template-engine.md) | Rendu syntax, layouts, includes, MDX, React SSR |
+| [Request Input](request.md) | 16 input methods: input, get, post, only, has, ip, ajax, etc. |
+| [Controller Lifecycle](controller-lifecycle.md) | Request lifecycle, `_before()` hook |
+| [Template Engine](template-engine.md) | Rendu, MDX, React SSR — 3 engines |
+| [Database](database.md) | CI-style query builder, pagination, joins |
+| [Validation](helpers.md#validation) | String rules + Zod schema |
+| [Helpers](helpers.md) | 27 helper modules reference |
+| [CLI Reference](cli-reference.md) | 27 CLI commands |
+| [HMVC Modules](hmvc-modules.md) | Modular HMVC architecture |
+| [JWT Auth](jwt-auth.md) | JWT sign/verify, middleware |
+| [Multi-Database](multi-database.md) | Named connections via `this.dbs.*` |
+| [OpenAPI](openapi.md) | Auto-generated API docs |
+| [SSE](sse.md) | Server-Sent Events |
+| [WebSocket](websocket.md) | WebSocket handler manager |
 
-## Development
+## Development & Analysis
 
 | Document | Description |
 |----------|-------------|
 | [Roadmap](../analysis/roadmap.md) | Development phases and future plans |
-
-## Technical References
-
-| Document | Description |
-|----------|-------------|
-| [Elysia v2 Analysis](../analysis/elysia-v2-analysis.md) | Elysia v2.0 kiana branch technical deep-dive |
+| [Elysia v2 Analysis](../analysis/elysia-v2-analysis.md) | Elysia v2 deep-dive |
+| [Input Features Analysis](../analysis/ANALYSIS-input-features.md) | CI3/4, Laravel, AdonisJS comparison |

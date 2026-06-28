@@ -1,9 +1,11 @@
 # Controller — Creating Routes
 
 ## File Location
+
 `routes/<name>.ts`
 
 ## Pattern
+
 ```ts
 import { Controller } from '@nexusts/core'
 
@@ -17,10 +19,31 @@ export class <Name> extends Controller {
 ```
 
 ## Rules
+
 - Only methods that exist are registered (no unused routes)
 - Import from `@nexusts/core`, NOT relative paths
 - `_before()` runs before every method (return Response to short-circuit)
-- Use `this.validate(body, rules)` for input validation
-- Use `this.db.get/insert/update/delete` for queries
-- Use `this.view(name, props)` for HTML templates
-- Use `this.json(data)` for API responses
+
+## Input Handling
+
+- `this.request.input(key, default?)` — POST + GET merged access
+- `this.request.get(key, default?)` — query string only
+- `this.request.post(key, default?)` — POST body only
+- `this.request.only(keys)` — mass-assignment protection
+- `this.request.has(key)` / `this.request.filled(key)` — existence checks
+- `this.request.method()` — HTTP method
+- `this.request.isAjax()` — AJAX detection
+- `this.request.ip()` — client IP
+- `this.request.boolean(key)` / `this.request.integer(key)` — type casting
+- `this.request.bearerToken()` — Bearer token extraction
+- `this.request.json(key?)` — JSON dot-notation access
+- `this.request.cookie(key)` — cookie access
+- `this.request.server(key)` — server variable access
+- `this.request.userAgent()` — User-Agent string
+
+## Responses
+
+- `this.validate(body, rules)` — input validation
+- `this.db.get/insert/update/delete` — queries
+- `this.view(name, props)` — HTML templates
+- `this.json(data)` — API responses

@@ -30,7 +30,8 @@ export class Users extends Controller {
     return this.json(user)
   }
   async create() {
-    const v = this.validate(this.body, { name: 'required|min:2', email: 'required|email' })
+    const data = this.request.only(['name', 'email'])
+    const v = this.validate(data, { name: 'required|min:2', email: 'required|email' })
     if (v.fails()) return this.badRequest(v.errors)
     await this.db.insert('users', { name: v.data.name, email: v.data.email })
     return this.json({ ok: true }, 201)
@@ -62,13 +63,12 @@ bun run examples/todo-app/dev.ts
 | **Templates** | Rendu (PHP-style `<?= ?>`), MDX (Markdown + JSX), React SSR, Inertia protocol, auto-layouts, partial includes, named slots |
 | **Auth** | Session-based auth, JWT (sign/verify/middleware), CSRF, CORS |
 | **API** | OpenAPI 3.1 auto-spec, Scalar UI, `OpenAPIRegistry` for custom docs |
-| **CLI** | 25 artisan-style commands (`make:*`, `db:*`, `key:generate`, `storage:link`) |
-| **Realtime** | WebSocket (`ws.handle`, rooms, broadcast), SSE (`sse(ctx, send)`) |
+| **CLI** | 27 artisan-style commands (`make:*`, `db:*`, `key:generate`, `storage:link`), REPL console, Route list |
+| **Realtime** | WebSocket (`ws.handle`, rooms, broadcast), SSE (`sse(ctx, send)`), Scheduler (cron) |
 | **Middleware** | Logger, Rate limiter, CORS, CSRF, Timing, Auth |
-| **Services** | Cache, Queue, Upload, Mail (SMTP/File/Null), Image manipulation, HTTP client |
+| **Services** | Cache (TTL), Queue (in-memory, retry), Upload (validation), Mail (SMTP/File/Null), Image manipulation, HTTP client |
 | **Security** | CSRF tokens, Rate limiting, JWT, Session encryption (AES-256-GCM + HMAC) |
 | **Edge** | Cloudflare Workers, Deno, pre-built routes (`nx build:edge`) |
-| **CLI Tools** | REPL console, Route list, Scaffolding (25 commands), Key generation |
 | **Debug** | Debug toolbar with SQL profiling, session viewer, request headers, timing |
 
 ---
@@ -79,7 +79,8 @@ bun run examples/todo-app/dev.ts
 |------------|:-------:|:------:|:--------:|:----:|
 | Bun-native runtime | ✅ | ❌ | △ | ✅ |
 | Cloudflare Workers | ✅ | △ | ❌ | ✅ |
-| TC39 standard decorators | ✅ | ❌ | ❌ | ❌ |
+| Class-based controllers (extends Controller) | ✅ | ✅ | ✅ | ❌ |
+| File-path routing (no decorators needed) | ✅ | ❌ | ❌ | ✅ |
 | PHP-style templates | ✅ | ❌ | △ | ❌ |
 | CI-style query builder | ✅ | ❌ | ✅ | ❌ |
 | JWT auth | ✅ | ✅ | ✅ | ❌ |
@@ -88,11 +89,11 @@ bun run examples/todo-app/dev.ts
 | HMVC modules | ✅ | ✅ | ❌ | ❌ |
 | Multi-database | ✅ | ✅ | ✅ | ❌ |
 | OpenAPI auto-docs | ✅ | ✅ | ❌ | ✅ |
-| 25 CLI commands | ✅ | ✅ | ✅ | ❌ |
+| 27 CLI commands | ✅ | ✅ | ✅ | ❌ |
 | REPL console | ✅ | ✅ | ✅ | ❌ |
 | Debug toolbar | ✅ | ❌ | ❌ | ❌ |
-| 33 bundle entry points | ✅ | ❌ | △ | ✅ |
-| No reflect-metadata | ✅ | ❌ | ❌ | ✅ |
+| 19 bundle entry points | ✅ | ❌ | ❌ | ✅ |
+| No build step required (Bun native) | ✅ | ❌ | ❌ | ✅ |
 | Field injection | ✅ | ❌ | ❌ | ❌ |
 
 ---
@@ -123,7 +124,7 @@ db/seed.ts            ← Database seeder
 
 ---
 
-## CLI Reference (25 commands)
+## CLI Reference (27 commands)
 
 ```bash
 bun run nx                    # Show help
@@ -135,15 +136,24 @@ bun run nx make:migration     # Create migration
 bun run nx db:migrate         # Run migrations
 bun run nx db:seed            # Run seeders
 bun run nx db:rollback        # Rollback migration
+bun run nx db:wipe            # Drop all tables
+bun run nx make:seeder        # Scaffold seeder
 bun run nx make:middleware    # Scaffold middleware
+bun run nx make:command       # Scaffold CLI command
 bun run nx make:test          # Scaffold test
 bun run nx make:event         # Scaffold event class
 bun run nx make:job           # Scaffold queue job
 bun run nx make:mail          # Scaffold mail class
+bun run nx make:listener      # Scaffold event listener
+bun run nx make:provider      # Scaffold service provider
 bun run nx make:policy        # Scaffold policy
+bun run nx make:request       # Scaffold form request
+bun run nx make:resource      # Scaffold API resource
+bun run nx make:rule          # Scaffold validation rule
 bun run nx key:generate       # Generate APP_KEY
 bun run nx storage:link       # Create storage symlink
 bun run nx build:edge         # Build edge routes
+bun run nx edge:dev           # Run edge app locally
 ```
 
 ---
@@ -185,16 +195,18 @@ Auto-layout: `views/_layout.html` wraps all pages automatically. Named slots: `<
 
 | Guide | File |
 |-------|------|
-| Template Engine | [docs/template-engine.md](docs/template-engine.md) |
-| Database Query Builder | [docs/database.md](docs/database.md) |
-| Multi-Database | [docs/multi-database.md](docs/multi-database.md) |
-| HMVC Modules | [docs/hmvc-modules.md](docs/hmvc-modules.md) |
-| OpenAPI | [docs/openapi.md](docs/openapi.md) |
-| JWT Auth | [docs/jwt-auth.md](docs/jwt-auth.md) |
-| WebSocket | [docs/websocket.md](docs/websocket.md) |
-| SSE | [docs/sse.md](docs/sse.md) |
-| CLI Reference | [docs/cli-reference.md](docs/cli-reference.md) |
-| Helpers Reference | [docs/helpers.md](docs/helpers.md) |
+| Controller Lifecycle | [docs/user-guide/controller-lifecycle.md](docs/user-guide/controller-lifecycle.md) |
+| Request Input | [docs/user-guide/request.md](docs/user-guide/request.md) |
+| Template Engine | [docs/user-guide/template-engine.md](docs/user-guide/template-engine.md) |
+| Database | [docs/user-guide/database.md](docs/user-guide/database.md) |
+| Multi-Database | [docs/user-guide/multi-database.md](docs/user-guide/multi-database.md) |
+| HMVC Modules | [docs/user-guide/hmvc-modules.md](docs/user-guide/hmvc-modules.md) |
+| OpenAPI | [docs/user-guide/openapi.md](docs/user-guide/openapi.md) |
+| JWT Auth | [docs/user-guide/jwt-auth.md](docs/user-guide/jwt-auth.md) |
+| WebSocket | [docs/user-guide/websocket.md](docs/user-guide/websocket.md) |
+| SSE | [docs/user-guide/sse.md](docs/user-guide/sse.md) |
+| CLI Reference | [docs/user-guide/cli-reference.md](docs/user-guide/cli-reference.md) |
+| Helpers Reference | [docs/user-guide/helpers.md](docs/user-guide/helpers.md) |
 
 ---
 

@@ -8,7 +8,8 @@ Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
 - AGENTS.md: Full development guide
 - CLAUDE.md: AI reference
 - README.md: Feature overview
-- docs/helpers.md: 18 helpers reference
+- docs/user-guide/request.md: Input handling (16 methods: input, get, post, only, has, filled, method, isAjax, ip, boolean, integer, json, bearerToken, userAgent, cookie, server)
+- docs/helpers.md: 27 helpers reference
 - docs/database.md: Query builder guide
 - docs/template-engine.md: 3 template engines
 - docs/hmvc-modules.md: HMVC module system
@@ -28,7 +29,8 @@ Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
 - src/view/renderer.tsx: Template rendering (Rendu/MDX/React)
 - src/router/file-router.ts: Auto file-path routing
 - src/router/server-router.ts: Void-style defineHandler routing
-- src/helpers/: 25 modules (env, validator, jwt, ws, sse, schedule, etc.)
+- src/helpers/request.ts: RequestProxy — CI-style input API
+- src/helpers/: 27 modules (env, validator, jwt, ws, sse, schedule, request, etc.)
 - src/cli/index.ts: 25 CLI commands
 - src/cli/templates.ts: Shared templates for make:* commands
 - config/app.ts: Single config file
