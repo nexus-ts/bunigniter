@@ -42,28 +42,30 @@ NexusTS uses **Rendu** as its primary template engine — a PHP-style syntax eng
 <div>{{{ rawHtmlContent }}}</div>   <!-- no escaping -->
 ```
 
-### 4. JavaScript control flow — `<?js code ?>`
+### 4. JavaScript control flow — `<? code ?>` (or `<?js code ?>`)
+
+`<?` can be used instead of `<?js`. Both are equivalent.
 
 ```html
 <ul>
-<?js for (const todo of todos) { ?>
+<? for (const todo of todos) { ?>
   <li><?= todo.title ?></li>
-<?js } ?>
+<? } ?>
 </ul>
 ```
 
 ```html
-<?js if (user) { ?>
+<? if (user) { ?>
   <p>Welcome, <?= user.name ?></p>
-<?js } else { ?>
+<? } else { ?>
   <p>Please log in</p>
-<?js } ?>
+<? } ?>
 ```
 
-### 5. Comments — `<?js /* comment */ ?>`
+### 5. Comments — `<? /* comment */ ?>`
 
 ```html
-<?js /* This won't appear in output */ ?>
+<? /* This won't appear in output */ ?>
 ```
 
 ---

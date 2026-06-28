@@ -24,7 +24,7 @@
   <a href="/new" class="<?= sort === 'new' ? 'active' : '' ?>">new</a>
 </div>
 
-<?js for (let i = 0; i < stories.length; i++) { const s = stories[i]; ?>
+<? for (let i = 0; i < stories.length; i++) { const s = stories[i]; ?>
   <div class="story">
     <span class="num"><?= i + 1 ?>.</span>
     <span class="votearrow">
@@ -34,11 +34,11 @@
     </span>
     <div>
       <div class="title">
-        <?js if (s.url) { ?>
+        <? if (s.url) { ?>
           <a href="<?= s.url ?>"><?= s.title ?></a> <span class="site">(<?= s.host ?>)</span>
-        <?js } else { ?>
+        <? } else { ?>
           <a href="/item/<?= s.id ?>"><?= s.title ?></a>
-        <?js } ?>
+        <? } ?>
       </div>
       <div class="meta">
         <b><?= s.points ?></b> points by <b><?= s.username ?></b> <?= s.timeAgo ?>
@@ -46,7 +46,7 @@
       </div>
     </div>
   </div>
-<?js } ?>
+<? } ?>
 
 <script>
 function timeAgo(dateStr) {

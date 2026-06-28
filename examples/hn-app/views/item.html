@@ -20,44 +20,44 @@
 
 <div class="detail">
   <h1>
-    <?js if (story.url) { ?>
+    <? if (story.url) { ?>
       <a href="<?= story.url ?>"><?= story.title ?></a> <span class="site">(<?= story.host ?>)</span>
-    <?js } else { ?>
+    <? } else { ?>
       <?= story.title ?>
-    <?js } ?>
+    <? } ?>
   </h1>
   <div class="meta">
     <b><?= story.points ?></b> points by <b><?= story.username ?></b> <?= story.timeAgo ?>
     | <?= comments.length ?> comments
   </div>
 
-  <?js if (story.text) { ?>
+  <? if (story.text) { ?>
     <div class="text"><?= story.text ?></div>
-  <?js } ?>
+  <? } ?>
 
-  <?js if (user) { ?>
+  <? if (user) { ?>
     <form action="/vote/<?= story.id ?>" method="POST" style="display:inline">
       <button class="vote-btn">▲ Upvote</button>
     </form>
-  <?js } ?>
+  <? } ?>
 </div>
 
 <div class="comments">
   <h2><?= comments.length ?> Comments</h2>
 
-  <?js if (user) { ?>
+  <? if (user) { ?>
     <form action="/item/<?= story.id ?>" method="POST" class="comment-form">
       <textarea name="text" placeholder="Add a comment..."></textarea>
       <button type="submit">Comment</button>
     </form>
-  <?js } else { ?>
+  <? } else { ?>
     <p style="font-size:13px;color:#828282;margin-bottom:12px"><a href="/login">Login</a> to comment</p>
-  <?js } ?>
+  <? } ?>
 
-  <?js for (const c of comments) { ?>
+  <? for (const c of comments) { ?>
     <div class="comment">
       <div class="meta"><b><?= c.username ?></b> <?= c.timeAgo ?></div>
       <div class="text"><?= c.text ?></div>
     </div>
-  <?js } ?>
+  <? } ?>
 </div>

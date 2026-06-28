@@ -1,5 +1,5 @@
 <!-- Debug Toolbar — NexusTS Developer Inspector -->
-<!-- Rendu template: <?= expr ?>, <?js code ?> -->
+<!-- Rendu template: <?= expr ?>, <? code ?> -->
 
 <div class="nexdb" id="__nexdb">
   <div class="bar" onclick="document.getElementById('__nexdb').classList.toggle('open')">
@@ -9,8 +9,8 @@
     <span class="badge status"><b><?= status ?></b></span>
     <span class="badge time"><?= duration ?>ms</span>
     <span class="badge db">
-      📊 <b><?= queries.length ?></b> <?js if (queries.length === 1) { ?>query<?js } else { ?>queries<?js } ?>
-      <?js if (slowCount > 0) { ?><span class="warn">⚠️</span><?js } ?>
+      📊 <b><?= queries.length ?></b> <? if (queries.length === 1) { ?>query<? } else { ?>queries<? } ?>
+      <? if (slowCount > 0) { ?><span class="warn">⚠️</span><? } ?>
     </span>
     <span class="badge mem">💾 <?= memory ?></span>
     <span class="badge date"><?= timestamp ?></span>
@@ -24,19 +24,19 @@
 
   <!-- SQL Queries Panel -->
   <div class="panel" id="nexdb-queries">
-    <?js if (queries.length === 0) { ?>
+    <? if (queries.length === 0) { ?>
       <div class="empty">No database queries in this request</div>
-    <?js } else { ?>
+    <? } else { ?>
       <div class="query-stats">
         <span class="stat-item">Total: <b><?= queries.length ?></b></span>
         <span class="stat-item">Total time: <b><?= totalTime ?>ms</b></span>
-        <?js if (slowCount > 0) { ?>
+        <? if (slowCount > 0) { ?>
           <span class="stat-item warn">Slow (>100ms): <b><?= slowCount ?></b></span>
-        <?js } ?>
+        <? } ?>
       </div>
       <table>
         <tr><th>#</th><th>Duration</th><th>Rows</th><th>SQL</th></tr>
-        <?js for (const q of queries) { ?>
+        <? for (const q of queries) { ?>
         <tr>
           <td class="num"><?= q.id ?></td>
           <td class="dur">
@@ -46,28 +46,28 @@
           <td class="num"><?= q.rows ?></td>
           <td>
             <code class="sql"><?= q.sqlEscaped ?></code>
-            <?js if (q.paramsEscaped) { ?>
+            <? if (q.paramsEscaped) { ?>
               <div class="params">params: <?= q.paramsEscaped ?></div>
-            <?js } ?>
+            <? } ?>
           </td>
         </tr>
-        <?js } ?>
+        <? } ?>
       </table>
-    <?js } ?>
+    <? } ?>
   </div>
 
   <!-- Session Panel -->
   <div class="panel" id="nexdb-session" style="display:none">
-    <?js if (sessionKeys === '0') { ?>
+    <? if (sessionKeys === '0') { ?>
       <div class="empty">Session is empty</div>
-    <?js } else { ?>
+    <? } else { ?>
       <table>
         <tr><th>Key</th><th>Value</th></tr>
-        <?js for (const [key, val] of Object.entries(session)) { ?>
+        <? for (const [key, val] of Object.entries(session)) { ?>
         <tr><td class="key"><?= key ?></td><td class="val"><?= valEscaped(val) ?></td></tr>
-        <?js } ?>
+        <? } ?>
       </table>
-    <?js } ?>
+    <? } ?>
   </div>
 
   <!-- Info Panel -->

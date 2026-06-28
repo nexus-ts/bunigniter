@@ -33,17 +33,17 @@
         <a href="/submit">submit</a>
       </div>
       <div class="right">
-        <?js if (typeof user !== 'undefined' && user) { ?>
+        <? if (typeof user !== 'undefined' && user) { ?>
           <span><?= user.username ?></span> | <a href="/logout">logout</a>
-        <?js } else { ?>
+        <? } else { ?>
           <a href="/login">login</a>
-        <?js } ?>
+        <? } ?>
       </div>
     </div>
 
-    <?js if (typeof flash !== 'undefined' && flash) { ?>
+    <? if (typeof flash !== 'undefined' && flash) { ?>
       <div class="flash <?= flashType ?? '' ?>"><?= flash ?></div>
-    <?js } ?>
+    <? } ?>
 
     <div class="content">
       <?= slot ?>
