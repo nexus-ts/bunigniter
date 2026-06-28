@@ -41,20 +41,44 @@ export class Users extends Controller {
 
 ---
 
-## Quick Start
+## Quick Start — New Project
+
+Create a new project from scratch:
+
+```bash
+mkdir my-app && cd my-app
+bun init -y
+bun add bunigniter
+bun add -d drizzle-orm zod sharp
+
+# Copy starter config
+cp -r node_modules/bunigniter/config .
+cp -r node_modules/bunigniter/routes .
+cp -r node_modules/bunigniter/views .
+cp -r node_modules/bunigniter/middleware .
+cp node_modules/bunigniter/src/index.ts .
+
+# Start coding
+bun run bi list            # list routes
+bun run bi make:controller # scaffold a controller
+bun run dev                # start dev server :3000
+```
+
+## Quick Start — Examples
+
+Clone the full repo to explore all features:
 
 ```bash
 git clone https://github.com/nexus-ts/bunigniter.git
 cd bunigniter
 bun install
+
+# Slack clone (recommended — covers all features)
 bun run examples/slack-app/db/seed.ts
 bun run examples/slack-app/dev.ts
 # → http://localhost:3006
-```
 
-Or try a simpler example:
-
-```bash
+# Todo app (simpler)
 bun run examples/todo-app/db/seed.ts
 bun run examples/todo-app/dev.ts
 # → http://localhost:3000
