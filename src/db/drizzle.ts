@@ -166,8 +166,8 @@ export class DbClient {
 			params.push(...r.vals)
 		}
 		if (options?.orderBy) sql += ` ORDER BY ${options.orderBy}`
-		if (options?.limit) sql += ` LIMIT ${options.limit}`
-		if (options?.offset) sql += ` OFFSET ${options.offset}`
+		if (options?.limit) { sql += ' LIMIT ?'; params.push(options.limit) }
+		if (options?.offset) { sql += ' OFFSET ?'; params.push(options.offset) }
 
 		const result = await this.query<T>(sql, params)
 		return result.rows
