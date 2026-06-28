@@ -10,10 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    env:
-      PORT: 15000
-      DEBUG: "false"
-
     steps:
       - uses: actions/checkout@v4
 
