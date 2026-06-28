@@ -1,159 +1,293 @@
 /**
- * NexusTS CLI — CodeIgniter-style scaffolding commands.
+ * NexusTS CLI — scaffolding and utility commands.
  *
  * Usage: `bun run nx <command> [args]`
  *
- * Commands:
- *   make:controller <name>   — Create a page controller
- *   make:model <name>        — Create DB schema + migration
- *   make:migration <name>    — Create a migration file
- *   make:crud <name>         — Full CRUD scaffold (controller + model + migration)
- *   db:migrate               — Run pending migrations
- *   db:seed                  — Run seed files
- *   list                     — Show all registered routes
- *   help                     — Show this help
+ * All templates live in src/cli/templates.ts — single source of truth.
  */
 import { join } from 'node:path'
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync, readdirSync, readFileSync } from 'node:fs'
 
 const CWD = process.cwd()
-
-const PAGES_DIR = join(CWD, 'routes')
+const ROUTES_DIR = join(CWD, 'routes')
 const DB_DIR = join(CWD, 'db')
-const SCHEMA_DIR = join(CWD, 'db/schema')
+const MIGRATIONS_DIR = join(CWD, 'db/migrations')
+const SEEDS_DIR = join(CWD, 'db/seeds')
+const MIDDLEWARE_DIR = join(CWD, 'middleware')
+const TESTS_DIR = join(CWD, 'tests')
 
-const commands: Record<string, { desc: string; run: (args: string[]) => Promise<void> }> = {
-	'build:edge': {
-		desc: 'Build pre-compiled edge routes for CF Workers / Deno',
-		run: async () => {
-			const { buildEdgeRoutes } = await import('../edge-builder')
-			await buildEdgeRoutes()
-		}
-	},
+// ─── Command registry ──────────────────────────────────────────
 
-	'edge:dev': {
-		desc: 'Run edge app locally (simulates Workers environment)',
-		run: async () => {
-			const { createEdgeApp, register } = await import('../edge')
-			const app = createEdgeApp()
-			register(app, 'GET', '/api/hello', () => new Response(JSON.stringify({
-				message: 'Hello from Edge!',
-				runtime: 'edge'
-			}), { headers: { 'content-type': 'application/json' }}))
-			app.listen(3001, () => console.log('Edge app on :3001'))
-		}
-	},
-	'make:controller': {
-		desc: 'Create a page controller',
-		run: async ([name]) => {
-			if (!name) throw new Error('Usage: nx make:controller <name>')
-			ensureDir(PAGES_DIR)
-			const file = join(PAGES_DIR, `${name}.ts`)
-			if (existsSync(file)) throw new Error(`Already exists: ${file}`)
+const commands: Record<string, { desc: string; run: (args: string[]) => Promise<void> }> = {}
 
-			const prefix = process.env.ROUTER_PREFIX || '/api'
-			const content = render(`/**
- * ${name.charAt(0).toUpperCase() + name.slice(1)} controller
- *
- * GET  {{prefix}}/${name}
- * GET  {{prefix}}/${name}/:id
- * POST {{prefix}}/${name}
- * PUT  {{prefix}}/${name}/:id
- * DELETE {{prefix}}/${name}/:id
- */
-import { Controller } from '../src/base/index'
-
-export class ${name.charAt(0).toUpperCase() + name.slice(1)} extends Controller {
-	async index() {
-		return this.json({ message: '${name} index' })
-	}
-
-	async show(id: number) {
-		return this.json({ message: '${name} show', id })
-	}
-
-	async create() {
-		const v = this.validate(this.body, {
-			// name: 'required'
-		})
-		if (v.fails()) return this.badRequest(v.errors())
-		return this.json({ message: '${name} created' }, 201)
-	}
-
-	async update(id: number) {
-		return this.json({ message: '${name} updated', id })
-	}
-
-	async destroy(id: number) {
-		return this.json({ message: '${name} deleted', id })
-	}
+export function register(name: string, desc: string, fn: (args: string[]) => Promise<void>): void {
+	commands[name] = { desc, run: fn }
 }
-`, { prefix })
-			writeFileSync(file, content)
-			console.log(`[nx] Created: ${file}`)
-		}
-	},
 
-	'make:model': {
-		desc: 'Create DB schema + migration',
-		run: async (args) => {
-			if (!args[0]) throw new Error('Usage: nx make:model <name> [--columns "name:string,email:string"]')
-			const name = args[0]
-			const columnsArg = args.find(a => a.startsWith('--columns='))?.split('=')[1]
-				?? args[args.indexOf('--columns') + 1]
-				?? 'id:number,name:string'
+// ─── Shared helpers ────────────────────────────────────────────
 
-			ensureDir(SCHEMA_DIR)
+function ensureDir(dir: string): void {
+	if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+}
 
-			const tableName = name.toLowerCase() + 's'
-			const cols = columnsArg.split(',').map((c: string) => {
-				const [colName, colType] = c.trim().split(':')
-				return { name: colName, type: colType ?? 'string' }
-			})
+function write(name: string, filePath: string, content: string): void {
+	ensureDir(filePath.substring(0, filePath.lastIndexOf('/')))
+	if (existsSync(filePath)) throw new Error(`Already exists: ${filePath}`)
+	writeFileSync(filePath, content, 'utf-8')
+	console.log(`[nx] Created: ${filePath}`)
+}
 
-			const schemaContent = `import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core'
+function argValue(args: string[], key: string, fallback = ''): string {
+	const idx = args.indexOf(key)
+	if (idx >= 0 && idx + 1 < args.length) return args[idx + 1]
+	const eq = args.find(a => a.startsWith(`${key}=`))
+	if (eq) return eq.split('=').slice(1).join('=')
+	return fallback
+}
 
-export const ${tableName} = sqliteTable('${tableName}', {
-${cols.map((c: any) => `\t${c.name}: ${c.type === 'number' ? `integer('${c.name}')` : `text('${c.name}')`},`).join('\n')}
-\tcreatedAt: text('created_at').default('CURRENT_TIMESTAMP'),
+// ─── Register commands ─────────────────────────────────────────
+
+register('make:controller', 'Scaffold a route controller', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:controller <name>')
+	const { controller } = await import('./templates')
+	write(name, join(ROUTES_DIR, `${name}.ts`), controller(name, process.env.ROUTER_PREFIX || '/api'))
 })
-`
-			writeFileSync(join(SCHEMA_DIR, `${name}.ts`), schemaContent)
-			console.log(`[nx] Created: ${join(SCHEMA_DIR, `${name}.ts`)}`)
-		}
-	},
 
-	'list': {
-		desc: 'Show all registered routes',
-		run: async () => {
-			const { listRoutes } = await import('./list-routes')
-			await listRoutes()
-		}
-	},
+register('make:model', 'Create DB schema', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:model <name> --columns "name:string,email:string"')
+	const cols = argValue(args, '--columns', 'name:string')
+	const { model } = await import('./templates')
+	const schemaDir = join(DB_DIR, 'schema')
+	write(name, join(schemaDir, `${name}.ts`), model(name, cols))
+})
 
-	'repl': {
-		desc: 'Start interactive console',
-		run: async () => {
-			const { startRepl } = await import('./repl')
-			await startRepl()
-		}
-	},
+register('make:migration', 'Create a migration file', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:migration <name>')
+	const { migration } = await import('./templates')
+	write(name, join(MIGRATIONS_DIR, `${Date.now()}_${name}.sql`), migration(name))
+})
 
-	'help': {
-		desc: 'Show this help',
-		run: async () => {
-			console.log('\n  NexusTS CLI')
-			console.log('  ─────────────────────────────────')
-			for (const [name, cmd] of Object.entries(commands)) {
-				if (name !== 'help') {
-					console.log(`  ${name.padEnd(25)} ${cmd.desc}`)
-				}
+register('db:migrate', 'Run pending migrations', async () => {
+	ensureDir(MIGRATIONS_DIR)
+	const files = readdirSync(MIGRATIONS_DIR).filter(f => f.endsWith('.sql')).sort()
+	if (files.length === 0) { console.log('[nx] No pending migrations.'); return }
+	for (const file of files) {
+		const sql = readFileSync(join(MIGRATIONS_DIR, file), 'utf-8')
+		console.log(`[nx] Running: ${file}`)
+		// Execute SQL via bun:sqlite
+		try {
+			const { Database } = await import('bun:sqlite')
+			const dbPath = arg(['DB_FILENAME'], 'app.db')
+			const db = new Database(dbPath)
+			for (const stmt of sql.split(';').filter(Boolean)) {
+				db.run(stmt.trim())
 			}
-			console.log(`  ${'help'.padEnd(25)} ${commands.help.desc}`)
-			console.log()
+			db.close()
+			console.log(`[nx]   ✓ ${file}`)
+		} catch (e: any) {
+			console.error(`[nx]   ✗ ${e.message}`)
 		}
-	},
-}
+	}
+})
+
+register('db:rollback', 'Rollback last migration', async () => {
+	ensureDir(MIGRATIONS_DIR)
+	const files = readdirSync(MIGRATIONS_DIR).filter(f => f.endsWith('.sql')).sort()
+	if (files.length === 0) { console.log('[nx] No migrations to rollback.'); return }
+	const last = files[files.length - 1]
+	try {
+		const fs = await import('node:fs')
+		fs.unlinkSync(join(MIGRATIONS_DIR, last))
+		console.log(`[nx] Rolled back: ${last}`)
+	} catch (e: any) {
+		console.error(`[nx] Error: ${e.message}`)
+	}
+})
+
+register('db:seed', 'Run database seeders', async (args) => {
+	const specific = argValue(args, '--file', '')
+	const dir = specific ? join(SEEDS_DIR, specific) : SEEDS_DIR
+	if (!existsSync(dir)) { console.log('[nx] No seeders directory found.'); return }
+	if (specific && !existsSync(dir)) throw new Error(`Seeder not found: ${specific}`)
+
+	const files = specific ? [specific] : readdirSync(SEEDS_DIR).filter(f => f.endsWith('.ts')).sort()
+	for (const file of files) {
+		const mod = await import(join(SEEDS_DIR, file))
+		const fn = mod.default || mod.seed
+		if (typeof fn === 'function') {
+			console.log(`[nx] Seeding: ${file}`)
+			await fn({ db: null, dialect: 'sqlite' })
+		}
+	}
+})
+
+register('make:seeder', 'Scaffold a seeder file', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:seeder <name>')
+	const { seeder } = await import('./templates')
+	write(name, join(SEEDS_DIR, `${name}.ts`), seeder(name))
+})
+
+register('db:wipe', 'Drop all tables (DESTRUCTIVE)', async () => {
+	console.log('[nx] WARNING: This will drop ALL tables!')
+	try {
+		const { Database } = await import('bun:sqlite')
+		const dbPath = arg(['DB_FILENAME'], 'app.db')
+		const db = new Database(dbPath)
+		const tables = db.query("SELECT name FROM sqlite_master WHERE type='table'").all() as any[]
+		for (const t of tables) {
+			if (t.name === 'sqlite_sequence') continue
+			db.run(`DROP TABLE IF EXISTS "${t.name}"`)
+			console.log(`[nx]   Dropped: ${t.name}`)
+		}
+		db.close()
+		console.log(`[nx] Done. ${tables.length - 1} tables dropped.`)
+	} catch (e: any) {
+		console.error(`[nx] Error: ${e.message}`)
+	}
+})
+
+register('key:generate', 'Generate APP_KEY', async () => {
+	const key = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64')
+	console.log(`\n  APP_KEY=${key}\n`)
+	console.log('  Add to your .env file:')
+	console.log(`  APP_KEY=${key}\n`)
+})
+
+register('make:middleware', 'Scaffold a middleware', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:middleware <name>')
+	const { middleware } = await import('./templates')
+	write(name, join(MIDDLEWARE_DIR, `${name}.ts`), middleware(name))
+})
+
+register('make:test', 'Scaffold a test file', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:test <name>')
+	const { test } = await import('./templates')
+	write(name, join(TESTS_DIR, `${name}.test.ts`), test(name))
+})
+
+register('make:command', 'Scaffold a CLI command', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:command <name>')
+	const { command } = await import('./templates')
+	write(name, join(CWD, 'commands', `${name}.ts`), command(name))
+})
+
+register('make:job', 'Scaffold a queue job', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:job <name>')
+	const { job } = await import('./templates')
+	write(name, join(CWD, 'jobs', `${name}.ts`), job(name))
+})
+
+register('make:mail', 'Scaffold a mail class', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:mail <name>')
+	const { mail } = await import('./templates')
+	write(name, join(CWD, 'mails', `${name}.ts`), mail(name))
+})
+
+register('make:event', 'Scaffold an event class', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:event <name>')
+	const { eventTemplate } = await import('./templates')
+	write(name, join(CWD, 'events', `${name}.ts`), eventTemplate(name))
+})
+
+register('make:listener', 'Scaffold an event listener', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:listener <name>')
+	const { listener } = await import('./templates')
+	write(name, join(CWD, 'listeners', `${name}.ts`), listener(name))
+})
+
+register('make:provider', 'Scaffold a service provider', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:provider <name>')
+	const { provider } = await import('./templates')
+	write(name, join(CWD, 'providers', `${name}.ts`), provider(name))
+})
+
+register('make:policy', 'Scaffold an authorization policy', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:policy <name>')
+	const { policy } = await import('./templates')
+	write(name, join(CWD, 'policies', `${name}.ts`), policy(name))
+})
+
+register('make:request', 'Scaffold a form request (validation)', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:request <name>')
+	const { formRequest } = await import('./templates')
+	write(name, join(CWD, 'requests', `${name}.ts`), formRequest(name))
+})
+
+register('make:resource', 'Scaffold an API resource', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:resource <name>')
+	const { resource } = await import('./templates')
+	write(name, join(CWD, 'resources', `${name}.ts`), resource(name))
+})
+
+register('make:rule', 'Scaffold a validation rule', async (args) => {
+	const name = args[0]
+	if (!name) throw new Error('Usage: nx make:rule <name>')
+	const { rule } = await import('./templates')
+	write(name, join(CWD, 'rules', `${name}.ts`), rule(name))
+})
+
+register('storage:link', 'Create storage symlink', async () => {
+	const target = join(CWD, 'storage', 'app')
+	const link = join(CWD, 'public', 'storage')
+	if (existsSync(link)) { console.log('[nx] Storage link already exists.'); return }
+	ensureDir(join(CWD, 'storage'))
+	ensureDir(join(CWD, 'public'))
+	try {
+		const fs = await import('node:fs')
+		fs.symlinkSync(target, link, 'dir')
+		console.log(`[nx] Linked: ${link} → ${target}`)
+	} catch (e: any) {
+		console.error(`[nx] Error: ${e.message}`)
+	}
+})
+
+register('build:edge', 'Build pre-compiled edge routes', async () => {
+	const { buildEdgeRoutes } = await import('../edge-builder')
+	await buildEdgeRoutes()
+})
+
+register('edge:dev', 'Run edge app locally', async () => {
+	const { createEdgeApp, register } = await import('../edge')
+	const app = createEdgeApp()
+	register(app, 'GET', '/api/hello', () => new Response(JSON.stringify({ message: 'Hello from Edge!' }), { headers: { 'content-type': 'application/json' } }))
+	app.listen(3001, () => console.log('Edge app on :3001'))
+})
+
+register('list', 'Show all registered routes', async () => {
+	const { listRoutes } = await import('./list-routes')
+	await listRoutes()
+})
+
+register('repl', 'Start interactive console', async () => {
+	const { startRepl } = await import('./repl')
+	await startRepl()
+})
+
+register('help', 'Show this help', async () => {
+	console.log('\n  NexusTS CLI')
+	console.log('  ─────────────────────────────────')
+	for (const [name, cmd] of Object.entries(commands)) {
+		console.log(`  ${name.padEnd(25)} ${cmd.desc}`)
+	}
+	console.log()
+})
+
+// ─── Boot ──────────────────────────────────────────────────────
 
 async function main() {
 	const args = process.argv.slice(2)
@@ -174,16 +308,11 @@ async function main() {
 
 main()
 
-/**
- * Helper: simple template renderer (mustache-lite).
- */
-function render(template: string, data: Record<string, any>): string {
-	return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => String(data[key] ?? ''))
-}
-
-/**
- * Helper: ensure a directory exists.
- */
-function ensureDir(dir: string): void {
-	if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+/** Read first matching env var or return default. */
+function arg(keys: string[], fallback: string): string {
+	for (const k of keys) {
+		const v = process.env[k] ?? ''
+		if (v) return v
+	}
+	return fallback
 }
