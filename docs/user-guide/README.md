@@ -14,6 +14,8 @@
 | [HMVC Modules](hmvc-modules.md) | Modular HMVC architecture |
 | [JWT Auth](jwt-auth.md) | JWT sign/verify, middleware |
 | [Multi-Database](multi-database.md) | Named connections via `this.dbs.*` |
+| [File Upload](upload.md) | Upload, validate, store, delete files |
+| [Image Manipulation](image.md) | Resize, crop, filters, watermarks, format conversion |
 | [OpenAPI](openapi.md) | Auto-generated API docs |
 | [SSE](sse.md) | Server-Sent Events |
 | [WebSocket](websocket.md) | WebSocket handler manager |
