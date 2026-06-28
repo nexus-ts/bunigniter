@@ -1,0 +1,163 @@
+# NexusTS — Development Guide
+
+Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
+
+> 82 commits, 80+ source files, 15 docs, 7 example apps.
+> GitHub: github.com/nexus-ts/framework
+
+---
+
+## Repository Structure
+
+```
+routes/        ← Controllers (Export class extends Controller)
+views/         ← Templates (.html Rendu / .mdx / .tsx React)
+modules/       ← HMVC modules (blog/shop/admin)
+config/app.ts  ← Single config file
+middleware/    ← Global middleware (01_*.ts)
+src/helpers/   ← 25 helper modules
+src/cli/       ← 25 CLI commands
+docs/          ← 15 documentation files
+examples/      ← 7 example apps
+```
+
+## Key Conventions (MUST FOLLOW)
+
+1. **Controllers go in `routes/`** — NOT `pages/` or `controllers/`
+2. **Import from `@nexusts/core`** — NOT relative paths like `../../src/`
+3. **View files in `views/`** — NOT `routes/`
+4. **HMVC modules in `modules/<name>/routes/`** — with their own views/
+5. **All templates share `src/cli/templates.ts`** — single source of truth
+6. **Docs in English + Korean** — both files simultaneously
+
+## Creating a Controller
+
+```ts
+// routes/posts.ts
+import { Controller } from '@nexusts/core'
+
+export class Posts extends Controller {
+  async index() { return this.json(await this.db.get('posts')) }
+  async show(id: number) { return this.json(await this.db.first('SELECT * FROM posts WHERE id = ?', [id])) }
+  async create() {
+    const v = this.validate(this.body, { title: 'required' })
+    if (v.fails()) return this.badRequest(v.errors)
+    await this.db.insert('posts', { title: v.data.title })
+    return this.json({ ok: true }, 201)
+  }
+}
+```
+
+## Route Method Mapping
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `index()` | `GET /posts` | List all |
+| `show(id)` | `GET /posts/:id` | Get one |
+| `create()` | `POST /posts` | Create |
+| `update(id)` | `PUT /posts/:id` | Replace |
+| `destroy(id)` | `DELETE /posts/:id` | Delete |
+
+## API Handler (Void-style)
+
+```ts
+// routes/hello.ts
+import { defineHandler } from '@nexusts/core'
+
+export const GET = defineHandler(async () => ({ message: 'Hello' }))
+export const POST = defineHandler.withValidator({
+  body: z.object({ name: z.string() })
+})(async (c, { body }) => ({ received: body.name }))
+```
+
+## Database Helpers (CI-style)
+
+```ts
+db.get('users', { role: 'admin' }, { orderBy: 'name', limit: 10 })  // SELECT
+db.getJoin('posts p', [['users u', 'u.id=p.user_id']])                // JOIN
+db.insert('users', { name: 'Alice' })                                 // INSERT
+db.update('users', { name: 'Bob' }, { id: 1 })                        // UPDATE
+db.delete('users', { id: 1 })                                         // DELETE
+db.count('users', { role: 'admin' })                                  // COUNT
+db.paginate('SELECT * FROM users', [], { page: 2 })                   // PAGINATION
+db.sql\`SELECT * FROM users WHERE id = ${id}\`                        // TAGGED TEMPLATE
+```
+
+WHERE operators: `=`, `>`, `<`, `>=`, `<=`, `<>`, `LIKE`, `IN`
+Multi-db: `this.dbs.analytics.get('stats')`
+
+## Templates
+
+| Type | File | Syntax | Use For |
+|------|------|--------|---------|
+| Rendu | `.html` | `<?= title ?>`, `<? if(...) { ?>` | PHP developers |
+| MDX | `.mdx` | `{{ title }}` + Markdown | Docs, content pages |
+| React SSR | `.tsx` | `{title}` (JSX) | Complex UI |
+
+Auto-layout: `views/_layout.html` → `<?= slot ?>` wraps all pages.
+
+## Auth
+
+```ts
+// Session-based
+this.auth.user()     // → current user object
+this.auth.login(u)   // → set session
+this.auth.logout()   // → clear session
+
+// JWT
+import { jwt } from '@nexusts/core/helpers/jwt'
+const token = jwt.sign({ userId: 1 })
+const payload = jwt.verify(token)
+
+// Controller guard
+protected _before() {
+  if (!this.auth.check()) return this.redirect('/login')
+}
+```
+
+## WebSocket & SSE
+
+```ts
+// routes/ws.ts
+import { ws } from '@nexusts/core/helpers/ws'
+ws.handle('/ws/chat', { message(ws, data) { ws.publish('chat', data) } })
+
+// routes/sse.ts
+import { sse } from '@nexusts/core/helpers/sse'
+export const GET = defineHandler(async (ctx) => sse(ctx, (send) => {
+  send({ event: 'tick', data: { count: 1 } })
+}))
+```
+
+## CLI
+
+```bash
+bun run nx <command>
+```
+
+Available: `make:controller`, `make:model`, `make:migration`, `db:migrate`, `db:seed`, `key:generate`, `make:middleware`, `make:test`, `make:job`, `make:mail`, `make:event`, `make:listener`, `make:provider`, `make:policy`, `make:request`, `make:resource`, `make:rule`, `storage:link`, `build:edge`, `list`, `repl`.
+
+## Example Apps
+
+| Command | App | Stack |
+|---------|-----|-------|
+| `examples/todo-app/dev.ts` | Todo | React SSR |
+| `examples/hn-app/dev.ts` | Hacker News | Rendu HTML |
+| `examples/petstore/dev.ts` | Pet Store | Rendu HTML |
+| `examples/blog-app-html/dev.ts` | Blog CMS | Rendu HTML |
+| `examples/blog-app-tsx/dev.ts` | Blog CMS | React SSR |
+
+## Testing
+
+```bash
+bun run test              # 39 tests
+bun x vitest run tests/   # Vitest suite
+```
+
+## Documentation
+
+See `docs/` — 15 files covering all features.
+
+## Skills
+
+See `skills/` directory for focused development guides.
