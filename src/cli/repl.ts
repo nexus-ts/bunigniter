@@ -262,7 +262,9 @@ async function handleCommand(cmd: string, ctx: Record<string, any>, rl: any): Pr
 			break
 
 		case '.routes':
-			console.log('  Routes: (run the app first)')
+		case '.list':
+			const { listRoutes } = await import('./list-routes')
+			await listRoutes()
 			break
 
 		case '.services':
