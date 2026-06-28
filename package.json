@@ -1,60 +1,61 @@
 {
-"name": "@nexusts/core",
-"version": "0.1.0",
-"description": "Bun-native fullstack framework — CodeIgniter spirit × Elysia performance × Edge-ready",
-"type": "module",
-"main": "src/index.ts",
-"module": "src/index.ts",
-"exports": {
-	".": "./src/index.ts",
-	"./base": "./src/base/index.ts",
-	"./controller": "./src/base/controller.ts",
-	"./helpers/env": "./src/helpers/env.ts",
-	"./helpers/validator": "./src/helpers/validator.ts",
-	"./helpers/http": "./src/helpers/http.ts",
-	"./helpers/image": "./src/helpers/image.ts",
-	"./helpers/pagination": "./src/helpers/pagination.ts",
-	"./helpers/session": "./src/helpers/session.ts",
-	"./helpers/cache": "./src/helpers/cache.ts",
-	"./helpers/queue": "./src/helpers/queue.ts",
-	"./helpers/upload": "./src/helpers/upload.ts",
-	"./helpers/mail": "./src/helpers/mail.ts",
-	"./helpers/modules": "./src/helpers/modules.ts",
+	"name": "@nexusts/core",
+	"version": "0.1.0",
+	"description": "Bun-native fullstack framework — CodeIgniter spirit × Elysia performance × Edge-ready",
+	"type": "module",
+	"main": "src/index.ts",
+	"module": "src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./base": "./src/base/index.ts",
+		"./controller": "./src/base/controller.ts",
+		"./helpers/env": "./src/helpers/env.ts",
+		"./helpers/validator": "./src/helpers/validator.ts",
+		"./helpers/http": "./src/helpers/http.ts",
+		"./helpers/image": "./src/helpers/image.ts",
+		"./helpers/pagination": "./src/helpers/pagination.ts",
+		"./helpers/session": "./src/helpers/session.ts",
+		"./helpers/cache": "./src/helpers/cache.ts",
+		"./helpers/queue": "./src/helpers/queue.ts",
+		"./helpers/upload": "./src/helpers/upload.ts",
+		"./helpers/mail": "./src/helpers/mail.ts",
+		"./helpers/modules": "./src/helpers/modules.ts",
 		"./helpers/openapi": "./src/helpers/openapi.ts",
 		"./helpers/jwt": "./src/helpers/jwt.ts",
 		"./helpers/ws": "./src/helpers/ws.ts",
 		"./helpers/sse": "./src/helpers/sse.ts",
 		"./helpers/schedule": "./src/helpers/schedule.ts"
-},
-  "scripts": {
-    "dev": "bun --hot run src/index.ts",
-    "start": "bun run src/index.ts",
-    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
-    "nx": "bun run src/cli/index.ts",
-    "make:controller": "bun run src/cli/index.ts make:controller",
-    "make:model": "bun run src/cli/index.ts make:model",
-    "test": "bun x vitest run",
-    "test:smoke": "bun x vitest run tests/smoke.test.ts",
-    "test:unit": "bun x vitest run tests/ --exclude 'tests/smoke*' ",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "drizzle-orm": "^0.45.0",
-    "elysia": "file:/tmp/pi-github-repos/elysiajs/elysia@kiana",
-    "rendu": "^0.1.0",
-    "zod": "^4.4.3"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.3.14",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "typescript": "^5.6.3",
-    "vitest": "^4.1.9"
-  },
-  "engines": {
-    "bun": ">=1.3.0"
-  },
-  "license": "MIT"
+	},
+	"scripts": {
+		"dev": "bun --hot run src/index.ts",
+		"start": "bun run src/index.ts",
+		"build": "bun build ./src/index.ts --outdir ./dist --target bun",
+		"nx": "bun run src/cli/index.ts",
+		"make:controller": "bun run src/cli/index.ts make:controller",
+		"make:model": "bun run src/cli/index.ts make:model",
+		"test": "bun x vitest run",
+		"test:smoke": "bun x vitest run tests/smoke.test.ts",
+		"test:unit": "bun x vitest run tests/ --exclude 'tests/smoke*' ",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"drizzle-orm": "^0.45.0",
+		"elysia": "2.0.0-exp.8",
+		"rendu": "^0.1.0",
+		"typebox": "1.2.16",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.3.14",
+		"@types/react": "^19.2.17",
+		"@types/react-dom": "^19.2.3",
+		"react": "^19.2.7",
+		"react-dom": "^19.2.7",
+		"typescript": "^5.6.3",
+		"vitest": "^4.1.9"
+	},
+	"engines": {
+		"bun": ">=1.3.0"
+	},
+	"license": "MIT"
 }

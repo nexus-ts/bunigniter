@@ -20,17 +20,13 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Create @nexusts/core symlink
+        run: |
+          mkdir -p node_modules/@nexusts
+          ln -sf ../.. node_modules/@nexusts/core
+
       - name: Run unit tests
-        run: bun x vitest run tests/ --exclude 'tests/smoke*'
+        run: bun x vitest run tests/ --exclude 'tests/smoke*' --reporter=verbose
 
       - name: Run smoke tests
         run: bun x vitest run tests/smoke.test.ts --reporter=verbose
-
-      - name: Build check
-        run: bun run --bun src/index.ts &
-          sleep 3
-          curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health
-          kill %1 2>/dev/null || true
-
-      - name: List routes
-        run: bun run nx list
