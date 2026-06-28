@@ -40,7 +40,7 @@
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.45.0",
-		"elysia": "2.0.0-exp.8",
+		"elysia": "2.0.0-exp.9",
 		"rendu": "^0.1.0",
 		"typebox": "1.2.16",
 		"zod": "^4.4.3"
