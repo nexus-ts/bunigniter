@@ -16,5 +16,8 @@ dist/
 # Build output
 dist/
 
+# Backup created during npm publish
+package.json.dev
+
 # Playwright MCP screenshots
 .playwright-mcp/

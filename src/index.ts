@@ -37,6 +37,7 @@ import { setViewsDir } from "./view/renderer"
 export { Controller, Service } from "./base/index"
 export { DbClient } from "./db/drizzle"
 export { RequestProxy } from "./helpers/request"
+export { defineHandler } from "./helpers/handler"
 
 interface AppConfig {
 	port?: number | string

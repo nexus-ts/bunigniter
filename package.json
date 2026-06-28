@@ -1,6 +1,6 @@
 {
   "name": "bunigniter",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Bun-native fullstack framework — CodeIgniter spirit × Elysia performance × Edge-ready",
   "homepage": "https://github.com/nexus-ts/bunigniter",
   "type": "module",
@@ -9,8 +9,8 @@
     "README.md",
     "LICENSE"
   ],
-  "main": "src/index.ts",
-  "module": "src/index.ts",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./base": "./src/base/index.ts",
@@ -50,7 +50,7 @@
   "scripts": {
     "build:dist": "bun run scripts/build-dist.ts",
     "prepublishOnly": "bun run build:dist",
-    "postpublish": "rm -rf dist",
+    "postpublish": "bun run scripts/restore-pkg.ts",
     "dev": "bun --hot run src/index.ts",
     "start": "bun run src/index.ts",
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",

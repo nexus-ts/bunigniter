@@ -91,18 +91,46 @@ for (const path of ALLOWLIST) {
 
 // Copy package.json and rewrite exports paths for dist
 const pkgSrc = join(ROOT, "package.json");
-if (existsSync(pkgSrc)) {
-	const pkg = JSON.parse(readFileSync(pkgSrc, "utf-8"));
-	if (pkg.main) pkg.main = pkg.main.replace(/^(?:\.\/)?src\//, "./");
-	if (pkg.module) pkg.module = pkg.module.replace(/^(?:\.\/)?src\//, "./");
-	if (pkg.exports) {
-		for (const [key, val] of Object.entries(pkg.exports)) {
+if (!existsSync(pkgSrc)) {
+	console.error("[build:dist] package.json not found");
+	process.exit(1);
+}
+
+try {
+	const original = JSON.parse(readFileSync(pkgSrc, "utf-8"));
+
+	// Step 1: Save backup of ORIGINAL root package.json (with ./src/ paths)
+	const backupPath = join(ROOT, "package.json.dev");
+	writeFileSync(backupPath, JSON.stringify(original, null, 2) + "\n");
+
+	// Step 2: Create dist/package.json with ./ paths (for dist/ internal use)
+	const distPkg = JSON.parse(JSON.stringify(original)); // deep clone
+	if (distPkg.main) distPkg.main = distPkg.main.replace(/^(?:\.\/)?src\//, "./");
+	if (distPkg.module) distPkg.module = distPkg.module.replace(/^(?:\.\/)?src\//, "./");
+	if (distPkg.exports) {
+		for (const [key, val] of Object.entries(distPkg.exports)) {
 			if (typeof val === "string") {
-				(pkg.exports as Record<string, string>)[key] = val.replace(/^(?:\.\/)?src\//, "./");
+				(distPkg.exports as Record<string, string>)[key] = val.replace(/^(?:\.\/)?src\//, "./");
 			}
 		}
 	}
-	writeFileSync(join(DIST, "package.json"), JSON.stringify(pkg, null, 2) + "\n");
+	writeFileSync(join(DIST, "package.json"), JSON.stringify(distPkg, null, 2) + "\n");
+
+	// Step 3: Rewrite ROOT package.json to point to ./dist/ for npm consumers
+	if (original.main) original.main = original.main.replace(/^(?:\.\/)?src\//, "./dist/");
+	if (original.module) original.module = original.module.replace(/^(?:\.\/)?src\//, "./dist/");
+	if (original.exports) {
+		for (const [key, val] of Object.entries(original.exports)) {
+			if (typeof val === "string") {
+				(original.exports as Record<string, string>)[key] = val.replace(/^(?:\.\/)?src\//, "./dist/");
+			}
+		}
+	}
+	writeFileSync(pkgSrc, JSON.stringify(original, null, 2) + "\n");
+	console.log("[build:dist] root package.json updated to point to dist/");
+} catch (e) {
+	console.error("[build:dist] Failed to process package.json:", e);
+	process.exit(1);
 }
 
 // Copy README and LICENSE

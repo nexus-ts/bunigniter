@@ -2,6 +2,25 @@
 
 All notable changes to Bunigniter are documented in this file.
 
+## [0.4.0] — 2026-06-28
+
+### Fixed
+
+- **npm publish: root package.json paths** — `build-dist.ts` now also rewrites the root `package.json` export paths to `./dist/` before publish, so npm/Bun consumers resolve correctly to the `dist/` directory. Previously only `dist/package.json` was rewritten, but npm consumers read the root `package.json` which still pointed to non-existent `./src/` paths.
+- **`defineHandler` not exported** — Added `export { defineHandler } from "./helpers/handler"` to main entry point so `import { defineHandler } from "bunigniter"` works.
+- **`postpublish` script** — Replaced `rm -rf dist` with a proper restore script (`scripts/restore-pkg.ts`) that restores root `package.json` from backup and removes `dist/`.
+- **Double `dist/` entry in `.gitignore`** — Cleaned up duplicate and added `package.json.dev` (backup file) to gitignore.
+
+### Changed
+
+- **`scripts/build-dist.ts`** — Refactored with try/catch error handling, proper backup/restore flow:
+  1. Saves original `package.json` (with `./src/` paths) as `package.json.dev`
+  2. Creates `dist/package.json` with `./` paths for internal dist resolution
+  3. Rewrites root `package.json` to `./dist/` paths for npm consumers
+- **`scripts/restore-pkg.ts`** — New script that restores root `package.json` from backup and cleans up `dist/` after publish.
+
+[0.4.0]: https://github.com/nexus-ts/bunigniter/compare/v0.3.1...v0.4.0
+
 ## [0.3.1] — 2026-06-28
 
 ### Fixed
