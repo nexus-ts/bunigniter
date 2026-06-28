@@ -38,10 +38,10 @@
         ># <?= ch.name ?></a
       >
       <p style="font-size: 13px; color: #9ca3af; margin-top: 4px">
-        <?= ch.topic ?? '' ?>
+        <?= ch.topic || '' ?>
       </p>
       <p style="font-size: 12px; color: #6b7280; margin-top: 4px">
-        <?= ch.msg_count ?? 0 ?>
+        <?= ch.msg_count || 0 ?>
         messages
       </p>
     </div>

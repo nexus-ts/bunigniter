@@ -84,7 +84,7 @@
   <div class="card" style="flex: 1; display: flex; flex-direction: column">
     <h2 style="margin-bottom: 16px; font-size: 20px"># <?= channel.name ?></h2>
     <p style="font-size: 13px; color: #9ca3af; margin-bottom: 16px">
-      <?= channel.topic ?? '' ?>
+      <?= channel.topic || '' ?>
     </p>
 
     <div id="messages">
@@ -105,14 +105,14 @@
               background: #4da6ff;
             "
           >
-            <?= (msg.display_name ?? msg.username)[0].toUpperCase() ?>
+            <?= (msg.display_name || msg.username)[0].toUpperCase() ?>
           </div>
           <? } ?>
         </div>
         <div style="flex: 1">
           <div style="font-size: 13px">
             <strong style="color: #fff"
-              ><?= msg.display_name ?? msg.username ?></strong
+              ><?= msg.display_name || msg.username ?></strong
             >
             <span style="color: #6b7280; margin-left: 8px; font-size: 11px"
               ><?= msg.created_at ?></span

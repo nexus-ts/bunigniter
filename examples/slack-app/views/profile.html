@@ -27,12 +27,12 @@
           color: #fff;
         "
       >
-        <?= (user.display_name ?? user.username)[0].toUpperCase() ?>
+        <?= (user.display_name || user.username)[0].toUpperCase() ?>
       </div>
       <? } ?>
       <div>
         <p style="font-weight: 600">
-          <?= user.display_name ?? user.username ?>
+          <?= user.display_name || user.username ?>
         </p>
         <p style="font-size: 13px; color: #9ca3af">@<?= user.username ?></p>
         <p style="font-size: 13px; color: #9ca3af"><?= user.email ?></p>
@@ -51,7 +51,7 @@
       <input
         type="text"
         name="display_name"
-        value="<?= user.display_name ?? '' ?>"
+        value="<?= user.display_name || '' ?>"
       />
     </div>
     <div>

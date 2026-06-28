@@ -78,6 +78,7 @@ async function main() {
 
 	await registerFileRoutes(app, {
 		directory: "examples/slack-app/routes",
+		viewsDir: "examples/slack-app/views",
 		prefix: "",
 		db,
 		cache,

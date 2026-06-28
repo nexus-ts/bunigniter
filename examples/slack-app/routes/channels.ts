@@ -7,13 +7,14 @@ export class Channels extends Controller {
 
 	async index() {
 		const user = this.auth.user();
-		const channels = await this.db.sql`
+		const result = await this.db.sql`
       SELECT c.*, (SELECT count(*) FROM messages m WHERE m.channel_id = c.id) as msg_count,
         (SELECT username FROM users WHERE id = c.created_by) as creator_name
       FROM channels c
       JOIN channel_members cm ON cm.channel_id = c.id AND cm.user_id = ${user.id}
       ORDER BY c.name
     `;
+		const channels = result.rows;
 
 		return this.view("channels", { title: "Channels", channels, user });
 	}
