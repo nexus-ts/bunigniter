@@ -346,8 +346,8 @@ function registerRoute(
 			// Handle _method override for HTML forms (PUT/DELETE via POST)
 			const body = _ctx.body ?? {}
 			const overrideMethod = body?._method?.toUpperCase()
-			if (overrideMethod && _ctx.request.method === 'POST' && ['PUT', 'DELETE', 'PATCH'].includes(overrideMethod)) {
-				_ctx.request.method = overrideMethod
+			if (overrideMethod && ['PUT', 'DELETE', 'PATCH'].includes(overrideMethod)) {
+				_ctx.__method = overrideMethod
 			}
 
 			// Call handler — pass context for server routes, ID for Controller routes
