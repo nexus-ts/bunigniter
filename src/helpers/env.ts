@@ -11,8 +11,8 @@
  * const debug = env('DEBUG', false)
  * ```
  */
-import { readFileSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readFileSync } from "node:fs"
+import { join } from "node:path"
 
 /** Parsed `.env` cache. */
 let envCache: Record<string, string> | null = null
@@ -39,17 +39,16 @@ export function setEnvDir(dir: string): void {
  */
 function parseEnv(content: string): Record<string, string> {
 	const result: Record<string, string> = {}
-	for (const line of content.split('\n')) {
+	for (const line of content.split("\n")) {
 		const trimmed = line.trim()
-		if (!trimmed || trimmed.startsWith('#')) continue
+		if (!trimmed || trimmed.startsWith("#")) continue
 		const match = trimmed.match(/^(?:export\s+)?([\w._-]+)\s*=\s*(.*)$/)
 		if (!match) continue
 		const key = match[1]
 		let value = match[2].trim()
 
 		// Strip quotes
-		if ((value.startsWith('"') && value.endsWith('"')) ||
-		    (value.startsWith("'") && value.endsWith("'"))) {
+		if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
 			value = value.slice(1, -1)
 		}
 		result[key] = value
@@ -66,20 +65,15 @@ export function loadEnv(): Record<string, string> {
 	if (envCache) return envCache
 
 	const env: Record<string, string> = { ...process.env } as Record<string, string>
-	const nodeEnv = process.env.NODE_ENV ?? 'development'
+	const nodeEnv = process.env.NODE_ENV ?? "development"
 
 	// Load priority: .env.<environment>.local > .env.local > .env.<environment> > .env
-	const files = [
-		'.env',
-		`.env.${nodeEnv}`,
-		'.env.local',
-		`.env.${nodeEnv}.local`,
-	]
+	const files = [".env", `.env.${nodeEnv}`, ".env.local", `.env.${nodeEnv}.local`]
 
 	for (const file of files) {
 		const path = join(envDir, file)
 		if (existsSync(path)) {
-			const parsed = parseEnv(readFileSync(path, 'utf-8'))
+			const parsed = parseEnv(readFileSync(path, "utf-8"))
 			Object.assign(env, parsed)
 		}
 	}
@@ -104,22 +98,19 @@ export function loadEnv(): Record<string, string> {
  * ```
  */
 function castValue<T>(value: string, defaultValue?: T): T {
-	if (typeof defaultValue === 'boolean') {
-		return (value === 'true' || value === '1' || value === 'yes') as unknown as T
+	if (typeof defaultValue === "boolean") {
+		return (value === "true" || value === "1" || value === "yes") as unknown as T
 	}
-	if (typeof defaultValue === 'number') {
+	if (typeof defaultValue === "number") {
 		return Number(value) as unknown as T
 	}
 	return value as unknown as T
 }
 
-export function env<T extends string | number | boolean>(
-	key: string,
-	defaultValue?: T
-): T {
+export function env<T extends string | number | boolean>(key: string, defaultValue?: T): T {
 	// Check actual process.env FIRST (it takes priority over .env files)
 	const processValue = (process.env as Record<string, string>)[key]
-	if (processValue !== undefined && processValue !== '') {
+	if (processValue !== undefined && processValue !== "") {
 		return castValue(processValue, defaultValue)
 	}
 
@@ -127,7 +118,7 @@ export function env<T extends string | number | boolean>(
 	const all = loadEnv()
 	const value = all[key]
 
-	if (value === undefined || value === '') {
+	if (value === undefined || value === "") {
 		return defaultValue as T
 	}
 
@@ -140,7 +131,7 @@ export function env<T extends string | number | boolean>(
 export function envOrFail(key: string): string {
 	const all = loadEnv()
 	const value = all[key]
-	if (value === undefined || value === '') {
+	if (value === undefined || value === "") {
 		throw new Error(`Required environment variable "${key}" is not set.`)
 	}
 	return value

@@ -63,7 +63,7 @@ export class HttpClient {
 	 * ```
 	 */
 	async get<T = any>(url: string, options: HttpOptions = {}): Promise<HttpResponse<T>> {
-		return this.request<T>('GET', url, undefined, options)
+		return this.request<T>("GET", url, undefined, options)
 	}
 
 	/**
@@ -75,39 +75,34 @@ export class HttpClient {
 	 * ```
 	 */
 	async post<T = any>(url: string, body?: any, options: HttpOptions = {}): Promise<HttpResponse<T>> {
-		return this.request<T>('POST', url, body, options)
+		return this.request<T>("POST", url, body, options)
 	}
 
 	/**
 	 * Send a PUT request.
 	 */
 	async put<T = any>(url: string, body?: any, options: HttpOptions = {}): Promise<HttpResponse<T>> {
-		return this.request<T>('PUT', url, body, options)
+		return this.request<T>("PUT", url, body, options)
 	}
 
 	/**
 	 * Send a PATCH request.
 	 */
 	async patch<T = any>(url: string, body?: any, options: HttpOptions = {}): Promise<HttpResponse<T>> {
-		return this.request<T>('PATCH', url, body, options)
+		return this.request<T>("PATCH", url, body, options)
 	}
 
 	/**
 	 * Send a DELETE request.
 	 */
 	async delete<T = any>(url: string, options: HttpOptions = {}): Promise<HttpResponse<T>> {
-		return this.request<T>('DELETE', url, undefined, options)
+		return this.request<T>("DELETE", url, undefined, options)
 	}
 
 	/**
 	 * Low-level request method.
 	 */
-	async request<T = any>(
-		method: string,
-		url: string,
-		body?: any,
-		options: HttpOptions = {}
-	): Promise<HttpResponse<T>> {
+	async request<T = any>(method: string, url: string, body?: any, options: HttpOptions = {}): Promise<HttpResponse<T>> {
 		const opts = { ...this.defaultOptions, ...options }
 
 		// Build URL with query params
@@ -117,22 +112,22 @@ export class HttpClient {
 			for (const [k, v] of Object.entries(opts.query)) {
 				params.set(k, String(v))
 			}
-			fullUrl += (fullUrl.includes('?') ? '&' : '?') + params.toString()
+			fullUrl += (fullUrl.includes("?") ? "&" : "?") + params.toString()
 		}
 
 		// Build headers
 		const headers: Record<string, string> = { ...opts.headers }
-		if (body && typeof body === 'object' && !(body instanceof FormData)) {
-			headers['content-type'] = 'application/json'
+		if (body && typeof body === "object" && !(body instanceof FormData)) {
+			headers["content-type"] = "application/json"
 		}
 
 		// Auth
 		if (opts.auth) {
-			if (typeof opts.auth === 'string') {
-				headers['authorization'] = `Bearer ${opts.auth}`
+			if (typeof opts.auth === "string") {
+				headers.authorization = `Bearer ${opts.auth}`
 			} else {
-				const encoded = Buffer.from(`${opts.auth.username}:${opts.auth.password}`).toString('base64')
-				headers['authorization'] = `Basic ${encoded}`
+				const encoded = Buffer.from(`${opts.auth.username}:${opts.auth.password}`).toString("base64")
+				headers.authorization = `Basic ${encoded}`
 			}
 		}
 
@@ -157,12 +152,12 @@ export class HttpClient {
 
 		try {
 			const response = await fetch(fullUrl, requestInit)
-			const contentType = response.headers.get('content-type') ?? ''
+			const contentType = response.headers.get("content-type") ?? ""
 			let data: any
 
-			if (contentType.includes('application/json')) {
+			if (contentType.includes("application/json")) {
 				data = await response.json()
-			} else if (contentType.includes('text/')) {
+			} else if (contentType.includes("text/")) {
 				data = await response.text()
 			} else {
 				data = await response.arrayBuffer()
@@ -176,7 +171,7 @@ export class HttpClient {
 				raw: response,
 			}
 		} catch (err: any) {
-			if (err.name === 'AbortError') {
+			if (err.name === "AbortError") {
 				throw new Error(`Request timed out after ${timeout}ms: ${method} ${fullUrl}`)
 			}
 			throw err

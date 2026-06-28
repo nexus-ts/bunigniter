@@ -10,11 +10,11 @@
  * applyMiddleware(app, config.middleware)
  * ```
  */
-import { Elysia } from 'elysia'
-import { corsMiddleware, type CORSOptions } from './cors'
-import { loggerMiddleware, type LoggerOptions } from './logger'
-import { csrfMiddleware, type CSRFOptions } from './csrf'
-import { rateLimiter, type ThrottleOptions } from './throttle'
+import type { Elysia } from "elysia"
+import { type CORSOptions, corsMiddleware } from "./cors"
+import { type CSRFOptions, csrfMiddleware } from "./csrf"
+import { type LoggerOptions, loggerMiddleware } from "./logger"
+import { rateLimiter, type ThrottleOptions } from "./throttle"
 
 /** Middleware configuration from config/app.ts. */
 export interface MiddlewareConfig {

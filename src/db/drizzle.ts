@@ -1,24 +1,5 @@
-/**
- * Drizzle wrapper — CodeIgniter-style database interface.
- *
- * Provides `db.query('SQL', [params])` for raw SQL with parameter binding,
- * plus full Drizzle ORM access for type-safe queries.
- *
- * @example
- * ```ts
- * // Raw SQL (CodeIgniter style)
- * const users = await db.query('SELECT * FROM users WHERE id = ?', [1])
- *
- * // Drizzle ORM (type-safe)
- * const rows = await db.select().from(users).all()
- * ```
- */
-import { type ExtractTablesWithRelations } from 'drizzle-orm'
-import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core'
-import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite'
-
 /** Dialect types supported. */
-export type Dialect = 'postgres' | 'mysql' | 'sqlite' | 'bun-sqlite' | 'd1'
+export type Dialect = "postgres" | "mysql" | "sqlite" | "bun-sqlite" | "d1"
 
 /** Database configuration. */
 export interface DbConfig {
@@ -98,8 +79,8 @@ export class DbClient {
 	 * ```
 	 */
 	async sql(strings: TemplateStringsArray, ...values: unknown[]): Promise<QueryResult<any>> {
-		let s = strings[0] ?? ''
-		for (let i = 1; i < strings.length; i++) s += '?' + strings[i]
+		let s = strings[0] ?? ""
+		for (let i = 1; i < strings.length; i++) s += `?${strings[i]}`
 		return this.query(s, values)
 	}
 
@@ -113,10 +94,7 @@ export class DbClient {
 	async insert(table: string, data: Record<string, any>): Promise<QueryResult> {
 		const keys = Object.keys(data)
 		const vals = Object.values(data)
-		return this.query(
-			`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${keys.map(() => '?').join(', ')})`,
-			vals
-		)
+		return this.query(`INSERT INTO ${table} (${keys.join(", ")}) VALUES (${keys.map(() => "?").join(", ")})`, vals)
 	}
 
 	/**
@@ -127,9 +105,9 @@ export class DbClient {
 	 * await db.update('posts', { views: 0 }, { views: ['<', 0] }) // views < 0
 	 */
 	async update(table: string, data: Record<string, any>, where: Record<string, any>): Promise<QueryResult> {
-		const setCols = Object.keys(data).map(k => `${k} = ?`)
+		const setCols = Object.keys(data).map((k) => `${k} = ?`)
 		const { clause, vals } = buildWhere(where)
-		return this.query(`UPDATE ${table} SET ${setCols.join(', ')} WHERE ${clause}`, [...Object.values(data), ...vals])
+		return this.query(`UPDATE ${table} SET ${setCols.join(", ")} WHERE ${clause}`, [...Object.values(data), ...vals])
 	}
 
 	/**
@@ -152,15 +130,19 @@ export class DbClient {
 	 * const recent = await db.get('posts', { status: 'published' }, { orderBy: 'created_at DESC', limit: 10 })
 	 * const admins = await db.get('users', { role: 'admin', age: ['>=', 18] })
 	 */
-	async get<T = any>(table: string, where?: Record<string, any> | null, options?: {
-		select?: string
-		orderBy?: string
-		limit?: number
-		offset?: number
-		groupBy?: string
-		having?: Record<string, any>
-	}): Promise<T[]> {
-		let sql = `SELECT ${options?.select ?? '*'} FROM ${table}`
+	async get<T = any>(
+		table: string,
+		where?: Record<string, any> | null,
+		options?: {
+			select?: string
+			orderBy?: string
+			limit?: number
+			offset?: number
+			groupBy?: string
+			having?: Record<string, any>
+		},
+	): Promise<T[]> {
+		let sql = `SELECT ${options?.select ?? "*"} FROM ${table}`
 		const params: unknown[] = []
 
 		if (where && Object.keys(where).length > 0) {
@@ -175,8 +157,14 @@ export class DbClient {
 			params.push(...h.vals)
 		}
 		if (options?.orderBy) sql += ` ORDER BY ${options.orderBy}`
-		if (options?.limit) { sql += ' LIMIT ?'; params.push(options.limit) }
-		if (options?.offset) { sql += ' OFFSET ?'; params.push(options.offset) }
+		if (options?.limit) {
+			sql += " LIMIT ?"
+			params.push(options.limit)
+		}
+		if (options?.offset) {
+			sql += " OFFSET ?"
+			params.push(options.offset)
+		}
 
 		const result = await this.query<T>(sql, params)
 		return result.rows
@@ -203,16 +191,19 @@ export class DbClient {
 			select?: string
 			groupBy?: string
 			having?: Record<string, any>
-		}
+		},
 	): Promise<T[]> {
-		let sql = `SELECT ${options?.select ?? '*'} FROM ${from}`
+		let sql = `SELECT ${options?.select ?? "*"} FROM ${from}`
 		const params: unknown[] = []
 
 		for (const join of joins) {
 			const [table, on, type] = join
-			const joinType = (type?.toUpperCase() === 'LEFT' || type?.toUpperCase() === 'RIGHT' || type?.toUpperCase() === 'INNER')
-				? type.toUpperCase()
-				: type?.toUpperCase() === 'OUTER' ? 'LEFT' : ''
+			const joinType =
+				type?.toUpperCase() === "LEFT" || type?.toUpperCase() === "RIGHT" || type?.toUpperCase() === "INNER"
+					? type.toUpperCase()
+					: type?.toUpperCase() === "OUTER"
+						? "LEFT"
+						: ""
 			sql += joinType ? ` ${joinType} JOIN ${table} ON ${on}` : ` JOIN ${table} ON ${on}`
 		}
 
@@ -228,8 +219,14 @@ export class DbClient {
 			params.push(...h.vals)
 		}
 		if (options?.orderBy) sql += ` ORDER BY ${options.orderBy}`
-		if (options?.limit) { sql += ' LIMIT ?'; params.push(options.limit) }
-		if (options?.offset) { sql += ' OFFSET ?'; params.push(options.offset) }
+		if (options?.limit) {
+			sql += " LIMIT ?"
+			params.push(options.limit)
+		}
+		if (options?.offset) {
+			sql += " OFFSET ?"
+			params.push(options.offset)
+		}
 
 		const result = await this.query<T>(sql, params)
 		return result.rows
@@ -259,9 +256,9 @@ export class DbClient {
 	async insertBatch(table: string, data: Record<string, any>[]): Promise<QueryResult> {
 		if (data.length === 0) return { rows: [], affectedRows: 0 }
 		const keys = Object.keys(data[0])
-		const placeholders = data.map(() => `(${keys.map(() => '?').join(',')})`).join(',')
-		const vals = data.flatMap(d => keys.map(k => d[k]))
-		return this.query(`INSERT INTO ${table} (${keys.join(',')}) VALUES ${placeholders}`, vals)
+		const placeholders = data.map(() => `(${keys.map(() => "?").join(",")})`).join(",")
+		const vals = data.flatMap((d) => keys.map((k) => d[k]))
+		return this.query(`INSERT INTO ${table} (${keys.join(",")}) VALUES ${placeholders}`, vals)
 	}
 
 	/**
@@ -285,7 +282,7 @@ export class DbClient {
 		try {
 			const ctx = getRequestContext()
 			if (ctx) {
-				const { getStore } = await import('../helpers/debug')
+				const { getStore } = await import("../helpers/debug")
 				const data = getStore(ctx)
 				data.queries.push({
 					id: data.queries.length + 1,
@@ -329,7 +326,7 @@ export class DbClient {
 	async paginate<T = any>(
 		sql: string,
 		params: unknown[] = [],
-		options: { page?: number; perPage?: number } = {}
+		options: { page?: number; perPage?: number } = {},
 	): Promise<{ data: T[]; total: number; page: number; perPage: number; pages: number }> {
 		const page = Math.max(1, options.page ?? 1)
 		const perPage = Math.max(1, options.perPage ?? 20)
@@ -361,11 +358,11 @@ export class DbClient {
 		this.assertOpen()
 		return this.client.transaction(async (tx: any) => {
 			const txClient = Object.create(this) as TxClient
-			Object.defineProperty(txClient, 'client', { value: tx, writable: false })
+			Object.defineProperty(txClient, "client", { value: tx, writable: false })
 			// Build a temporary raw executor from the tx client if needed
-			Object.defineProperty(txClient, 'rawExecutor', {
+			Object.defineProperty(txClient, "rawExecutor", {
 				value: this.rawExecutor,
-				writable: false
+				writable: false,
 			})
 			return fn(txClient)
 		})
@@ -383,7 +380,7 @@ export class DbClient {
 
 	private assertOpen(): void {
 		if (!this.opened) {
-			throw new Error('[db] not opened. Call await db.open() first.')
+			throw new Error("[db] not opened. Call await db.open() first.")
 		}
 	}
 }
@@ -409,11 +406,11 @@ function buildWhere(where: Record<string, any>): { clause: string; vals: unknown
 
 	for (const [key, val] of Object.entries(where)) {
 		if (Array.isArray(val)) {
-			const op = val[0] ?? '='
+			const op = val[0] ?? "="
 			const v = val[1] ?? val[0]
-			if (op.toUpperCase() === 'IN') {
+			if (op.toUpperCase() === "IN") {
 				const items = Array.isArray(v) ? v : [v]
-				parts.push(`${key} IN (${items.map(() => '?').join(', ')})`)
+				parts.push(`${key} IN (${items.map(() => "?").join(", ")})`)
 				vals.push(...items)
 			} else {
 				parts.push(`${key} ${op} ?`)
@@ -425,23 +422,23 @@ function buildWhere(where: Record<string, any>): { clause: string; vals: unknown
 		}
 	}
 
-	return { clause: parts.join(' AND '), vals }
+	return { clause: parts.join(" AND "), vals }
 }
 
 async function resolveDriver(dialect: Dialect, config: DbConfig): Promise<DriverResult> {
 	const conn = config.connection
 
 	switch (dialect) {
-		case 'postgres': {
-			const drizzleMod = await import('drizzle-orm/postgres-js')
-			const postgres = await import('postgres')
+		case "postgres": {
+			const drizzleMod = await import("drizzle-orm/postgres-js")
+			const postgres = await import("postgres")
 			const sql = postgres.default({
-				host: conn.host ?? 'localhost',
+				host: conn.host ?? "localhost",
 				port: conn.port ?? 5432,
 				user: conn.user,
 				password: conn.password,
 				database: conn.database,
-				...(conn as any)
+				...(conn as any),
 			})
 			const db = drizzleMod.drizzle(sql, { logger: config.logging as any })
 			const rawExecutor: RawExecutor = {
@@ -449,17 +446,17 @@ async function resolveDriver(dialect: Dialect, config: DbConfig): Promise<Driver
 					const rows = await sql.unsafe(querySql, params as any[])
 					return {
 						rows: rows as T[],
-						affectedRows: rows.length
+						affectedRows: rows.length,
 					}
-				}
+				},
 			}
 			return { db, rawExecutor }
 		}
 
-		case 'bun-sqlite': {
-			const drizzleMod = await import('drizzle-orm/bun-sqlite')
-			const { Database } = await import('bun:sqlite')
-			const filename = (conn as any).filename ?? 'app.db'
+		case "bun-sqlite": {
+			const drizzleMod = await import("drizzle-orm/bun-sqlite")
+			const { Database } = await import("bun:sqlite")
+			const filename = (conn as any).filename ?? "app.db"
 			const sqlite = new Database(filename)
 			const db = drizzleMod.drizzle(sqlite, { logger: config.logging as any })
 			const rawExecutor: RawExecutor = {
@@ -474,18 +471,18 @@ async function resolveDriver(dialect: Dialect, config: DbConfig): Promise<Driver
 					return {
 						rows: [],
 						affectedRows: Number(r.changes ?? 0),
-						insertId: r.lastInsertRowid as number | string
+						insertId: r.lastInsertRowid as number | string,
 					}
-				}
+				},
 			}
 			return { db, rawExecutor }
 		}
 
-		case 'sqlite': {
-			const drizzleMod = await import('drizzle-orm/better-sqlite3')
-			const sqliteMod = await import('better-sqlite3')
+		case "sqlite": {
+			const drizzleMod = await import("drizzle-orm/better-sqlite3")
+			const sqliteMod = await import("better-sqlite3")
 			const Database = (sqliteMod as any).default ?? sqliteMod
-			const filename = (conn as any).filename ?? 'app.db'
+			const filename = (conn as any).filename ?? "app.db"
 			const sqlite = new Database(filename)
 			const db = drizzleMod.drizzle(sqlite, { logger: config.logging as any })
 			const rawExecutor: RawExecutor = {
@@ -500,46 +497,46 @@ async function resolveDriver(dialect: Dialect, config: DbConfig): Promise<Driver
 					return {
 						rows: [],
 						affectedRows: Number(r.changes ?? 0),
-						insertId: r.lastInsertRowid as number | string
+						insertId: r.lastInsertRowid as number | string,
 					}
-				}
+				},
 			}
 			return { db, rawExecutor }
 		}
 
-		case 'mysql': {
-			const drizzleMod = await import('drizzle-orm/mysql2')
-			const mysqlMod = await import('mysql2/promise')
+		case "mysql": {
+			const drizzleMod = await import("drizzle-orm/mysql2")
+			const mysqlMod = await import("mysql2/promise")
 			const pool = (mysqlMod as any).createPool({
-				host: conn.host ?? 'localhost',
+				host: conn.host ?? "localhost",
 				port: conn.port ?? 3306,
 				user: conn.user,
 				password: conn.password,
 				database: conn.database,
-				...(conn as any)
+				...(conn as any),
 			})
 			const db = drizzleMod.drizzle(pool, { logger: config.logging as any })
 			const rawExecutor: RawExecutor = {
 				async query<T>(querySql: string, params: unknown[] = []) {
 					const [rows] = await pool.query(querySql, params as any[])
 					return { rows: rows as T[], affectedRows: (rows as any[])?.length ?? 0 }
-				}
+				},
 			}
 			return { db, rawExecutor }
 		}
 
-		case 'd1': {
-			const drizzleMod = await import('drizzle-orm/d1')
+		case "d1": {
+			const drizzleMod = await import("drizzle-orm/d1")
 			const binding = conn.binding as any
-			if (!binding) throw new Error('D1 driver requires connection.binding')
+			if (!binding) throw new Error("D1 driver requires connection.binding")
 			const db = drizzleMod.drizzle(binding, { logger: config.logging as any })
 			const rawExecutor: RawExecutor = {
-				async query<T>(querySql: string, params: unknown[] = []) {
+				async query<_T>(querySql: string, params: unknown[] = []) {
 					const stmt = binding.prepare(querySql)
 					if (params.length > 0) stmt.bind(...params)
 					const result = await stmt.run()
 					return { rows: (result as any)?.results ?? [], affectedRows: result.meta?.changes ?? 0 }
-				}
+				},
 			}
 			return { db, rawExecutor }
 		}

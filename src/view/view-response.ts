@@ -5,6 +5,6 @@ export class ViewResponse {
 	constructor(
 		public readonly name: string,
 		public readonly props: Record<string, any> = {},
-		public readonly options: { title?: string; scripts?: string[] } = {}
+		public readonly options: { title?: string; scripts?: string[] } = {},
 	) {}
 }

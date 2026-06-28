@@ -35,6 +35,9 @@ jobs:
           ln -sf . node_modules/bunigniter/core
           ln -sf . node_modules/bunigniter
 
+      - name: Lint check
+        run: bun run lint
+
       - name: Run tests
         run: bun x vitest run --reporter=verbose
         timeout-minutes: 5

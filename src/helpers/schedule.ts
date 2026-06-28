@@ -74,9 +74,10 @@ class ScheduleBuilder {
 }
 
 /** Simple cron parser — supports 5-field cron expressions. */
-function parseCron(expr: string): number[] {
+function _parseCron(expr: string): number[] {
 	const fields = expr.trim().split(/\s+/)
-	if (fields.length !== 5) throw new Error(`Invalid cron expression: "${expr}". Use 5 fields: minute hour day month weekday`)
+	if (fields.length !== 5)
+		throw new Error(`Invalid cron expression: "${expr}". Use 5 fields: minute hour day month weekday`)
 
 	const now = new Date()
 	const results: number[] = []
@@ -90,11 +91,13 @@ function parseCron(expr: string): number[] {
 		const month = target.getMonth() + 1
 		const weekday = target.getDay()
 
-		if (matchField(fields[0], minute) &&
+		if (
+			matchField(fields[0], minute) &&
 			matchField(fields[1], hour) &&
 			matchField(fields[2], day) &&
 			matchField(fields[3], month) &&
-			matchField(fields[4], weekday)) {
+			matchField(fields[4], weekday)
+		) {
 			results.push(target.getTime())
 		}
 	}
@@ -103,14 +106,14 @@ function parseCron(expr: string): number[] {
 }
 
 function matchField(field: string, value: number): boolean {
-	if (field === '*') return true
-	if (field.includes(',')) return field.split(',').some(f => matchField(f.trim(), value))
-	if (field.includes('/')) {
-		const [, step] = field.split('/')
+	if (field === "*") return true
+	if (field.includes(",")) return field.split(",").some((f) => matchField(f.trim(), value))
+	if (field.includes("/")) {
+		const [, step] = field.split("/")
 		return value % Number(step) === 0
 	}
-	if (field.includes('-')) {
-		const [s, e] = field.split('-')
+	if (field.includes("-")) {
+		const [s, e] = field.split("-")
 		return value >= Number(s) && value <= Number(e)
 	}
 	return Number(field) === value
@@ -132,16 +135,16 @@ export const schedule = {
 	/** Run on a cron schedule (5-field cron expression). */
 	cron(expr: string, name?: string): ScheduleBuilder {
 		// For MVP, treat cron as "every minute" with additional matching
-		return new ScheduleBuilder(60000, name ?? `cron_${expr.replace(/\s+/g, '_')}`)
+		return new ScheduleBuilder(60000, name ?? `cron_${expr.replace(/\s+/g, "_")}`)
 	},
 
 	/** Run at a specific time (HH:MM in local time). */
 	daily(time: string, name?: string): ScheduleBuilder {
-		const [h, m] = time.split(':').map(Number)
+		const [h, m] = time.split(":").map(Number)
 		const now = new Date()
 		const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0)
 		const delay = target.getTime() - now.getTime()
-		const msUntilNext = delay > 0 ? delay : delay + 86400000
+		const _msUntilNext = delay > 0 ? delay : delay + 86400000
 		return new ScheduleBuilder(86400000, name ?? `daily_${time}`)
 	},
 
@@ -156,12 +159,12 @@ export const schedule = {
 
 	/** List all active tasks. */
 	list(): ScheduleTask[] {
-		return tasks.filter(t => t.running)
+		return tasks.filter((t) => t.running)
 	},
 
 	/** Stop a specific task by name. */
 	stop(name: string): void {
-		const task = tasks.find(t => t.name === name)
+		const task = tasks.find((t) => t.name === name)
 		if (task) {
 			task.running = false
 			if (task.timer) clearInterval(task.timer)
@@ -170,4 +173,7 @@ export const schedule = {
 }
 
 export { formatInterval as _formatInterval }
-function _formatInterval(ms: number): string { return formatInterval(ms) }
+
+function _formatInterval(ms: number): string {
+	return formatInterval(ms)
+}

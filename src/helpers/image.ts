@@ -20,25 +20,25 @@
  *   .save('photo-marked.jpg')
  * ```
  */
-import { existsSync, mkdirSync } from "node:fs";
-import { extname } from "node:path";
-import sharp, { type Sharp, type FitEnum, type Gravity } from "sharp";
+import { existsSync, mkdirSync } from "node:fs"
+import { extname } from "node:path"
+import sharp, { type FitEnum, type Gravity, type Sharp } from "sharp"
 
-export type ImageFormat = "jpeg" | "png" | "webp" | "gif" | "avif" | "tiff";
+export type ImageFormat = "jpeg" | "png" | "webp" | "gif" | "avif" | "tiff"
 
 export interface ImageSize {
-	width: number;
-	height: number;
+	width: number
+	height: number
 }
 
 export interface ImageMetadata extends ImageSize {
-	format: ImageFormat;
-	space?: string;
-	channels?: number;
-	density?: number;
-	hasAlpha?: boolean;
-	hasProfile?: boolean;
-	exif?: Record<string, any>;
+	format: ImageFormat
+	space?: string
+	channels?: number
+	density?: number
+	hasAlpha?: boolean
+	hasProfile?: boolean
+	exif?: Record<string, any>
 }
 
 export type WatermarkPosition =
@@ -50,32 +50,32 @@ export type WatermarkPosition =
 	| "right"
 	| "bottom-left"
 	| "bottom"
-	| "bottom-right";
+	| "bottom-right"
 
 export interface WatermarkOptions {
-	position?: WatermarkPosition;
-	opacity?: number;
-	margin?: number;
+	position?: WatermarkPosition
+	opacity?: number
+	margin?: number
 }
 
 export interface TextOptions {
-	font?: string;
-	fontSize?: number;
-	color?: string;
-	position?: WatermarkPosition;
-	margin?: number;
-	opacity?: number;
+	font?: string
+	fontSize?: number
+	color?: string
+	position?: WatermarkPosition
+	margin?: number
+	opacity?: number
 }
 
 export interface ResizeOptions {
-	width?: number;
-	height?: number;
+	width?: number
+	height?: number
 	/** 'fit' = contain within bounds, 'fill' = exact size, 'cover' = crop to fill, 'inside' = shrink to fit, 'outside' = stretch to cover */
-	mode?: "fit" | "fill" | "cover" | "inside" | "outside";
+	mode?: "fit" | "fill" | "cover" | "inside" | "outside"
 	/** Do not enlarge if already smaller */
-	withoutEnlargement?: boolean;
+	withoutEnlargement?: boolean
 	/** Background color for 'fit' mode (e.g. '#ffffff', 'transparent') */
-	background?: string;
+	background?: string
 }
 
 /**
@@ -84,12 +84,12 @@ export interface ResizeOptions {
  * All operations are queued and executed when `save()` or `toBuffer()` is called.
  */
 export class Image {
-	private _sharp: Sharp;
-	private _format: ImageFormat;
+	private _sharp: Sharp
+	private _format: ImageFormat
 
 	constructor(input: Buffer | string, format?: ImageFormat) {
-		this._sharp = sharp(input);
-		this._format = format ?? "jpeg";
+		this._sharp = sharp(input)
+		this._format = format ?? "jpeg"
 	}
 
 	// ─── Factory Methods ─────────────────────────────────────
@@ -106,10 +106,10 @@ export class Image {
 	 */
 	static open(path: string): Image {
 		if (!existsSync(path)) {
-			throw new Error(`Image not found: ${path}`);
+			throw new Error(`Image not found: ${path}`)
 		}
-		const ext = extname(path).toLowerCase().replace(".", "") as ImageFormat;
-		return new Image(path, ext);
+		const ext = extname(path).toLowerCase().replace(".", "") as ImageFormat
+		return new Image(path, ext)
 	}
 
 	/**
@@ -124,7 +124,7 @@ export class Image {
 	 * ```
 	 */
 	static fromBuffer(buffer: Buffer, format?: ImageFormat): Image {
-		return new Image(buffer, format);
+		return new Image(buffer, format)
 	}
 
 	// ─── Resize Operations ───────────────────────────────────
@@ -143,16 +143,12 @@ export class Image {
 	 * Image.open('photo.jpg').resize(200, 200, { mode: 'cover' }).save('cover.jpg')
 	 * ```
 	 */
-	resize(
-		width?: number,
-		height?: number,
-		options?: ResizeOptions | "fit" | "fill" | "cover",
-	): Image {
-		let opts: ResizeOptions = {};
+	resize(width?: number, height?: number, options?: ResizeOptions | "fit" | "fill" | "cover"): Image {
+		let opts: ResizeOptions = {}
 		if (typeof options === "string") {
-			opts = { mode: options };
+			opts = { mode: options }
 		} else if (options) {
-			opts = options;
+			opts = options
 		}
 
 		const fitMap: Record<string, keyof FitEnum> = {
@@ -161,7 +157,7 @@ export class Image {
 			cover: "cover",
 			inside: "inside",
 			outside: "outside",
-		};
+		}
 
 		this._sharp.resize({
 			width,
@@ -169,8 +165,8 @@ export class Image {
 			fit: opts.mode ? (fitMap[opts.mode] ?? "inside") : "inside",
 			withoutEnlargement: opts.withoutEnlargement ?? false,
 			background: opts.background,
-		});
-		return this;
+		})
+		return this
 	}
 
 	/**
@@ -191,8 +187,8 @@ export class Image {
 			height,
 			fit: "contain",
 			background: background ?? { r: 0, g: 0, b: 0, alpha: 0 },
-		});
-		return this;
+		})
+		return this
 	}
 
 	/**
@@ -211,11 +207,11 @@ export class Image {
 	 */
 	crop(width: number, height: number, x?: number, y?: number): Image {
 		if (x !== undefined && y !== undefined) {
-			this._sharp.extract({ left: x, top: y, width, height });
+			this._sharp.extract({ left: x, top: y, width, height })
 		} else {
-			this._sharp.resize(width, height, { fit: "cover", position: "centre" });
+			this._sharp.resize(width, height, { fit: "cover", position: "centre" })
 		}
-		return this;
+		return this
 	}
 
 	// ─── Rotate & Flip ──────────────────────────────────────
@@ -235,8 +231,8 @@ export class Image {
 	rotate(degrees: number, background?: string): Image {
 		this._sharp.rotate(degrees, {
 			background: background ?? { r: 0, g: 0, b: 0, alpha: 0 },
-		});
-		return this;
+		})
+		return this
 	}
 
 	/**
@@ -248,8 +244,8 @@ export class Image {
 	 * ```
 	 */
 	flipH(): Image {
-		this._sharp.flop();
-		return this;
+		this._sharp.flop()
+		return this
 	}
 
 	/**
@@ -261,8 +257,8 @@ export class Image {
 	 * ```
 	 */
 	flipV(): Image {
-		this._sharp.flip();
-		return this;
+		this._sharp.flip()
+		return this
 	}
 
 	// ─── Filters & Effects ──────────────────────────────────
@@ -276,15 +272,15 @@ export class Image {
 	 * ```
 	 */
 	greyscale(): Image {
-		this._sharp.greyscale();
-		return this;
+		this._sharp.greyscale()
+		return this
 	}
 
 	/**
 	 * Alias for greyscale().
 	 */
 	grayscale(): Image {
-		return this.greyscale();
+		return this.greyscale()
 	}
 
 	/**
@@ -298,8 +294,8 @@ export class Image {
 	 * ```
 	 */
 	blur(sigma?: number): Image {
-		this._sharp.blur(sigma ?? true);
-		return this;
+		this._sharp.blur(sigma ?? true)
+		return this
 	}
 
 	/**
@@ -314,19 +310,19 @@ export class Image {
 	 */
 	sharpen(sigma?: number): Image {
 		if (sigma) {
-			this._sharp.sharpen({ sigma });
+			this._sharp.sharpen({ sigma })
 		} else {
-			this._sharp.sharpen({ sigma: 1 });
+			this._sharp.sharpen({ sigma: 1 })
 		}
-		return this;
+		return this
 	}
 
 	/**
 	 * Negate the image (invert colors).
 	 */
 	negate(): Image {
-		this._sharp.negate();
-		return this;
+		this._sharp.negate()
+		return this
 	}
 
 	/**
@@ -339,32 +335,20 @@ export class Image {
 	 * @param options.hue - Hue rotation (-100 to 100, default: 0)
 	 * @param options.lightness - Lightness (-100 to 100, default: 0)
 	 */
-	modulate(options: {
-		brightness?: number;
-		saturation?: number;
-		hue?: number;
-		lightness?: number;
-	}): Image {
-		const b =
-			options.brightness !== undefined
-				? 1 + options.brightness / 100
-				: undefined;
-		const s =
-			options.saturation !== undefined
-				? 1 + options.saturation / 100
-				: undefined;
-		const h = options.hue !== undefined ? options.hue * 3.6 : undefined;
-		const l =
-			options.lightness !== undefined ? 1 + options.lightness / 100 : undefined;
+	modulate(options: { brightness?: number; saturation?: number; hue?: number; lightness?: number }): Image {
+		const b = options.brightness !== undefined ? 1 + options.brightness / 100 : undefined
+		const s = options.saturation !== undefined ? 1 + options.saturation / 100 : undefined
+		const h = options.hue !== undefined ? options.hue * 3.6 : undefined
+		const l = options.lightness !== undefined ? 1 + options.lightness / 100 : undefined
 
-		const opts: Record<string, number> = {};
-		if (b !== undefined) opts.brightness = b;
-		if (s !== undefined) opts.saturation = s;
-		if (h !== undefined) opts.hue = h;
-		if (l !== undefined) opts.lightness = l;
+		const opts: Record<string, number> = {}
+		if (b !== undefined) opts.brightness = b
+		if (s !== undefined) opts.saturation = s
+		if (h !== undefined) opts.hue = h
+		if (l !== undefined) opts.lightness = l
 
-		this._sharp.modulate(opts);
-		return this;
+		this._sharp.modulate(opts)
+		return this
 	}
 
 	/**
@@ -373,8 +357,8 @@ export class Image {
 	 * @param color - CSS color string (e.g. '#ff0000', 'rgb(255,0,0)', 'red')
 	 */
 	tint(color: string): Image {
-		this._sharp.tint(color);
-		return this;
+		this._sharp.tint(color)
+		return this
 	}
 
 	// ─── Watermark ──────────────────────────────────────────
@@ -400,7 +384,7 @@ export class Image {
 		margin: number = 10,
 	): Image {
 		if (!existsSync(watermarkPath)) {
-			throw new Error(`Watermark image not found: ${watermarkPath}`);
+			throw new Error(`Watermark image not found: ${watermarkPath}`)
 		}
 
 		const gravityMap: Record<string, Gravity> = {
@@ -413,7 +397,7 @@ export class Image {
 			"bottom-left": "southwest" as Gravity,
 			bottom: "south" as Gravity,
 			"bottom-right": "southeast" as Gravity,
-		};
+		}
 
 		this._sharp.composite([
 			{
@@ -422,9 +406,9 @@ export class Image {
 				top: position.includes("top") ? margin : undefined,
 				left: position.includes("left") ? margin : undefined,
 			},
-		]);
+		])
 
-		return this;
+		return this
 	}
 
 	/**
@@ -445,11 +429,11 @@ export class Image {
 	 * ```
 	 */
 	text(text: string, options: TextOptions = {}): Image {
-		const fontSize = options.fontSize ?? 32;
-		const color = options.color ?? "#ffffff";
-		const position = options.position ?? "bottom-right";
-		const margin = options.margin ?? 10;
-		const opacity = options.opacity ?? 0.8;
+		const fontSize = options.fontSize ?? 32
+		const color = options.color ?? "#ffffff"
+		const position = options.position ?? "bottom-right"
+		const margin = options.margin ?? 10
+		const opacity = options.opacity ?? 0.8
 
 		const svgText = `
 			<svg width="100%" height="100%">
@@ -464,7 +448,7 @@ export class Image {
 					alignment-baseline="${position === "center" || position === "bottom" || position === "top" ? "middle" : position.includes("bottom") ? "bottom" : "top"}"
 				>${escapeXml(text)}</text>
 			</svg>
-		`;
+		`
 
 		const gravityMap: Record<string, number> = {
 			center: sharp.gravity.centre,
@@ -476,16 +460,16 @@ export class Image {
 			"bottom-left": sharp.gravity.southwest,
 			bottom: sharp.gravity.south,
 			"bottom-right": sharp.gravity.southeast,
-		};
+		}
 
 		this._sharp.composite([
 			{
 				input: Buffer.from(svgText),
 				gravity: gravityMap[position] ?? sharp.gravity.southeast,
 			},
-		]);
+		])
 
-		return this;
+		return this
 	}
 
 	// ─── Metadata ──────────────────────────────────────────
@@ -500,7 +484,7 @@ export class Image {
 	 * ```
 	 */
 	async metadata(): Promise<ImageMetadata> {
-		const meta = await this._sharp.metadata();
+		const meta = await this._sharp.metadata()
 		return {
 			width: meta.width ?? 0,
 			height: meta.height ?? 0,
@@ -511,7 +495,7 @@ export class Image {
 			hasAlpha: meta.hasAlpha,
 			hasProfile: meta.hasProfile,
 			exif: meta.exif as Record<string, any>,
-		};
+		}
 	}
 
 	// ─── Output ────────────────────────────────────────────
@@ -529,15 +513,13 @@ export class Image {
 	 * ```
 	 */
 	async save(outputPath: string, format?: ImageFormat): Promise<void> {
-		const outDir = outputPath.substring(0, outputPath.lastIndexOf("/"));
+		const outDir = outputPath.substring(0, outputPath.lastIndexOf("/"))
 		if (outDir && !existsSync(outDir)) {
-			mkdirSync(outDir, { recursive: true });
+			mkdirSync(outDir, { recursive: true })
 		}
 
-		const outFormat =
-			format ??
-			(extname(outputPath).toLowerCase().replace(".", "") as ImageFormat);
-		await this._formatOutput(outFormat).toFile(outputPath);
+		const outFormat = format ?? (extname(outputPath).toLowerCase().replace(".", "") as ImageFormat)
+		await this._formatOutput(outFormat).toFile(outputPath)
 	}
 
 	/**
@@ -551,36 +533,36 @@ export class Image {
 	 * ```
 	 */
 	async toBuffer(format?: ImageFormat): Promise<Buffer> {
-		return this._formatOutput(format ?? this._format).toBuffer();
+		return this._formatOutput(format ?? this._format).toBuffer()
 	}
 
 	// ─── Internal ──────────────────────────────────────────
 
 	/** Apply output format settings. */
 	private _formatOutput(format: ImageFormat): Sharp {
-		const img = this._sharp.clone();
+		const img = this._sharp.clone()
 
 		switch (format) {
 			case "jpeg":
-				img.jpeg({ quality: 85, mozjpeg: true });
-				break;
+				img.jpeg({ quality: 85, mozjpeg: true })
+				break
 			case "png":
-				img.png({ compressionLevel: 8 });
-				break;
+				img.png({ compressionLevel: 8 })
+				break
 			case "webp":
-				img.webp({ quality: 80 });
-				break;
+				img.webp({ quality: 80 })
+				break
 			case "gif":
-				break;
+				break
 			case "avif":
-				img.avif({ quality: 65 });
-				break;
+				img.avif({ quality: 65 })
+				break
 			case "tiff":
-				img.tiff({ quality: 85 });
-				break;
+				img.tiff({ quality: 85 })
+				break
 		}
 
-		return img;
+		return img
 	}
 }
 
@@ -591,5 +573,5 @@ function escapeXml(s: string): string {
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&apos;");
+		.replace(/'/g, "&apos;")
 }

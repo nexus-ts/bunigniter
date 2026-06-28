@@ -15,7 +15,7 @@
  * this.session.clear()  // destroy all
  * ```
  */
-import { env } from '../helpers/env'
+import { env } from "../helpers/env"
 
 /** Session config. */
 export interface SessionConfig {
@@ -38,16 +38,16 @@ export interface SessionConfig {
 	httpOnly?: boolean
 
 	/** SameSite policy. Default: 'Lax' */
-	sameSite?: 'Strict' | 'Lax' | 'None'
+	sameSite?: "Strict" | "Lax" | "None"
 }
 
 /** Default session config. */
 const defaultConfig: SessionConfig = {
-	name: 'bunigniter_session',
+	name: "bunigniter_session",
 	lifetime: 86400,
-	path: '/',
+	path: "/",
 	httpOnly: true,
-	sameSite: 'Lax',
+	sameSite: "Lax",
 }
 
 /**
@@ -57,7 +57,7 @@ const defaultConfig: SessionConfig = {
  */
 export class Session {
 	private data: Record<string, any> = {}
-	private originalData: string = ''
+	private originalData: string = ""
 	private dirty = false
 	private config: SessionConfig
 
@@ -69,7 +69,7 @@ export class Session {
 	load(rawCookie: string | undefined): void {
 		if (!rawCookie) {
 			this.data = {}
-			this.originalData = '{}'
+			this.originalData = "{}"
 			return
 		}
 
@@ -80,7 +80,7 @@ export class Session {
 		} catch {
 			// Invalid or tampered cookie — reset
 			this.data = {}
-			this.originalData = '{}'
+			this.originalData = "{}"
 		}
 	}
 
@@ -138,18 +138,18 @@ export class Session {
 		if (!this.dirty && json === this.originalData) return null
 
 		// If session was cleared (empty data), set cookie to expire immediately
-		const isEmpty = Object.keys(this.data).length === 0 ||
-			(Object.keys(this.data).length === 1 && this.data.__session_id)
+		const isEmpty =
+			Object.keys(this.data).length === 0 || (Object.keys(this.data).length === 1 && this.data.__session_id)
 
 		if (isEmpty) {
 			return {
-				value: '',
+				value: "",
 				maxAge: 0,
 				options: {
-					path: this.config.path ?? '/',
+					path: this.config.path ?? "/",
 					secure: this.config.secure ?? false,
 					httpOnly: this.config.httpOnly ?? true,
-					sameSite: this.config.sameSite ?? 'Lax',
+					sameSite: this.config.sameSite ?? "Lax",
 				},
 			}
 		}
@@ -159,17 +159,17 @@ export class Session {
 			value: encrypted,
 			maxAge: this.config.lifetime ?? 86400,
 			options: {
-				path: this.config.path ?? '/',
+				path: this.config.path ?? "/",
 				secure: this.config.secure ?? false,
 				httpOnly: this.config.httpOnly ?? true,
-				sameSite: this.config.sameSite ?? 'Lax',
+				sameSite: this.config.sameSite ?? "Lax",
 			},
 		}
 	}
 
 	/** Get the cookie name. */
 	get cookieName(): string {
-		return this.config.name ?? 'bunigniter_session'
+		return this.config.name ?? "bunigniter_session"
 	}
 }
 
@@ -202,7 +202,7 @@ function encryptCookie(json: string, key?: string): string {
 	result.set(encrypted, iv.length)
 	result.set(hmac, iv.length + encrypted.length)
 
-	return Buffer.from(result).toString('base64url')
+	return Buffer.from(result).toString("base64url")
 }
 
 /**
@@ -210,8 +210,8 @@ function encryptCookie(json: string, key?: string): string {
  */
 function decryptCookie(raw: string, key?: string): string {
 	const keyBytes = deriveKey(key)
-	const data = Buffer.from(raw, 'base64url')
-	const iv = data.subarray(0, 12)
+	const data = Buffer.from(raw, "base64url")
+	const _iv = data.subarray(0, 12)
 	const encrypted = data.subarray(12, data.length - 32)
 	const hmac = data.subarray(data.length - 32)
 
@@ -220,7 +220,7 @@ function decryptCookie(raw: string, key?: string): string {
 	const payload = data.subarray(0, data.length - 32)
 	const expected = computeHmac(hmacKey, payload)
 	if (!constantTimeEqual(hmac, expected)) {
-		throw new Error('Session cookie signature invalid')
+		throw new Error("Session cookie signature invalid")
 	}
 
 	// Decrypt
@@ -233,12 +233,12 @@ function decryptCookie(raw: string, key?: string): string {
  * APP_KEY should be 32 random bytes (base64 encoded).
  */
 function deriveKey(key?: string): Uint8Array {
-	const raw = key ?? env('APP_KEY', '')
+	const raw = key ?? env("APP_KEY", "")
 	if (!raw) {
 		// Generate a random key on the fly (session won't persist across restarts)
 		return new Uint8Array(64).fill(42) // not secure, just for dev
 	}
-	const decoded = Buffer.from(raw, 'base64')
+	const decoded = Buffer.from(raw, "base64")
 	const result = new Uint8Array(64)
 	result.set(decoded.subarray(0, Math.min(decoded.length, 64)))
 	return result
@@ -256,20 +256,22 @@ function xorWithKey(data: Uint8Array, key: Uint8Array): Uint8Array {
 /** HMAC-SHA256 using Web Crypto API (works in Bun, Node, Workers, Deno). */
 function computeHmac(key: Uint8Array, data: Uint8Array): Uint8Array {
 	// Use a synchronous-compatible approach
-	const { createHmac } = require('node:crypto')
+	const { createHmac } = require("node:crypto")
 	try {
-		return createHmac('sha256', Buffer.from(key))
-			.update(Buffer.from(data))
-			.digest()
+		return createHmac("sha256", Buffer.from(key)).update(Buffer.from(data)).digest()
 	} catch {
 		// Fallback for environments without node:crypto (Workers, Deno)
 		// This synchronous fallback uses a basic hash approach
-		const keyStr = Array.from(key).map(b => b.toString(16).padStart(2, '0')).join('')
-		const dataStr = Array.from(data).map(b => b.toString(16).padStart(2, '0')).join('')
+		const keyStr = Array.from(key)
+			.map((b) => b.toString(16).padStart(2, "0"))
+			.join("")
+		const dataStr = Array.from(data)
+			.map((b) => b.toString(16).padStart(2, "0"))
+			.join("")
 		const combined = keyStr + dataStr
 		const hash = new Uint8Array(32)
 		for (let i = 0; i < 32; i++) {
-			hash[i] = (combined.charCodeAt(i % combined.length) + i) & 0xFF
+			hash[i] = (combined.charCodeAt(i % combined.length) + i) & 0xff
 		}
 		return hash
 	}

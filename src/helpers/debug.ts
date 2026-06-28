@@ -47,13 +47,13 @@ export function getStore(ctx: any): DebugData {
 	let d = store.get(ctx)
 	if (!d) {
 		d = {
-			method: ctx.request?.method ?? 'GET',
-			path: new URL(ctx.request?.url ?? 'http://localhost').pathname,
+			method: ctx.request?.method ?? "GET",
+			path: new URL(ctx.request?.url ?? "http://localhost").pathname,
 			status: 200,
 			duration: 0,
 			queries: [],
 			session: {},
-			memory: '0 MB',
+			memory: "0 MB",
 			headers: {},
 			timestamp: new Date().toLocaleString(),
 		}
@@ -77,8 +77,8 @@ export function debugQuery(ctx: any, sql: string, duration: number, rows: number
 
 // ─── Toolbar HTML (rendered via Rendu template) ──────────────
 
-import { readFileSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readFileSync } from "node:fs"
+import { join } from "node:path"
 
 /**
  * Render the debug toolbar using the Rendu template at views/_debug.html.
@@ -86,45 +86,65 @@ import { join } from 'node:path'
  */
 export async function generateToolbar(data: DebugData): Promise<string> {
 	// Try to use the Rendu template
-	const templatePath = join(process.cwd(), 'views', '_debug.html')
+	const templatePath = join(process.cwd(), "views", "_debug.html")
 	if (existsSync(templatePath)) {
 		try {
-			const { compileTemplate } = await import('rendu')
-			const source = readFileSync(templatePath, 'utf-8')
+			const { compileTemplate } = await import("rendu")
+			const source = readFileSync(templatePath, "utf-8")
 			const fn = compileTemplate(source)
 
-			const maxDur = Math.max(...data.queries.map(q => q.duration), 1)
-			const slowCount = data.queries.filter(q => q.duration > 100).length
+			const maxDur = Math.max(...data.queries.map((q) => q.duration), 1)
+			const slowCount = data.queries.filter((q) => q.duration > 100).length
 			const totalTime = data.queries.reduce((s, q) => s + q.duration, 0)
 
 			const stream = await fn({
-				htmlspecialchars: (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
-				valEscaped: (v: any) => String(typeof v === 'object' ? JSON.stringify(v) : v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
+				htmlspecialchars: (s: unknown) =>
+					String(s ?? "")
+						.replace(/&/g, "&amp;")
+						.replace(/</g, "&lt;")
+						.replace(/>/g, "&gt;")
+						.replace(/"/g, "&quot;"),
+				valEscaped: (v: any) =>
+					String(typeof v === "object" ? JSON.stringify(v) : (v ?? ""))
+						.replace(/&/g, "&amp;")
+						.replace(/</g, "&lt;")
+						.replace(/>/g, "&gt;"),
 				method: data.method,
 				path: data.path,
 				status: data.status,
 				duration: data.duration,
 				memory: data.memory,
 				timestamp: data.timestamp,
-				queries: data.queries.map(q => ({
+				queries: data.queries.map((q) => ({
 					...q,
 					barWidth: Math.max(3, (q.duration / maxDur) * 80),
-					color: q.duration > 100 ? '#f94860' : '#7bed9f',
-					pillClass: q.duration > 100 ? 'pill-slow' : 'pill-ok',
-					sqlEscaped: String(q.sql ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
-					paramsEscaped: q.params ? String(JSON.stringify(q.params)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '',
+					color: q.duration > 100 ? "#f94860" : "#7bed9f",
+					pillClass: q.duration > 100 ? "pill-slow" : "pill-ok",
+					sqlEscaped: String(q.sql ?? "")
+						.replace(/&/g, "&amp;")
+						.replace(/</g, "&lt;")
+						.replace(/>/g, "&gt;"),
+					paramsEscaped: q.params
+						? String(JSON.stringify(q.params)).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+						: "",
 				})),
 				session: data.session,
 				sessionKeys: String(Object.keys(data.session).length),
 				slowCount,
 				totalTime: Math.round(totalTime * 100) / 100,
-				runtime: typeof Bun !== 'undefined' ? 'Bun ' + Bun.version : 'Node.js',
+				runtime: typeof Bun !== "undefined" ? `Bun ${Bun.version}` : "Node.js",
 			})
 			const reader = stream.getReader()
 			const chunks: Uint8Array[] = []
-			while (true) { const { done, value } = await reader.read(); if (done) break; chunks.push(value) }
+			while (true) {
+				const { done, value } = await reader.read()
+				if (done) break
+				chunks.push(value)
+			}
 			return new TextDecoder().decode(concatUint8Arrays(chunks))
-		} catch { /* fall through to inline */ }
+		} catch {
+			/* fall through to inline */
+		}
 	}
 
 	// Inline fallback
@@ -132,9 +152,9 @@ export async function generateToolbar(data: DebugData): Promise<string> {
 }
 
 function renderInline(data: DebugData): string {
-	const slow = data.queries.filter(q => q.duration > 100)
-	const warn = slow.length > 0 ? ' ⚠️' : ''
-	const qtext = data.queries.length === 1 ? 'query' : 'queries'
+	const slow = data.queries.filter((q) => q.duration > 100)
+	const warn = slow.length > 0 ? " ⚠️" : ""
+	const qtext = data.queries.length === 1 ? "query" : "queries"
 
 	return `<!-- Debug -->
 <div class="nexdb" id="__nexdb" style="all:initial;position:fixed;bottom:0;left:0;right:0;z-index:99999;font-family:system-ui,sans-serif;font-size:13px;color:#e0e0e0;background:#13131f;border-top:2px solid #e94560">
@@ -153,6 +173,9 @@ function concatUint8Arrays(arrays: Uint8Array[]): Uint8Array {
 	const total = arrays.reduce((s, a) => s + a.length, 0)
 	const result = new Uint8Array(total)
 	let offset = 0
-	for (const a of arrays) { result.set(a, offset); offset += a.length }
+	for (const a of arrays) {
+		result.set(a, offset)
+		offset += a.length
+	}
 	return result
 }

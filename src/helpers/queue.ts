@@ -159,7 +159,7 @@ function startProcessing(name: string, state: QueueState, options: QueueOptions)
 			job.attempts++
 			if (job.attempts < job.maxAttempts) {
 				// Retry with exponential backoff
-				const delay = Math.min(1000 * Math.pow(2, job.attempts), 30000)
+				const delay = Math.min(1000 * 2 ** job.attempts, 30000)
 				setTimeout(() => {
 					state.pending.push(job)
 				}, delay)

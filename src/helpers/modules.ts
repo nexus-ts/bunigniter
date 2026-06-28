@@ -19,16 +19,15 @@
  * const posts = await moduleRun('blog/posts', ctx)
  * ```
  */
-import { readdirSync, existsSync, statSync } from 'node:fs'
-import { join } from 'node:path'
-import { Elysia } from 'elysia'
-import { registerFileRoutes } from '../router/file-router'
-import { registerServerRoutes } from '../router/server-router'
-import type { DbClient } from '../db/drizzle'
-import type { Cache } from '../helpers/cache'
-import type { Queue } from '../helpers/queue'
-import type { Upload } from '../helpers/upload'
-import type { Mail } from '../helpers/mail'
+import { existsSync, readdirSync } from "node:fs"
+import { join } from "node:path"
+import type { Elysia } from "elysia"
+import type { DbClient } from "../db/drizzle"
+import type { Cache } from "../helpers/cache"
+import type { Mail } from "../helpers/mail"
+import type { Queue } from "../helpers/queue"
+import type { Upload } from "../helpers/upload"
+import { registerFileRoutes } from "../router/file-router"
 
 export interface ModuleServices {
 	db?: DbClient
@@ -42,17 +41,17 @@ export interface ModuleServices {
 /** Scan and register all modules in the `modules/` directory. */
 export async function registerModules(app: Elysia, services: ModuleServices): Promise<void> {
 	// Compute modules directory relative to CWD
-	const modulesDir = 'modules'
+	const modulesDir = "modules"
 	if (!existsSync(modulesDir)) return
 
 	const entries = readdirSync(modulesDir, { withFileTypes: true })
 
 	for (const entry of entries) {
-		if (!entry.isDirectory() || entry.name.startsWith('_')) continue
+		if (!entry.isDirectory() || entry.name.startsWith("_")) continue
 
 		const moduleName = entry.name
-		const routesDir = join(modulesDir, moduleName, 'routes')
-		const viewsDir = join(modulesDir, moduleName, 'views')
+		const routesDir = join(modulesDir, moduleName, "routes")
+		const viewsDir = join(modulesDir, moduleName, "views")
 
 		if (!existsSync(routesDir)) continue
 
@@ -73,12 +72,12 @@ export async function registerModules(app: Elysia, services: ModuleServices): Pr
  * Syntax: `moduleRun('blog/posts/index', ctx)` or `moduleRun('blog/posts', ctx)`
  */
 export async function moduleRun(path: string, ctx?: any): Promise<any> {
-	const parts = path.split('/')
+	const parts = path.split("/")
 	const moduleName = parts[0]
-	const method = parts.length > 2 ? parts.pop() : 'index'
-	const controllerPath = parts.slice(1).join('/') || 'index'
+	const method = parts.length > 2 ? parts.pop() : "index"
+	const controllerPath = parts.slice(1).join("/") || "index"
 
-	const fullPath = join(process.cwd(), 'modules', moduleName, 'routes', `${controllerPath}.ts`)
+	const fullPath = join(process.cwd(), "modules", moduleName, "routes", `${controllerPath}.ts`)
 	if (!existsSync(fullPath)) {
 		throw new Error(`[hmvc] Module route not found: ${moduleName}/${controllerPath}`)
 	}
@@ -95,7 +94,7 @@ export async function moduleRun(path: string, ctx?: any): Promise<any> {
 	}
 
 	const fn = instance[method]
-	if (typeof fn !== 'function') throw new Error(`[hmvc] No method ${method} in ${moduleName}/${controllerPath}`)
+	if (typeof fn !== "function") throw new Error(`[hmvc] No method ${method} in ${moduleName}/${controllerPath}`)
 
 	return fn.call(instance)
 }
@@ -103,10 +102,10 @@ export async function moduleRun(path: string, ctx?: any): Promise<any> {
 function findExport(mod: Record<string, any>): any {
 	for (const key of Object.keys(mod)) {
 		const val = mod[key]
-		if (typeof val === 'function' && val.prototype) {
+		if (typeof val === "function" && val.prototype) {
 			let proto = val.prototype
 			while (proto) {
-				if (proto.constructor?.name === 'Controller') return val
+				if (proto.constructor?.name === "Controller") return val
 				proto = Object.getPrototypeOf(proto)
 			}
 		}

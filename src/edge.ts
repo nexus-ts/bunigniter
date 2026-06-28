@@ -19,8 +19,8 @@
  * Deno.serve(app.fetch)
  * ```
  */
-import { Elysia } from 'elysia'
-import { applyMiddleware } from './helpers/middleware'
+import { Elysia } from "elysia"
+import { applyMiddleware } from "./helpers/middleware"
 
 /**
  * Create an edge-compatible application.
@@ -33,16 +33,27 @@ export function createEdgeApp(config?: { middleware?: any }) {
 	applyMiddleware(app, config?.middleware)
 
 	// Health check
-	app.get('/health', () => new Response(JSON.stringify({
-		status: 'ok',
-		runtime: typeof Bun !== 'undefined' ? 'bun' :
-			typeof (globalThis as any).Deno !== 'undefined' ? 'deno' :
-			typeof (globalThis as any).navigator !== 'undefined' ? 'cloudflare' :
-			'unknown',
-		timestamp: new Date().toISOString(),
-	}), {
-		headers: { 'content-type': 'application/json' },
-	}))
+	app.get(
+		"/health",
+		() =>
+			new Response(
+				JSON.stringify({
+					status: "ok",
+					runtime:
+						typeof Bun !== "undefined"
+							? "bun"
+							: typeof (globalThis as any).Deno !== "undefined"
+								? "deno"
+								: typeof (globalThis as any).navigator !== "undefined"
+									? "cloudflare"
+									: "unknown",
+					timestamp: new Date().toISOString(),
+				}),
+				{
+					headers: { "content-type": "application/json" },
+				},
+			),
+	)
 
 	return app
 }
@@ -60,10 +71,10 @@ export function createEdgeApp(config?: { middleware?: any }) {
  */
 export function register(
 	app: Elysia,
-	method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+	method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
 	path: string,
-	handler: (...args: any[]) => any
+	handler: (...args: any[]) => any,
 ): void {
-	const lower = method.toLowerCase() as 'get' | 'post' | 'put' | 'delete' | 'patch'
+	const lower = method.toLowerCase() as "get" | "post" | "put" | "delete" | "patch"
 	;(app as any)[lower](path, handler)
 }

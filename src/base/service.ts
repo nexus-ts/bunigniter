@@ -13,7 +13,7 @@
  * }
  * ```
  */
-import type { DbClient } from '../db/drizzle'
+import type { DbClient } from "../db/drizzle"
 
 export class Service {
 	/** Database client. */

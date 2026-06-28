@@ -13,18 +13,18 @@
  * this.request.ip()
  * ```
  */
-import type { Context } from "elysia";
+import type { Context } from "elysia"
 
 /** Dot-notation access to nested object properties. */
 function getFrom(obj: any, key: string, defaultValue?: any): any {
-	if (!key) return obj;
-	const keys = key.split(".");
-	let val = obj;
+	if (!key) return obj
+	const keys = key.split(".")
+	let val = obj
 	for (const k of keys) {
-		if (val === null || val === undefined) return defaultValue;
-		val = val[k];
+		if (val === null || val === undefined) return defaultValue
+		val = val[k]
 	}
-	return val !== undefined ? val : defaultValue;
+	return val !== undefined ? val : defaultValue
 }
 
 /**
@@ -55,14 +55,12 @@ export class RequestProxy {
 	 */
 	input(key?: string, defaultValue?: any): any {
 		if (key === undefined) {
-			return { ...(this.ctx.body ?? {}), ...(this.ctx.query ?? {}) };
+			return { ...(this.ctx.body ?? {}), ...(this.ctx.query ?? {}) }
 		}
-		const body = this.ctx.body ?? {};
-		const query = this.ctx.query ?? {};
-		const fromBody = getFrom(body, key);
-		return fromBody !== undefined
-			? fromBody
-			: getFrom(query, key, defaultValue);
+		const body = this.ctx.body ?? {}
+		const query = this.ctx.query ?? {}
+		const fromBody = getFrom(body, key)
+		return fromBody !== undefined ? fromBody : getFrom(query, key, defaultValue)
 	}
 
 	/**
@@ -78,8 +76,8 @@ export class RequestProxy {
 	 * ```
 	 */
 	get(key?: string, defaultValue?: any): any {
-		if (key === undefined) return this.ctx.query;
-		return getFrom(this.ctx.query, key, defaultValue);
+		if (key === undefined) return this.ctx.query
+		return getFrom(this.ctx.query, key, defaultValue)
 	}
 
 	/**
@@ -96,8 +94,8 @@ export class RequestProxy {
 	 * ```
 	 */
 	post(key?: string, defaultValue?: any): any {
-		if (key === undefined) return this.ctx.body;
-		return getFrom(this.ctx.body, key, defaultValue);
+		if (key === undefined) return this.ctx.body
+		return getFrom(this.ctx.body, key, defaultValue)
 	}
 
 	/**
@@ -112,12 +110,12 @@ export class RequestProxy {
 	 * ```
 	 */
 	only(keys: string[]): Record<string, any> {
-		const result: Record<string, any> = {};
-		const data = { ...(this.ctx.body ?? {}), ...(this.ctx.query ?? {}) };
+		const result: Record<string, any> = {}
+		const data = { ...(this.ctx.body ?? {}), ...(this.ctx.query ?? {}) }
 		for (const key of keys) {
-			result[key] = getFrom(data, key);
+			result[key] = getFrom(data, key)
 		}
-		return result;
+		return result
 	}
 
 	/**
@@ -131,8 +129,8 @@ export class RequestProxy {
 	 * ```
 	 */
 	has(key: string): boolean {
-		const data = { ...(this.ctx.body ?? {}), ...(this.ctx.query ?? {}) };
-		return getFrom(data, key) !== undefined;
+		const data = { ...(this.ctx.body ?? {}), ...(this.ctx.query ?? {}) }
+		return getFrom(data, key) !== undefined
 	}
 
 	/**
@@ -146,9 +144,9 @@ export class RequestProxy {
 	 * ```
 	 */
 	filled(key: string): boolean {
-		const data = { ...(this.ctx.body ?? {}), ...(this.ctx.query ?? {}) };
-		const val = getFrom(data, key);
-		return val !== undefined && val !== null && val !== "";
+		const data = { ...(this.ctx.body ?? {}), ...(this.ctx.query ?? {}) }
+		const val = getFrom(data, key)
+		return val !== undefined && val !== null && val !== ""
 	}
 
 	/**
@@ -160,7 +158,7 @@ export class RequestProxy {
 	 * ```
 	 */
 	method(): string {
-		return this.ctx.request.method;
+		return this.ctx.request.method
 	}
 
 	/**
@@ -174,10 +172,8 @@ export class RequestProxy {
 	 * ```
 	 */
 	isAjax(): boolean {
-		const header = this.ctx.headers["x-requested-with"];
-		return (
-			typeof header === "string" && header.toLowerCase() === "xmlhttprequest"
-		);
+		const header = this.ctx.headers["x-requested-with"]
+		return typeof header === "string" && header.toLowerCase() === "xmlhttprequest"
 	}
 
 	/**
@@ -192,15 +188,15 @@ export class RequestProxy {
 	 */
 	ip(): string | undefined {
 		try {
-			const server = this.ctx.server as any;
+			const server = this.ctx.server as any
 			if (typeof server?.requestIP === "function") {
-				const info = server.requestIP(this.ctx.request);
-				return info?.address;
+				const info = server.requestIP(this.ctx.request)
+				return info?.address
 			}
 		} catch {
 			// Silently fall through
 		}
-		return undefined;
+		return undefined
 	}
 
 	// ─── Phase 2: Productivity ────────────────────────────────
@@ -220,10 +216,10 @@ export class RequestProxy {
 	 * ```
 	 */
 	boolean(key: string, defaultValue: boolean = false): boolean {
-		const val = this.input(key);
-		if (val === undefined || val === null) return defaultValue;
-		if (typeof val === "boolean") return val;
-		return ["true", "1", "yes", "on"].includes(String(val).toLowerCase());
+		const val = this.input(key)
+		if (val === undefined || val === null) return defaultValue
+		if (typeof val === "boolean") return val
+		return ["true", "1", "yes", "on"].includes(String(val).toLowerCase())
 	}
 
 	/**
@@ -239,10 +235,10 @@ export class RequestProxy {
 	 * ```
 	 */
 	integer(key: string, defaultValue: number = 0): number {
-		const val = this.input(key);
-		if (val === undefined || val === null) return defaultValue;
-		const num = Number(val);
-		return Number.isNaN(num) ? defaultValue : Math.floor(num);
+		const val = this.input(key)
+		if (val === undefined || val === null) return defaultValue
+		const num = Number(val)
+		return Number.isNaN(num) ? defaultValue : Math.floor(num)
 	}
 
 	/**
@@ -259,10 +255,10 @@ export class RequestProxy {
 	 * ```
 	 */
 	json(key?: string): any {
-		const body = this.ctx.body;
-		if (!body || typeof body !== "object") return undefined;
-		if (key === undefined) return body;
-		return getFrom(body, key);
+		const body = this.ctx.body
+		if (!body || typeof body !== "object") return undefined
+		if (key === undefined) return body
+		return getFrom(body, key)
 	}
 
 	/**
@@ -276,10 +272,10 @@ export class RequestProxy {
 	 * ```
 	 */
 	bearerToken(): string | null {
-		const auth = this.ctx.headers["authorization"];
-		if (!auth || typeof auth !== "string") return null;
-		const match = auth.match(/^Bearer\s+(.+)$/i);
-		return match ? match[1] : null;
+		const auth = this.ctx.headers.authorization
+		if (!auth || typeof auth !== "string") return null
+		const match = auth.match(/^Bearer\s+(.+)$/i)
+		return match ? match[1] : null
 	}
 
 	/**
@@ -293,8 +289,8 @@ export class RequestProxy {
 	 * ```
 	 */
 	userAgent(): string {
-		const ua = this.ctx.headers["user-agent"];
-		return typeof ua === "string" ? ua : "";
+		const ua = this.ctx.headers["user-agent"]
+		return typeof ua === "string" ? ua : ""
 	}
 
 	/**
@@ -309,10 +305,10 @@ export class RequestProxy {
 	 * ```
 	 */
 	cookie(key: string, defaultValue?: string): string | undefined {
-		const cookieObj = this.ctx.cookie?.[key];
-		if (!cookieObj) return defaultValue;
-		const val = cookieObj.value;
-		return val !== undefined && val !== null ? String(val) : defaultValue;
+		const cookieObj = this.ctx.cookie?.[key]
+		if (!cookieObj) return defaultValue
+		const val = cookieObj.value
+		return val !== undefined && val !== null ? String(val) : defaultValue
 	}
 
 	/**
@@ -334,42 +330,42 @@ export class RequestProxy {
 	server(key: string): string | undefined {
 		switch (key) {
 			case "REMOTE_ADDR":
-				return this.ip();
+				return this.ip()
 			case "REQUEST_METHOD":
-				return this.method();
+				return this.method()
 			case "HTTP_USER_AGENT":
-				return this.userAgent();
+				return this.userAgent()
 			case "SERVER_NAME": {
 				try {
-					return new URL(this.ctx.request.url).hostname;
+					return new URL(this.ctx.request.url).hostname
 				} catch {
-					return undefined;
+					return undefined
 				}
 			}
 			case "SERVER_PORT": {
 				try {
-					return String(new URL(this.ctx.request.url).port || "80");
+					return String(new URL(this.ctx.request.url).port || "80")
 				} catch {
-					return undefined;
+					return undefined
 				}
 			}
 			case "REQUEST_URI":
-				return this.ctx.request.url;
+				return this.ctx.request.url
 			case "QUERY_STRING": {
 				try {
-					return new URL(this.ctx.request.url).search.replace(/^\?/, "");
+					return new URL(this.ctx.request.url).search.replace(/^\?/, "")
 				} catch {
-					return undefined;
+					return undefined
 				}
 			}
 			default: {
 				// Handle HTTP_* keys → map to headers
 				if (key.startsWith("HTTP_")) {
-					const headerKey = key.slice(5).replace(/_/g, "-").toLowerCase();
-					const header = this.ctx.headers[headerKey];
-					return typeof header === "string" ? header : undefined;
+					const headerKey = key.slice(5).replace(/_/g, "-").toLowerCase()
+					const header = this.ctx.headers[headerKey]
+					return typeof header === "string" ? header : undefined
 				}
-				return undefined;
+				return undefined
 			}
 		}
 	}

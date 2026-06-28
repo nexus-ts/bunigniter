@@ -67,11 +67,7 @@ export interface PaginateResult<T = any> {
  * const result = paginate(rows, totalCount, { page: 1, perPage: 20 })
  * ```
  */
-export function paginate<T = any>(
-	data: T[],
-	total: number,
-	options: PaginateOptions = {}
-): PaginateResult<T> {
+export function paginate<T = any>(data: T[], total: number, options: PaginateOptions = {}): PaginateResult<T> {
 	const page = Math.max(1, options.page ?? 1)
 	const perPage = Math.max(1, options.perPage ?? 20)
 	const pages = Math.max(1, Math.ceil(total / perPage))
@@ -88,20 +84,20 @@ export function paginate<T = any>(
 		count: data.length,
 		prevPage: currentPage > 1 ? currentPage - 1 : null,
 		nextPage: currentPage < pages ? currentPage + 1 : null,
-		links: generateLinks(total, currentPage, pages, options.baseUrl ?? ''),
+		links: generateLinks(total, currentPage, pages, options.baseUrl ?? ""),
 	}
 }
 
 /**
  * Generate simple HTML pagination links.
  */
-function generateLinks(total: number, page: number, pages: number, baseUrl: string): string {
-	if (pages <= 1) return ''
+function generateLinks(_total: number, page: number, pages: number, baseUrl: string): string {
+	if (pages <= 1) return ""
 
-	const prev = page > 1 ? `<a href="${baseUrl}?page=${page - 1}">&laquo; Prev</a>` : '<span>&laquo; Prev</span>'
-	const next = page < pages ? `<a href="${baseUrl}?page=${page + 1}">Next &raquo;</a>` : '<span>Next &raquo;</span>'
+	const prev = page > 1 ? `<a href="${baseUrl}?page=${page - 1}">&laquo; Prev</a>` : "<span>&laquo; Prev</span>"
+	const next = page < pages ? `<a href="${baseUrl}?page=${page + 1}">Next &raquo;</a>` : "<span>Next &raquo;</span>"
 
-	let numbers = ''
+	let numbers = ""
 	const start = Math.max(1, page - 2)
 	const end = Math.min(pages, page + 2)
 
@@ -134,7 +130,7 @@ export function addPaginationToDb(db: any): void {
 	db.paginate = async function <T = any>(
 		sql: string,
 		params: unknown[] = [],
-		options: PaginateOptions = {}
+		options: PaginateOptions = {},
 	): Promise<PaginateResult<T>> {
 		const page = Math.max(1, options.page ?? 1)
 		const perPage = Math.max(1, options.perPage ?? 20)

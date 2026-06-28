@@ -55,14 +55,14 @@ export class PageResponse {
 		return JSON.stringify({
 			component: this.component,
 			props: { ...sharedProps, ...this.props },
-			url: '', // set by the router
+			url: "", // set by the router
 			version: this.options.version ?? null,
 			flash: this.options.flash ?? null,
 		})
 	}
 
 	/** Render full HTML shell with embedded page data. */
-	toHtml(sharedProps: Record<string, any> = {}, url = '/'): string {
+	toHtml(sharedProps: Record<string, any> = {}, url = "/"): string {
 		const pageJson = JSON.stringify({
 			component: this.component,
 			props: { ...sharedProps, ...this.props },
@@ -72,10 +72,7 @@ export class PageResponse {
 		})
 
 		const title = this.options.title ?? this.component
-		const escapedPage = pageJson
-			.replace(/&/g, '&amp;')
-			.replace(/'/g, '&#39;')
-			.replace(/"/g, '&quot;')
+		const escapedPage = pageJson.replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/"/g, "&quot;")
 
 		return `<!DOCTYPE html>
 <html lang="en">
@@ -92,5 +89,5 @@ export class PageResponse {
 }
 
 function escapeHtml(s: string): string {
-	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+	return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
 }

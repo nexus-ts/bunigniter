@@ -11,7 +11,7 @@
  * // → { userId: 1, role: 'admin', iat: ..., exp: ... }
  * ```
  */
-import { env } from './env'
+import { env } from "./env"
 
 export interface JwtConfig {
 	/** HMAC secret key. Default: APP_KEY */
@@ -32,7 +32,7 @@ export interface JwtPayload {
 }
 
 const defaults: JwtConfig = {
-	secret: env('APP_KEY', 'dev-jwt-secret'),
+	secret: env("APP_KEY", "dev-jwt-secret"),
 	expiresIn: 3600,
 }
 
@@ -59,7 +59,7 @@ export const jwt = {
 	 */
 	sign(payload: Record<string, any>, config?: JwtConfig): string {
 		const cfg = { ...defaults, ...config }
-		const header = base64UrlEncode(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
+		const header = base64UrlEncode(JSON.stringify({ alg: "HS256", typ: "JWT" }))
 		const now = Math.floor(Date.now() / 1000)
 		const fullPayload = {
 			...payload,
@@ -78,17 +78,17 @@ export const jwt = {
 	 */
 	verify(token: string, config?: JwtConfig): JwtPayload {
 		const cfg = { ...defaults, ...config }
-		const parts = token.split('.')
-		if (parts.length !== 3) throw new Error('Invalid JWT format')
+		const parts = token.split(".")
+		if (parts.length !== 3) throw new Error("Invalid JWT format")
 
 		const [, payloadB64, signature] = parts
 		const expected = createSignature(`${parts[0]}.${parts[1]}`, cfg.secret!)
-		if (signature !== expected) throw new Error('Invalid JWT signature')
+		if (signature !== expected) throw new Error("Invalid JWT signature")
 
 		const payload = JSON.parse(base64UrlDecode(payloadB64))
 		const now = Math.floor(Date.now() / 1000)
-		if (payload.exp && payload.exp < now) throw new Error('JWT expired')
-		if (payload.nbf && payload.nbf > now) throw new Error('JWT not yet valid')
+		if (payload.exp && payload.exp < now) throw new Error("JWT expired")
+		if (payload.nbf && payload.nbf > now) throw new Error("JWT not yet valid")
 
 		return payload
 	},
@@ -109,13 +109,13 @@ export function jwtMiddleware(config?: JwtConfig) {
 	const cfg = { ...defaults, ...config }
 
 	return async (c: any, next: any) => {
-		const authHeader = c.request?.headers?.get('authorization')
+		const authHeader = c.request?.headers?.get("authorization")
 		const token = jwt.fromHeader(authHeader)
 
 		if (!token) {
-			return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
+			return new Response(JSON.stringify({ error: "Missing authorization header" }), {
 				status: 401,
-				headers: { 'content-type': 'application/json' },
+				headers: { "content-type": "application/json" },
 			})
 		}
 
@@ -125,23 +125,23 @@ export function jwtMiddleware(config?: JwtConfig) {
 			c.user = payload
 			await next()
 		} catch (e: any) {
-			return new Response(JSON.stringify({ error: e.message ?? 'Invalid token' }), {
+			return new Response(JSON.stringify({ error: e.message ?? "Invalid token" }), {
 				status: 401,
-				headers: { 'content-type': 'application/json' },
+				headers: { "content-type": "application/json" },
 			})
 		}
 	}
 }
 
 function createSignature(data: string, secret: string): string {
-	const { createHmac } = require('node:crypto')
-	return createHmac('sha256', secret).update(data).digest('base64url')
+	const { createHmac } = require("node:crypto")
+	return createHmac("sha256", secret).update(data).digest("base64url")
 }
 
 function base64UrlEncode(s: string): string {
-	return Buffer.from(s).toString('base64url')
+	return Buffer.from(s).toString("base64url")
 }
 
 function base64UrlDecode(s: string): string {
-	return Buffer.from(s, 'base64url').toString('utf-8')
+	return Buffer.from(s, "base64url").toString("utf-8")
 }

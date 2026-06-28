@@ -18,9 +18,9 @@
  * })
  * ```
  */
-import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
-import { env } from './env'
+import { existsSync, mkdirSync, writeFileSync } from "node:fs"
+import { join } from "node:path"
+import { env } from "./env"
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -65,7 +65,7 @@ export interface MailTransport {
  * Null transport — discards all messages (for testing).
  */
 export class NullTransport implements MailTransport {
-	name = 'null'
+	name = "null"
 	async send(_message: MailMessage): Promise<void> {
 		// Discard
 	}
@@ -75,11 +75,11 @@ export class NullTransport implements MailTransport {
  * File transport — writes messages to disk (for development).
  */
 export class FileTransport implements MailTransport {
-	name = 'file'
+	name = "file"
 	private dir: string
 
 	constructor(dir?: string) {
-		this.dir = dir ?? join(process.cwd(), 'storage/mail')
+		this.dir = dir ?? join(process.cwd(), "storage/mail")
 	}
 
 	async send(message: MailMessage): Promise<void> {
@@ -87,9 +87,9 @@ export class FileTransport implements MailTransport {
 			mkdirSync(this.dir, { recursive: true })
 		}
 
-		const filename = `${Date.now()}_${message.subject.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}.json`
+		const filename = `${Date.now()}_${message.subject.replace(/[^a-zA-Z0-9]/g, "_").slice(0, 50)}.json`
 		const content = JSON.stringify(message, null, 2)
-		writeFileSync(join(this.dir, filename), content, 'utf-8')
+		writeFileSync(join(this.dir, filename), content, "utf-8")
 	}
 }
 
@@ -98,47 +98,49 @@ export class FileTransport implements MailTransport {
  * Uses Bun's built-in SMTP or a lightweight client.
  */
 export class SmtpTransport implements MailTransport {
-	name = 'smtp'
+	name = "smtp"
 	private host: string
 	private port: number
 	private user: string
 	private pass: string
 	private secure: boolean
 
-	constructor(options: {
-		host?: string
-		port?: number
-		user?: string
-		pass?: string
-		secure?: boolean
-	} = {}) {
-		this.host = options.host ?? env('SMTP_HOST', 'localhost')
-		this.port = options.port ?? Number(env('SMTP_PORT', '587'))
-		this.user = options.user ?? env('SMTP_USER', '')
-		this.pass = options.pass ?? env('SMTP_PASS', '')
-		this.secure = options.secure ?? env('SMTP_SECURE', false)
+	constructor(
+		options: {
+			host?: string
+			port?: number
+			user?: string
+			pass?: string
+			secure?: boolean
+		} = {},
+	) {
+		this.host = options.host ?? env("SMTP_HOST", "localhost")
+		this.port = options.port ?? Number(env("SMTP_PORT", "587"))
+		this.user = options.user ?? env("SMTP_USER", "")
+		this.pass = options.pass ?? env("SMTP_PASS", "")
+		this.secure = options.secure ?? env("SMTP_SECURE", false)
 	}
 
 	async send(message: MailMessage): Promise<void> {
 		// Build email content
-		const from = message.from ?? env('MAIL_FROM', 'noreply@localhost')
-		const to = Array.isArray(message.to) ? message.to.join(', ') : message.to
+		const from = message.from ?? env("MAIL_FROM", "noreply@localhost")
+		const to = Array.isArray(message.to) ? message.to.join(", ") : message.to
 
 		let headers = `From: ${from}\nTo: ${to}\nSubject: ${message.subject}\n`
 		if (message.cc) {
-			headers += `Cc: ${Array.isArray(message.cc) ? message.cc.join(', ') : message.cc}\n`
+			headers += `Cc: ${Array.isArray(message.cc) ? message.cc.join(", ") : message.cc}\n`
 		}
 		if (message.replyTo) {
 			headers += `Reply-To: ${message.replyTo}\n`
 		}
-		headers += 'MIME-Version: 1.0\n'
+		headers += "MIME-Version: 1.0\n"
 
-		let body = ''
+		let body = ""
 		if (message.html) {
-			headers += 'Content-Type: text/html; charset=UTF-8\n'
+			headers += "Content-Type: text/html; charset=UTF-8\n"
 			body = message.html
 		} else if (message.text) {
-			headers += 'Content-Type: text/plain; charset=UTF-8\n'
+			headers += "Content-Type: text/plain; charset=UTF-8\n"
 			body = message.text
 		}
 
@@ -146,70 +148,70 @@ export class SmtpTransport implements MailTransport {
 
 		// Send via SMTP using Bun's TCP socket
 		try {
-			const { connect } = await import('node:net')
+			const { connect } = await import("node:net")
 			await new Promise<void>((resolve, reject) => {
 				const socket = connect(this.port, this.host, () => {
-					let buffer = ''
+					let buffer = ""
 					let step = 0
 
 					const send = (cmd: string) => {
-						socket.write(cmd + '\r\n')
+						socket.write(`${cmd}\r\n`)
 					}
 
-					socket.on('data', (data: Buffer) => {
+					socket.on("data", (data: Buffer) => {
 						buffer += data.toString()
-						const lines = buffer.split('\r\n')
-						buffer = lines.pop() ?? ''
+						const lines = buffer.split("\r\n")
+						buffer = lines.pop() ?? ""
 
 						for (const line of lines) {
-							if (line.startsWith('220') && step === 0) {
+							if (line.startsWith("220") && step === 0) {
 								step = 1
 								send(`EHLO ${this.host}`)
-							} else if (line.startsWith('250') && step === 1) {
+							} else if (line.startsWith("250") && step === 1) {
 								if (this.user && this.pass) {
 									step = 2
-									send('AUTH LOGIN')
+									send("AUTH LOGIN")
 								} else {
 									step = 3
 									send(`MAIL FROM:<${from}>`)
 								}
-							} else if (line.startsWith('334') && step === 2) {
-								send(Buffer.from(this.user).toString('base64'))
+							} else if (line.startsWith("334") && step === 2) {
+								send(Buffer.from(this.user).toString("base64"))
 								step = 21
-							} else if (line.startsWith('334') && step === 21) {
-								send(Buffer.from(this.pass).toString('base64'))
+							} else if (line.startsWith("334") && step === 21) {
+								send(Buffer.from(this.pass).toString("base64"))
 								step = 22
-							} else if (line.startsWith('235') && step === 22) {
+							} else if (line.startsWith("235") && step === 22) {
 								step = 3
 								send(`MAIL FROM:<${from}>`)
-							} else if (line.startsWith('250') && step === 3) {
+							} else if (line.startsWith("250") && step === 3) {
 								step = 4
 								send(`RCPT TO:<${to}>`)
-							} else if (line.startsWith('250') && step === 4) {
+							} else if (line.startsWith("250") && step === 4) {
 								step = 5
-								send('DATA')
-							} else if (line.startsWith('354') && step === 5) {
+								send("DATA")
+							} else if (line.startsWith("354") && step === 5) {
 								step = 6
-								send(raw + '\r\n.')
-							} else if (line.startsWith('250') && step === 6) {
+								send(`${raw}\r\n.`)
+							} else if (line.startsWith("250") && step === 6) {
 								step = 7
-								send('QUIT')
-							} else if (line.startsWith('221') && step === 7) {
+								send("QUIT")
+							} else if (line.startsWith("221") && step === 7) {
 								socket.end()
 								resolve()
 							}
 						}
 					})
 
-					socket.on('error', reject)
+					socket.on("error", reject)
 				})
 
 				setTimeout(() => {
 					socket.destroy()
-					reject(new Error('SMTP connection timed out'))
+					reject(new Error("SMTP connection timed out"))
 				}, 10000)
 			})
-		} catch (err) {
+		} catch (_err) {
 			// Fall back to file transport on error
 			const fallback = new FileTransport(this.dir)
 			await fallback.send(message)
@@ -217,7 +219,7 @@ export class SmtpTransport implements MailTransport {
 	}
 
 	private get dir(): string {
-		return join(process.cwd(), 'storage/mail')
+		return join(process.cwd(), "storage/mail")
 	}
 }
 
@@ -250,7 +252,7 @@ export class Mail {
 	async send(message: MailMessage): Promise<void> {
 		const msg: MailMessage = {
 			...message,
-			from: message.from ?? this.options.defaultFrom ?? env('MAIL_FROM', 'noreply@localhost'),
+			from: message.from ?? this.options.defaultFrom ?? env("MAIL_FROM", "noreply@localhost"),
 		}
 		await this._transport.send(msg)
 	}

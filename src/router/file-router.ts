@@ -20,66 +20,64 @@
  * - Method names map to HTTP verbs: `index`=GET, `show`=GET/:id, `create`=POST, `update`=PUT, `destroy`=DELETE
  */
 
-import { readdirSync, statSync, existsSync } from "node:fs";
-import { join, basename } from "node:path";
-import { type Elysia, t } from "elysia";
-import type { Controller } from "../base/controller";
-import type { DbClient } from "../db/drizzle";
-import type { Cache } from "../helpers/cache";
-import type { Queue } from "../helpers/queue";
-import type { Upload } from "../helpers/upload";
-import type { Mail } from "../helpers/mail";
-import { Session } from "../helpers/session";
-import { PageResponse } from "../view/page";
-import { ViewResponse } from "../view/view-response";
-import { renderView } from "../view/renderer";
-import { generateToolbar, getStore } from "../helpers/debug";
-import { setRequestContext } from "../helpers/request-context";
+import { existsSync, readdirSync, statSync } from "node:fs"
+import { basename, join } from "node:path"
+import type { Elysia } from "elysia"
+import type { Controller } from "../base/controller"
+import type { DbClient } from "../db/drizzle"
+import type { Cache } from "../helpers/cache"
+import { generateToolbar, getStore } from "../helpers/debug"
+import type { Mail } from "../helpers/mail"
+import type { Queue } from "../helpers/queue"
+import { setRequestContext } from "../helpers/request-context"
+import { Session } from "../helpers/session"
+import type { Upload } from "../helpers/upload"
+import { PageResponse } from "../view/page"
+import { renderView } from "../view/renderer"
+import { ViewResponse } from "../view/view-response"
 
 export interface FileRouterOptions {
 	/** Directory containing route files. Default: `routes` */
-	directory?: string;
+	directory?: string
 
 	/** Views directory for module support. Overrides global views. */
-	viewsDir?: string;
+	viewsDir?: string
 
 	/** URL prefix for all routes. Default: `/api` */
-	prefix?: string;
+	prefix?: string
 
 	/** Database instance to inject into controllers. */
-	db?: DbClient;
+	db?: DbClient
 
 	/** Named databases (multi-database support). */
-	dbs?: Record<string, DbClient>;
+	dbs?: Record<string, DbClient>
 
 	/** Cache instance. */
-	cache?: Cache;
+	cache?: Cache
 
 	/** Queue instance. */
-	queue?: Queue;
+	queue?: Queue
 
 	/** Upload instance. */
-	upload?: Upload;
+	upload?: Upload
 
 	/** Mail instance. */
-	mail?: Mail;
+	mail?: Mail
 
 	/** Called when a controller is registered (for DI/decoration). */
-	onRegister?: (controller: Controller) => void;
+	onRegister?: (controller: Controller) => void
 }
 
 interface LoaderExport {
-	loader?: (ctx: any) => Promise<Record<string, any>>;
-	action?:
-		| ((ctx: any, args?: any) => Promise<void>)
-		| { config?: any; fn?: any };
+	loader?: (ctx: any) => Promise<Record<string, any>>
+	action?: ((ctx: any, args?: any) => Promise<void>) | { config?: any; fn?: any }
 }
 
 /** Render a page component to HTML (server-side). */
 function renderPage(component: string, props: Record<string, any>): string {
 	// Build props JSON to embed in HTML shell
-	const propsJson = escapeHtml(JSON.stringify(props));
-	return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escapeHtml(component)}</title></head><body><div id="app" data-page='${propsJson}'></div></body></html>`;
+	const propsJson = escapeHtml(JSON.stringify(props))
+	return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escapeHtml(component)}</title></head><body><div id="app" data-page='${propsJson}'></div></body></html>`
 }
 
 function escapeHtml(s: string): string {
@@ -88,7 +86,7 @@ function escapeHtml(s: string): string {
 		.replace(/'/g, "&#39;")
 		.replace(/"/g, "&quot;")
 		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;");
+		.replace(/>/g, "&gt;")
 }
 
 /** Default method-to-verb mapping (CodeIgniter-style). */
@@ -100,10 +98,10 @@ const METHOD_MAP: Record<string, string> = Object.assign(Object.create(null), {
 	update: "PUT",
 	destroy: "DELETE",
 	edit: "GET",
-});
+})
 
 /** Methods that need a param ID. */
-const ID_METHODS = new Set(["show", "update", "destroy", "edit"]);
+const ID_METHODS = new Set(["show", "update", "destroy", "edit"])
 
 /**
  * Scan a directory and auto-register routes.
@@ -118,134 +116,129 @@ const ID_METHODS = new Set(["show", "update", "destroy", "edit"]);
  * }
  * ```
  */
-export async function registerFileRoutes(
-	app: Elysia,
-	options: FileRouterOptions = {},
-): Promise<void> {
-	const dir = options.directory ?? "routes";
-	const prefix = options.prefix ?? "/api";
+export async function registerFileRoutes(app: Elysia, options: FileRouterOptions = {}): Promise<void> {
+	const dir = options.directory ?? "routes"
+	const prefix = options.prefix ?? "/api"
 
 	// Ensure directory exists
 	try {
-		statSync(dir);
+		statSync(dir)
 	} catch {
-		console.warn(`[router] routes directory not found: ${dir}`);
-		return;
+		console.warn(`[router] routes directory not found: ${dir}`)
+		return
 	}
 
 	// First pass: register .server.ts loader/action routes
-	const serverFiles = scanDir(dir, ".server.ts");
+	const serverFiles = scanDir(dir, ".server.ts")
 	for (const file of serverFiles) {
-		const fullPath = join(dir, file);
-		const serverMod = (await import(
-			/* @vite-ignore */ join(process.cwd(), dir, file)
-		)) as LoaderExport;
-		const componentName = file.replace(/\.server\.ts$/, "");
-		const urlPath = filePathToUrl(componentName + ".ts", prefix);
+		const _fullPath = join(dir, file)
+		const serverMod = (await import(/* @vite-ignore */ join(process.cwd(), dir, file))) as LoaderExport
+		const componentName = file.replace(/\.server\.ts$/, "")
+		const urlPath = filePathToUrl(`${componentName}.ts`, prefix)
 
 		if (serverMod.loader) {
 			const handler = async (_ctx: any) => {
-				const props = await (serverMod.loader as Function)(_ctx);
+				const props = await (serverMod.loader as Function)(_ctx)
 				// Serve as HTML shell (SSR placeholder) + JSON props
 				return new Response(renderPage(componentName, props), {
 					headers: { "content-type": "text/html; charset=utf-8" },
-				});
-			};
-			registerRoute(app, "GET", urlPath, handler, null as any, options);
+				})
+			}
+			registerRoute(app, "GET", urlPath, handler, null as any, options)
 		}
 
 		if (serverMod.action) {
-			const action = serverMod.action as any;
+			const action = serverMod.action as any
 			const handler = async (_ctx: any) => {
-				let body;
+				let body: any
 				try {
-					body = await _ctx.request.json();
+					body = await _ctx.request.json()
 				} catch {
-					body = {};
+					body = {}
 				}
 				if (action.fn) {
-					await action.fn(_ctx, { body });
+					await action.fn(_ctx, { body })
 				} else {
-					await action(_ctx, { body });
+					await action(_ctx, { body })
 				}
-				return new Response(null, { status: 204 });
-			};
-			registerRoute(app, "POST", urlPath, handler, null as any, options);
+				return new Response(null, { status: 204 })
+			}
+			registerRoute(app, "POST", urlPath, handler, null as any, options)
 		}
 	}
 
 	// Second pass: register Controller routes
-	const files = scanDir(dir, ".ts");
+	const files = scanDir(dir, ".ts")
 
 	for (const file of files) {
-		if (file.endsWith(".server.ts")) continue;
+		if (file.endsWith(".server.ts")) continue
 
-		const fullPath = join(process.cwd(), dir, file);
-		const mod = await import(/* @vite-ignore */ fullPath);
+		const fullPath = join(process.cwd(), dir, file)
+		const mod = await import(/* @vite-ignore */ fullPath)
 
 		// Find the Controller subclass
-		const ControllerClass = findController(mod);
+		const ControllerClass = findController(mod)
 
 		// If file has ws.handle() calls without a Controller, still import it
 		// (WS handlers register via side-effect at module load time)
-		if (!ControllerClass) continue;
+		if (!ControllerClass) continue
 
-		const controller = new ControllerClass() as Controller;
+		const controller = new ControllerClass() as Controller
 
 		// Inject services
 		if (options.db) {
 			Object.defineProperty(controller, "db", {
 				value: options.db,
 				writable: false,
-			});
+			})
 		}
 		if (options.dbs) {
 			Object.defineProperty(controller, "dbs", {
 				value: options.dbs,
 				writable: false,
-			});
+			})
 		}
 		if (options.cache) {
 			Object.defineProperty(controller, "cache", {
 				value: options.cache,
 				writable: false,
-			});
+			})
 		}
 		if (options.queue) {
 			Object.defineProperty(controller, "queue", {
 				value: options.queue,
 				writable: false,
-			});
+			})
 		}
 		if (options.upload) {
 			Object.defineProperty(controller, "upload", {
 				value: options.upload,
 				writable: false,
-			});
+			})
 		}
 		if (options.mail) {
 			Object.defineProperty(controller, "mail", {
 				value: options.mail,
 				writable: false,
-			});
+			})
 		}
 
 		// Call onRegister hook
-		options.onRegister?.(controller);
+		options.onRegister?.(controller)
 
 		// Convert file path to URL path
-		const urlPath = filePathToUrl(file, prefix);
+		const urlPath = filePathToUrl(file, prefix)
 
 		// Register routes for each Controller method
-		const isIndex = basename(file, ".ts") === "index";
+		const isIndex = basename(file, ".ts") === "index"
 
 		// Check if URL already has a path parameter (from [param].ts)
-		const hasPathParam = urlPath.includes(":");
+		const hasPathParam = urlPath.includes(":")
 
 		for (const method of ["index", "show", "create", "update", "destroy"]) {
-			if (typeof (controller as any)[method] !== "function") continue;
-			const verb = METHOD_MAP[method];
-			const handler = (controller as any)[method].bind(controller);
+			if (typeof (controller as any)[method] !== "function") continue
+			const verb = METHOD_MAP[method]
+			const handler = (controller as any)[method].bind(controller)
 			const methodPath = ID_METHODS.has(method)
 				? hasPathParam
 					? urlPath
@@ -254,79 +247,67 @@ export async function registerFileRoutes(
 						: `${urlPath}/:id`
 				: isIndex
 					? prefix
-					: urlPath;
+					: urlPath
 
-			registerRoute(app, verb, methodPath, handler, controller, options);
+			registerRoute(app, verb, methodPath, handler, controller, options)
 		}
 	}
 }
 
 // ─── Internal Helpers ──────────────────────────────────────────
 
-let startTime = 0;
+let startTime = 0
 
 function formatBytes2(bytes: number): string {
-	if (bytes === 0) return "0 MB";
-	const mb = bytes / (1024 * 1024);
-	return `${mb.toFixed(1)} MB`;
+	if (bytes === 0) return "0 MB"
+	const mb = bytes / (1024 * 1024)
+	return `${mb.toFixed(1)} MB`
 }
 
 /** Inject debug toolbar into HTML if enabled. */
-async function injectDebug(
-	html: string,
-	ctx: any,
-	controller: any,
-	status: number,
-): Promise<string> {
-	const dbgParam = new URL(
-		ctx.request?.url ?? "http://localhost",
-	).searchParams.get("debug");
-	const isDebug = dbgParam === "1" || process.env.DEBUG === "true";
-	if (!isDebug || !html.includes("</body>")) return html;
+async function injectDebug(html: string, ctx: any, controller: any, status: number): Promise<string> {
+	const dbgParam = new URL(ctx.request?.url ?? "http://localhost").searchParams.get("debug")
+	const isDebug = dbgParam === "1" || process.env.DEBUG === "true"
+	if (!isDebug || !html.includes("</body>")) return html
 
 	try {
-		const debugData = getStore(ctx);
-		debugData.status = status;
-		debugData.duration =
-			Math.round((performance.now() - startTime) * 100) / 100;
-		debugData.memory = formatBytes2((process as any).memoryUsage?.()?.rss ?? 0);
-		debugData.timestamp = new Date().toLocaleString();
-		if (controller?.session) debugData.session = controller.session.all();
+		const debugData = getStore(ctx)
+		debugData.status = status
+		debugData.duration = Math.round((performance.now() - startTime) * 100) / 100
+		debugData.memory = formatBytes2((process as any).memoryUsage?.()?.rss ?? 0)
+		debugData.timestamp = new Date().toLocaleString()
+		if (controller?.session) debugData.session = controller.session.all()
 		if (ctx.request?.headers) {
-			const h: Record<string, string> = {};
-			for (const [k, v] of ctx.request.headers.entries()) h[k] = v;
-			debugData.headers = h;
+			const h: Record<string, string> = {}
+			for (const [k, v] of ctx.request.headers.entries()) h[k] = v
+			debugData.headers = h
 		}
-		const toolbar = await generateToolbar(debugData);
+		const toolbar = await generateToolbar(debugData)
 		if (toolbar && toolbar.length > 50) {
-			const bodyIdx = html.lastIndexOf("</body>");
+			const bodyIdx = html.lastIndexOf("</body>")
 			if (bodyIdx > 0) {
-				return html.slice(0, bodyIdx) + toolbar + "\n" + html.slice(bodyIdx);
+				return `${html.slice(0, bodyIdx) + toolbar}\n${html.slice(bodyIdx)}`
 			}
 		}
-		return html;
+		return html
 	} catch (e) {
-		console.error("[debug] toolbar error:", e, (e as Error).stack);
+		console.error("[debug] toolbar error:", e, (e as Error).stack)
 	}
-	return html;
+	return html
 }
 
 function scanDir(dir: string, ext: string, baseDir = ""): string[] {
-	const files: string[] = [];
-	const entries = readdirSync(dir, { withFileTypes: true });
+	const files: string[] = []
+	const entries = readdirSync(dir, { withFileTypes: true })
 	for (const entry of entries) {
-		const relPath = baseDir ? `${baseDir}/${entry.name}` : entry.name;
+		const relPath = baseDir ? `${baseDir}/${entry.name}` : entry.name
 		if (entry.isDirectory()) {
-			files.push(...scanDir(join(dir, entry.name), ext, relPath));
-		} else if (
-			entry.isFile() &&
-			entry.name.endsWith(ext) &&
-			!entry.name.startsWith("_")
-		) {
-			files.push(relPath);
+			files.push(...scanDir(join(dir, entry.name), ext, relPath))
+		} else if (entry.isFile() && entry.name.endsWith(ext) && !entry.name.startsWith("_")) {
+			files.push(relPath)
 		}
 	}
-	return files.sort();
+	return files.sort()
 }
 
 function filePathToUrl(file: string, prefix: string): string {
@@ -335,30 +316,24 @@ function filePathToUrl(file: string, prefix: string): string {
 		.replace(/\[\.\.\.\]/g, "*")
 		.replace(/\[([^\]]+)\]/g, ":$1")
 		.replace(/\/index$/, "")
-		.replace(/\\/g, "/");
+		.replace(/\\/g, "/")
 
-	return `${prefix}${url ? `/${url}` : ""}`;
+	return `${prefix}${url ? `/${url}` : ""}`
 }
 
-function findController(
-	mod: Record<string, any>,
-): (new () => Controller) | null {
+function findController(mod: Record<string, any>): (new () => Controller) | null {
 	for (const key of Object.keys(mod)) {
-		const val = mod[key];
-		if (
-			typeof val === "function" &&
-			val.prototype &&
-			val.prototype.constructor
-		) {
+		const val = mod[key]
+		if (typeof val === "function" && val.prototype && val.prototype.constructor) {
 			// Check if it extends Controller
-			let proto = val.prototype;
+			let proto = val.prototype
 			while (proto) {
-				if (proto.constructor.name === "Controller") return val;
-				proto = Object.getPrototypeOf(proto);
+				if (proto.constructor.name === "Controller") return val
+				proto = Object.getPrototypeOf(proto)
 			}
 		}
 	}
-	return null;
+	return null
 }
 
 function registerRoute(
@@ -369,123 +344,106 @@ function registerRoute(
 	controller: Controller,
 	options: FileRouterOptions,
 ): void {
-	const lowerVerb = verb.toLowerCase() as
-		| "get"
-		| "post"
-		| "put"
-		| "delete"
-		| "patch";
+	const lowerVerb = verb.toLowerCase() as "get" | "post" | "put" | "delete" | "patch"
 
 	// Determine if this route needs an ID param based on the path
-	const needsId = path.endsWith("/:id");
+	const needsId = path.endsWith("/:id")
 
 	// Wrap handler: inject ctx + session + auth into controller
 	const wrappedHandler = async (_ctx: any) => {
-		setRequestContext(_ctx);
-		startTime = performance.now();
-		let session: Session | null = null;
-		const cookieName = "bunigniter_session";
+		setRequestContext(_ctx)
+		startTime = performance.now()
+		let session: Session | null = null
+		const cookieName = "bunigniter_session"
 
 		if (controller) {
-			(controller as any).ctx = _ctx;
+			;(controller as any).ctx = _ctx
 
 			// Set upload body for auto-detection
 			if ((controller as any).upload) {
-				(controller as any).upload.body = _ctx.body;
+				;(controller as any).upload.body = _ctx.body
 			}
 
 			// Create session from cookie
-			session = new Session();
-			const cookieHeader = _ctx.request?.headers?.get("cookie") ?? "";
-			const match = cookieHeader.match(new RegExp(cookieName + "=([^;]+)"));
-			session.load(match?.[1]);
-			(controller as any).session = session;
+			session = new Session()
+			const cookieHeader = _ctx.request?.headers?.get("cookie") ?? ""
+			const match = cookieHeader.match(new RegExp(`${cookieName}=([^;]+)`))
+			session.load(match?.[1])
+			;(controller as any).session = session
 
 			// Create auth facade
-			(controller as any).auth = {
+			;(controller as any).auth = {
 				user: () => session?.get("user"),
 				login: (user: any) => {
-					session?.set("user", user);
-					session?.regenerate();
+					session?.set("user", user)
+					session?.regenerate()
 				},
 				logout: () => {
-					session?.delete("user");
-					session?.clear();
+					session?.delete("user")
+					session?.clear()
 				},
 				check: () => !!session?.get("user"),
-			};
+			}
 		}
 
 		try {
 			// Handle _method override for HTML forms (PUT/DELETE via POST)
-			const body = _ctx.body ?? {};
-			const overrideMethod = body?._method?.toUpperCase();
-			if (
-				overrideMethod &&
-				["PUT", "DELETE", "PATCH"].includes(overrideMethod)
-			) {
-				_ctx.__method = overrideMethod;
+			const body = _ctx.body ?? {}
+			const overrideMethod = body?._method?.toUpperCase()
+			if (overrideMethod && ["PUT", "DELETE", "PATCH"].includes(overrideMethod)) {
+				_ctx.__method = overrideMethod
 			}
 
 			// Call _before() lifecycle hook (can short-circuit with a Response)
 			if (controller) {
-				const beforeResult = (controller as any)._before?.();
+				const beforeResult = (controller as any)._before?.()
 				if (beforeResult instanceof Response) {
-					return beforeResult;
+					return beforeResult
 				}
 			}
 
 			// Call handler — pass context for server routes, ID for Controller routes
-			const id = _ctx.params?.id ? Number(_ctx.params.id) : undefined;
-			let result;
+			const id = _ctx.params?.id ? Number(_ctx.params.id) : undefined
+			let result: any
 			if (controller) {
-				result = needsId ? await handler(id) : await handler();
+				result = needsId ? await handler(id) : await handler()
 			} else {
-				result = await handler(_ctx);
+				result = await handler(_ctx)
 			}
 
 			// Save session cookie AFTER handler runs
 			if (session) {
-				const serialized = session.serialize();
+				const serialized = session.serialize()
 				if (serialized) {
-					if (!_ctx.set.headers) _ctx.set.headers = {};
+					if (!_ctx.set.headers) _ctx.set.headers = {}
 					_ctx.set.headers["Set-Cookie"] =
-						`${cookieName}=${serialized.value}; Max-Age=${serialized.maxAge}; Path=/; HttpOnly; SameSite=Lax`;
+						`${cookieName}=${serialized.value}; Max-Age=${serialized.maxAge}; Path=/; HttpOnly; SameSite=Lax`
 				}
 			}
 
-			if (result instanceof Response) return result;
+			if (result instanceof Response) return result
 
 			// Handle ViewResponse — SSR render (React or Rendu HTML)
 			if (result instanceof ViewResponse) {
-				const viewBase = options.viewsDir
-					? join(process.cwd(), options.viewsDir)
-					: undefined;
-				const htmlOrRes = await renderView(
-					result.name,
-					result.props,
-					result.options,
-					viewBase,
-				);
+				const viewBase = options.viewsDir ? join(process.cwd(), options.viewsDir) : undefined
+				const htmlOrRes = await renderView(result.name, result.props, result.options, viewBase)
 				if (htmlOrRes instanceof Response) {
-					let text = await htmlOrRes.text();
-					text = await injectDebug(text, _ctx, controller, htmlOrRes.status);
+					let text = await htmlOrRes.text()
+					text = await injectDebug(text, _ctx, controller, htmlOrRes.status)
 					return new Response(text, {
 						status: htmlOrRes.status,
 						headers: { "content-type": "text/html; charset=utf-8" },
-					});
+					})
 				}
-				const html = await injectDebug(htmlOrRes, _ctx, controller, 200);
+				const html = await injectDebug(htmlOrRes, _ctx, controller, 200)
 				return new Response(html, {
 					headers: { "content-type": "text/html; charset=utf-8" },
-				});
+				})
 			}
 
 			// Handle PageResponse — Inertia-style page
 			if (result instanceof PageResponse) {
-				const isInertia =
-					_ctx.headers?.["x-inertia"] === "true" ||
-					_ctx.request?.headers?.get("X-Inertia") === "true";
+				const isInertia = _ctx.headers?.["x-inertia"] === "true" || _ctx.request?.headers?.get("X-Inertia") === "true"
 
 				if (isInertia) {
 					return new Response(result.toInertiaJson(controller?._sharedProps), {
@@ -494,53 +452,45 @@ function registerRoute(
 							"content-type": "application/json",
 							"x-inertia": "true",
 						},
-					});
+					})
 				}
 
 				// First load: full HTML shell
-				const url = _ctx.request?.url ?? "/";
-				let html = result.toHtml(controller?._sharedProps, url);
+				const url = _ctx.request?.url ?? "/"
+				let html = result.toHtml(controller?._sharedProps, url)
 
 				// Client script inject
 				if (html.includes("</body>")) {
-					const publicPath = join(process.cwd(), "public", "app.js");
+					const publicPath = join(process.cwd(), "public", "app.js")
 					if (existsSync(publicPath)) {
-						html = html.replace(
-							"</body>",
-							'<script src="/public/app.js"></script>\n</body>',
-						);
+						html = html.replace("</body>", '<script src="/public/app.js"></script>\n</body>')
 					}
-					html = await injectDebug(
-						html,
-						_ctx,
-						controller,
-						result.options.status ?? 200,
-					);
+					html = await injectDebug(html, _ctx, controller, result.options.status ?? 200)
 				}
 
 				return new Response(html, {
 					status: result.options.status ?? 200,
 					headers: { "content-type": "text/html; charset=utf-8" },
-				});
+				})
 			}
 
 			if (result !== undefined && result !== null) {
-				const status = (result as any)._status ?? 200;
+				const status = (result as any)._status ?? 200
 				return new Response(JSON.stringify(result), {
 					status,
 					headers: { "content-type": "application/json" },
-				});
+				})
 			}
-			return new Response(null, { status: 204 });
+			return new Response(null, { status: 204 })
 		} catch (err) {
-			console.error(`[ERROR] ${verb} ${path}:`, (err as Error).message);
+			console.error(`[ERROR] ${verb} ${path}:`, (err as Error).message)
 			return new Response(JSON.stringify({ error: (err as Error).message }), {
 				status: 500,
 				headers: { "content-type": "application/json" },
-			});
+			})
 		}
-	};
+	}
 
 	// Elysia v2.0: .get(path, handler) — schema precedes handler in v2
-	(app as any)[lowerVerb](path, wrappedHandler);
+	;(app as any)[lowerVerb](path, wrappedHandler)
 }

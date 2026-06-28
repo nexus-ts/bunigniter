@@ -31,9 +31,9 @@
  * }
  * ```
  */
-import { readdirSync, statSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
-import { Elysia } from 'elysia'
+import { existsSync, readdirSync } from "node:fs"
+import { join } from "node:path"
+import type { Elysia } from "elysia"
 
 /** Middleware function signature (Hono-compatible). */
 export type MiddlewareFn = (c: any, next: () => Promise<void>) => Promise<void> | void
@@ -72,26 +72,26 @@ interface MiddlewareEntry {
  *
  * @param dir - Middleware directory path. Default: 'middleware'
  */
-export async function loadMiddleware(dir: string = 'middleware'): Promise<MiddlewareFn[]> {
+export async function loadMiddleware(dir: string = "middleware"): Promise<MiddlewareFn[]> {
 	if (!existsSync(dir)) return []
 
 	const entries: MiddlewareEntry[] = []
 	const files = readdirSync(dir, { withFileTypes: true })
 
 	for (const file of files) {
-		if (!file.isFile() || !file.name.endsWith('.ts') || file.name.startsWith('_')) continue
+		if (!file.isFile() || !file.name.endsWith(".ts") || file.name.startsWith("_")) continue
 
 		const fullPath = join(process.cwd(), dir, file.name)
 		const mod = await import(fullPath)
 		const fn = mod.default ?? mod.middleware
-		if (typeof fn !== 'function') continue
+		if (typeof fn !== "function") continue
 
 		// Extract numeric prefix (e.g. "01" from "01_logger.ts")
 		const match = file.name.match(/^(\d+)[._-]/)
 		const order = match ? parseInt(match[1], 10) : 999
 
 		entries.push({
-			name: file.name.replace(/\.ts$/, ''),
+			name: file.name.replace(/\.ts$/, ""),
 			order,
 			fn,
 		})
@@ -100,7 +100,7 @@ export async function loadMiddleware(dir: string = 'middleware'): Promise<Middle
 	// Sort by order, then by name for stability
 	entries.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
 
-	return entries.map(e => e.fn)
+	return entries.map((e) => e.fn)
 }
 
 /**

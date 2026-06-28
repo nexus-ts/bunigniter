@@ -23,12 +23,7 @@
  * }
  * ```
  */
-export function sse(
-	ctx: any,
-	handler: (
-		send: (event: SSEMessage) => void
-	) => void | (() => void)
-): Response {
+export function sse(_ctx: any, handler: (send: (event: SSEMessage) => void) => undefined | (() => void)): Response {
 	const encoder = new TextEncoder()
 	let cleanup: (() => void) | null = null
 
@@ -39,12 +34,14 @@ export function sse(
 				try {
 					const text = formatSSE(msg)
 					controller.enqueue(encoder.encode(text))
-				} catch { /* stream closed */ }
+				} catch {
+					/* stream closed */
+				}
 			}
 
 			// Run handler — it may return a cleanup function
 			const result = handler(send)
-			if (typeof result === 'function') {
+			if (typeof result === "function") {
 				cleanup = result
 			}
 		},
@@ -55,9 +52,9 @@ export function sse(
 
 	return new Response(stream, {
 		headers: {
-			'content-type': 'text/event-stream',
-			'cache-control': 'no-cache',
-			'connection': 'keep-alive',
+			"content-type": "text/event-stream",
+			"cache-control": "no-cache",
+			connection: "keep-alive",
 		},
 	})
 }
@@ -75,16 +72,16 @@ interface SSEMessage {
 
 /** Format an SSE message string. */
 function formatSSE(msg: SSEMessage): string {
-	let result = ''
+	let result = ""
 	if (msg.event) result += `event: ${msg.event}\n`
 	if (msg.id !== undefined) result += `id: ${msg.id}\n`
 	if (msg.retry !== undefined) result += `retry: ${msg.retry}\n`
 	if (msg.data !== undefined) {
-		const payload = typeof msg.data === 'string' ? msg.data : JSON.stringify(msg.data)
-		for (const line of payload.split('\n')) {
+		const payload = typeof msg.data === "string" ? msg.data : JSON.stringify(msg.data)
+		for (const line of payload.split("\n")) {
 			result += `data: ${line}\n`
 		}
 	}
-	result += '\n'
+	result += "\n"
 	return result
 }

@@ -6,16 +6,16 @@
  * This scans `pages/` and generates `edge-app.ts` — a static file with
  * all routes pre-registered. Works on Cloudflare Workers, Deno, etc.
  */
-import { readdirSync, statSync, writeFileSync, existsSync, readFileSync } from 'node:fs'
-import { join, basename } from 'node:path'
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
+import { basename, join } from "node:path"
 
 const CWD = process.cwd()
 
 export async function buildEdgeRoutes(): Promise<void> {
 	// Scan routes/ for controllers (was pages/, now routes/)
-	const routesDir = join(CWD, 'routes')
+	const routesDir = join(CWD, "routes")
 	if (!existsSync(routesDir)) {
-		console.error('[build] No routes/ directory found.')
+		console.error("[build] No routes/ directory found.")
 		return
 	}
 
@@ -24,39 +24,42 @@ export async function buildEdgeRoutes(): Promise<void> {
 	const routes: string[] = []
 
 	for (const file of files) {
-		if (file.endsWith('.server.ts')) continue
+		if (file.endsWith(".server.ts")) continue
 
 		const fullPath = join(routesDir, file)
 		const s = statSync(fullPath)
 		if (!s.isFile()) continue
 
 		// Read the file to find the exported class name
-		const content = readFileSync(fullPath, 'utf-8')
+		const content = readFileSync(fullPath, "utf-8")
 		const classMatch = content.match(/export class (\w+) extends Controller/)
-		const name = classMatch ? classMatch[1] : 'UnknownController'
+		const name = classMatch ? classMatch[1] : "UnknownController"
 		const importPath = `./routes/${file}`
-		const isIndex = basename(file, '.ts') === 'index'
-		const prefix = process.env.ROUTER_PREFIX ?? '/api'
+		const isIndex = basename(file, ".ts") === "index"
+		const prefix = process.env.ROUTER_PREFIX ?? "/api"
 
 		// Build URL path
-		let urlPath
+		let urlPath: string
 		if (isIndex) {
 			urlPath = prefix
 		} else {
 			urlPath = file
-				.replace(/\.ts$/, '')
-				.replace(/\.\.\./g, '*')
-				.replace(/\[(\w+)\]/g, ':$1')
+				.replace(/\.ts$/, "")
+				.replace(/\.\.\./g, "*")
+				.replace(/\[(\w+)\]/g, ":$1")
 			urlPath = `${prefix}/${urlPath}`
 		}
 
 		imports.push(`import { ${name} } from '${importPath}'`)
 
 		const methodMap: Record<string, string> = {
-			index: 'GET', show: 'GET', create: 'POST',
-			update: 'PUT', destroy: 'DELETE',
+			index: "GET",
+			show: "GET",
+			create: "POST",
+			update: "PUT",
+			destroy: "DELETE",
 		}
-		const idMethods = new Set(['show', 'update', 'destroy'])
+		const idMethods = new Set(["show", "update", "destroy"])
 
 		// Only generate routes for methods that exist on the controller
 		for (const [method, verb] of Object.entries(methodMap)) {
@@ -70,7 +73,7 @@ export async function buildEdgeRoutes(): Promise<void> {
     const ctrl = new ${name}()
     ;(ctrl as any).ctx = ctx
     const id = ctx.params?.id ? Number(ctx.params.id) : undefined
-    const result = await ctrl.${method}(${isIdMethod ? 'id' : ''})
+    const result = await ctrl.${method}(${isIdMethod ? "id" : ""})
     if (result instanceof Response) return result
     return new Response(JSON.stringify(result ?? {}), {
       headers: { 'content-type': 'application/json' }
@@ -84,7 +87,7 @@ export async function buildEdgeRoutes(): Promise<void> {
 
 import { Elysia } from 'elysia'
 
-${imports.join('\n')}
+${imports.join("\n")}
 
 const app = new Elysia()
 
@@ -95,24 +98,24 @@ app.get('/health', () => new Response(JSON.stringify({
 }), { headers: { 'content-type': 'application/json' }}))
 
 // Routes
-${routes.join('\n\n')}
+${routes.join("\n\n")}
 
 export default app
 `
 
-	const outPath = join(CWD, 'edge-app.ts')
-	writeFileSync(outPath, output, 'utf-8')
+	const outPath = join(CWD, "edge-app.ts")
+	writeFileSync(outPath, output, "utf-8")
 	console.log(`[build] Edge routes written to ${outPath}`)
 	console.log(`[build] ${files.length} controllers, ${routes.length} routes`)
 }
 
-function scanDir(dir: string, baseDir = ''): string[] {
+function scanDir(dir: string, baseDir = ""): string[] {
 	const files: string[] = []
 	const entries = readdirSync(dir, { withFileTypes: true })
 	for (const entry of entries) {
 		if (entry.isDirectory()) {
 			files.push(...scanDir(join(dir, entry.name), baseDir ? `${baseDir}/${entry.name}` : entry.name))
-		} else if (entry.isFile() && entry.name.endsWith('.ts') && !entry.name.startsWith('_')) {
+		} else if (entry.isFile() && entry.name.endsWith(".ts") && !entry.name.startsWith("_")) {
 			files.push(baseDir ? `${baseDir}/${entry.name}` : entry.name)
 		}
 	}

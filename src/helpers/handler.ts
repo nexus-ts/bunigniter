@@ -20,9 +20,9 @@
  * })
  * ```
  */
-import type { Context } from 'elysia'
-import type { z } from 'zod'
-import { validateZod, type ValidationErrors } from './validator'
+import type { Context } from "elysia"
+import type { z } from "zod"
+import type { ValidationErrors } from "./validator"
 
 /** Handler function type. */
 export type HandlerFn<T = any> = (c: Context, args?: T) => any
@@ -44,14 +44,14 @@ export type ValidatedHandler<T> = (c: Context, args: T) => any
 function toResponse(result: any, c?: Context): Response {
 	if (result instanceof Response) return result
 	if (result === null || result === undefined) return new Response(null, { status: 204 })
-	if (typeof result === 'string') {
+	if (typeof result === "string") {
 		return new Response(result, {
-			headers: { 'content-type': 'text/html; charset=utf-8' },
+			headers: { "content-type": "text/html; charset=utf-8" },
 		})
 	}
 	// object / array / number / boolean → JSON
 	return new Response(JSON.stringify(result), {
-		headers: { 'content-type': 'application/json' },
+		headers: { "content-type": "application/json" },
 		...(c ? { status: (c as any).set?.status ?? 200 } : {}),
 	})
 }
@@ -88,70 +88,68 @@ export function defineHandler<T extends HandlerFn>(fn: T): T {
  * })
  * ```
  */
-defineHandler.withValidator = function <T extends ValidatedHandler<any>>(
-	validators: HandlerValidatorConfig
-) {
-	return function (fn: T): HandlerFn {
-		return async (c: Context) => {
-			const errors: Record<string, ValidationErrors> = {}
+defineHandler.withValidator =
+	<T extends ValidatedHandler<any>>(validators: HandlerValidatorConfig) =>
+	(fn: T): HandlerFn =>
+	async (c: Context) => {
+		const errors: Record<string, ValidationErrors> = {}
 
-			// Validate body (Elysia v2 puts parsed body on c.body)
-			if (validators.body) {
-				const body = (c as any).body ?? {}
-				const result = validators.body.safeParse(body)
-				if (!result.success) {
-					errors.body = mapZodErrors(result.error)
-				} else {
-					(c as any)._validatedBody = result.data
-				}
+		// Validate body (Elysia v2 puts parsed body on c.body)
+		if (validators.body) {
+			const body = (c as any).body ?? {}
+			const result = validators.body.safeParse(body)
+			if (!result.success) {
+				errors.body = mapZodErrors(result.error)
+			} else {
+				;(c as any)._validatedBody = result.data
 			}
-
-			// Validate query
-			if (validators.query) {
-				const query = Object.fromEntries(
-					new URL(c.request.url).searchParams.entries()
-				)
-				const result = validators.query.safeParse(query)
-				if (!result.success) {
-					errors.query = mapZodErrors(result.error)
-				} else {
-					(c as any)._validatedQuery = result.data
-				}
-			}
-
-			// Validate params
-			if (validators.params) {
-				const result = validators.params.safeParse((c as any).params ?? {})
-				if (!result.success) {
-					errors.params = mapZodErrors(result.error)
-				}
-			}
-
-			if (Object.keys(errors).length > 0) {
-				return new Response(JSON.stringify({
-					error: 'Validation failed',
-					issues: errors,
-				}), {
-					status: 400,
-					headers: { 'content-type': 'application/json' },
-				})
-			}
-
-			const result = await fn(c, {
-				body: (c as any)._validatedBody,
-				query: (c as any)._validatedQuery,
-				params: (c as any).params,
-			})
-			return toResponse(result, c)
 		}
+
+		// Validate query
+		if (validators.query) {
+			const query = Object.fromEntries(new URL(c.request.url).searchParams.entries())
+			const result = validators.query.safeParse(query)
+			if (!result.success) {
+				errors.query = mapZodErrors(result.error)
+			} else {
+				;(c as any)._validatedQuery = result.data
+			}
+		}
+
+		// Validate params
+		if (validators.params) {
+			const result = validators.params.safeParse((c as any).params ?? {})
+			if (!result.success) {
+				errors.params = mapZodErrors(result.error)
+			}
+		}
+
+		if (Object.keys(errors).length > 0) {
+			return new Response(
+				JSON.stringify({
+					error: "Validation failed",
+					issues: errors,
+				}),
+				{
+					status: 400,
+					headers: { "content-type": "application/json" },
+				},
+			)
+		}
+
+		const result = await fn(c, {
+			body: (c as any)._validatedBody,
+			query: (c as any)._validatedQuery,
+			params: (c as any).params,
+		})
+		return toResponse(result, c)
 	}
-}
 
 /** Map Zod errors to our format. */
 function mapZodErrors(error: any): ValidationErrors {
 	const errors: ValidationErrors = {}
 	for (const issue of error.issues ?? []) {
-		const path = issue.path.join('.')
+		const path = issue.path.join(".")
 		;(errors[path] ??= []).push(issue.message)
 	}
 	return errors

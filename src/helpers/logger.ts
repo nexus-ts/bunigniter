@@ -12,14 +12,14 @@
  *   .use(loggerMiddleware())
  * ```
  */
-import { Elysia } from "elysia";
+import { Elysia } from "elysia"
 
 export interface LoggerOptions {
-	enabled?: boolean;
-	showQuery?: boolean;
-	showBody?: boolean;
-	logFn?: (message: string, data?: any) => void;
-	skip?: string[];
+	enabled?: boolean
+	showQuery?: boolean
+	showBody?: boolean
+	logFn?: (message: string, data?: any) => void
+	skip?: string[]
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -27,9 +27,9 @@ const STATUS_COLORS: Record<string, string> = {
 	"3": "\x1b[36m",
 	"4": "\x1b[33m",
 	"5": "\x1b[31m",
-};
-const RESET = "\x1b[0m";
-const DIM = "\x1b[2m";
+}
+const RESET = "\x1b[0m"
+const DIM = "\x1b[2m"
 
 /**
  * Create a request logger middleware for Elysia v2.
@@ -38,45 +38,38 @@ const DIM = "\x1b[2m";
  * `afterResponse('global')` to log after response is sent.
  */
 export function loggerMiddleware(options: LoggerOptions = {}) {
-	const enabled = options.enabled ?? true;
-	const showQuery = options.showQuery ?? false;
-	const logFn = options.logFn ?? console.log;
-	const skip = options.skip ?? ["/health"];
+	const enabled = options.enabled ?? true
+	const showQuery = options.showQuery ?? false
+	const logFn = options.logFn ?? console.log
+	const skip = options.skip ?? ["/health"]
 
-	if (!enabled) return new Elysia({ name: "bunigniter-logger" });
+	if (!enabled) return new Elysia({ name: "bunigniter-logger" })
 
 	return new Elysia({ name: "bunigniter-logger" })
 		.derive("global", ({ request }: any) => {
-			const url = new URL(request.url);
-			const path = url.pathname;
-			if (skip.some((s: string) => path.startsWith(s))) return {};
+			const url = new URL(request.url)
+			const path = url.pathname
+			if (skip.some((s: string) => path.startsWith(s))) return {}
 
 			return {
 				_logStart: performance.now(),
 				_logMethod: request.method,
 				_logPath: path + (showQuery ? url.search : ""),
-			};
+			}
 		})
-		.afterHandle(
-			"global" as any,
-			({ _logStart, _logMethod, _logPath, set, response }: any) => {
-				if (!_logStart) return response;
+		.afterHandle("global" as any, ({ _logStart, _logMethod, _logPath, set, response }: any) => {
+			if (!_logStart) return response
 
-				const duration =
-					Math.round((performance.now() - _logStart) * 100) / 100;
-				const status = set?.status ?? 200;
-				const statusGroup = String(status)[0];
-				const color = STATUS_COLORS[statusGroup] ?? "";
-				const timestamp = new Date()
-					.toISOString()
-					.replace("T", " ")
-					.slice(0, 19);
-				const methodPad = (_logMethod ?? "?").padEnd(7);
+			const duration = Math.round((performance.now() - _logStart) * 100) / 100
+			const status = set?.status ?? 200
+			const statusGroup = String(status)[0]
+			const color = STATUS_COLORS[statusGroup] ?? ""
+			const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19)
+			const methodPad = (_logMethod ?? "?").padEnd(7)
 
-				logFn(
-					`${DIM}${timestamp}${RESET} ${methodPad} ${color}${status}${RESET} ${_logPath ?? "?"} ${DIM}${duration}ms${RESET}`,
-				);
-				return response;
-			},
-		);
+			logFn(
+				`${DIM}${timestamp}${RESET} ${methodPad} ${color}${status}${RESET} ${_logPath ?? "?"} ${DIM}${duration}ms${RESET}`,
+			)
+			return response
+		})
 }

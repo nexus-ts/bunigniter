@@ -1,28 +1,3 @@
-/**
- * WebSocket — simple real-time communication.
- *
- * @example
- * ```ts
- * // routes/ws.ts — define WebSocket handlers per room/topic
- * import { ws } from 'bunigniter/helpers/ws'
- *
- * // Echo server
- * ws.handle('/ws/echo', {
- *   open(ws) { console.log('connected') },
- *   message(ws, data) { ws.send('echo: ' + data) },
- *   close(ws) { console.log('disconnected') },
- * })
- *
- * // Chat room
- * ws.handle('/ws/chat', {
- *   message(ws, data) {
- *     ws.publish('chat', JSON.stringify({ user: ws.id, msg: data }))
- *   },
- * })
- * ```
- */
-import { Elysia } from 'elysia'
-
 type WSHandler = {
 	open?: (ws: any) => void
 	message?: (ws: any, data: any) => void
@@ -38,7 +13,6 @@ type WSOptions = {
 }
 
 class WSManager {
-	private app: any = null
 	private handlers: Map<string, WSHandler> = new Map()
 	private options: Map<string, WSOptions> = new Map()
 

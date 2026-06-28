@@ -35,7 +35,7 @@
  * })
  * ```
  */
-import { z } from 'zod'
+import { z } from "zod"
 
 /**
  * Column type info extracted from a Drizzle table column definition.
@@ -56,12 +56,12 @@ interface ColumnInfo {
 function getColumns(table: any): ColumnInfo[] {
 	const cols: ColumnInfo[] = []
 	// Drizzle stores columns in table[Symbol.for('drizzle:columns')]
-	const drizzleCols = table?.[Symbol.for('drizzle:columns')] ?? table?.['_'] ?? {}
+	const drizzleCols = table?.[Symbol.for("drizzle:columns")] ?? table?._ ?? {}
 
 	for (const [name, col] of Object.entries<any>(drizzleCols)) {
 		cols.push({
 			name,
-			type: col?.type ?? 'text',
+			type: col?.type ?? "text",
 			notNull: col?.notNull ?? false,
 			hasDefault: col?.hasDefault ?? false,
 			isPrimaryKey: col?.primaryKey ?? false,
@@ -72,12 +72,12 @@ function getColumns(table: any): ColumnInfo[] {
 	// Fallback: try to get columns from the table's structure
 	if (cols.length === 0) {
 		for (const key of Object.keys(table)) {
-			if (key.startsWith('_') || key === 'name' || key === 'Symbol') continue
+			if (key.startsWith("_") || key === "name" || key === "Symbol") continue
 			const col = table[key]
-			if (col && typeof col === 'object' && col.name) {
+			if (col && typeof col === "object" && col.name) {
 				cols.push({
 					name: col.name,
-					type: col.type ?? 'text',
+					type: col.type ?? "text",
 					notNull: col.notNull ?? false,
 					hasDefault: col.hasDefault ?? false,
 					isPrimaryKey: col.primaryKey ?? false,
@@ -97,22 +97,18 @@ function columnToZod(col: ColumnInfo): z.ZodTypeAny {
 	let schema: z.ZodTypeAny
 
 	switch (col.type) {
-		case 'number':
-		case 'integer':
-		case 'serial':
+		case "number":
+		case "integer":
+		case "serial":
 			schema = z.number()
 			break
-		case 'boolean':
+		case "boolean":
 			schema = z.boolean()
 			break
-		case 'json':
-		case 'jsonb':
+		case "json":
+		case "jsonb":
 			schema = z.record(z.any())
 			break
-		case 'text':
-		case 'varchar':
-		case 'char':
-		case 'string':
 		default:
 			schema = z.string()
 			break
@@ -149,7 +145,7 @@ export function createInsertSchema<T extends Record<string, any>>(
 	table: any,
 	refinements?: Partial<{
 		[K in keyof T]: (schema: z.ZodTypeAny) => z.ZodTypeAny
-	}>
+	}>,
 ): z.ZodObject<any> {
 	const columns = getColumns(table)
 	const shape: Record<string, z.ZodTypeAny> = {}
@@ -161,7 +157,7 @@ export function createInsertSchema<T extends Record<string, any>>(
 		let schema = columnToZod(col)
 
 		// Apply refinements
-		if (refinements && refinements[col.name as keyof typeof refinements]) {
+		if (refinements?.[col.name as keyof typeof refinements]) {
 			const refine = refinements[col.name as keyof typeof refinements]!
 			schema = refine(schema)
 		}
@@ -214,7 +210,7 @@ export function createUpdateSchema<T extends Record<string, any>>(
 	table: any,
 	refinements?: Partial<{
 		[K in keyof T]: (schema: z.ZodTypeAny) => z.ZodTypeAny
-	}>
+	}>,
 ): z.ZodObject<any> {
 	const insertSchema = createInsertSchema(table, refinements)
 	const shape = insertSchema.shape
