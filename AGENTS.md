@@ -185,3 +185,15 @@ See `docs/user-guide/` and `docs/analysis/` — 16 files covering all features.
 ## Skills
 
 See `skills/` directory for focused development guides.
+
+| Skill | Description |
+|-------|-------------|
+| [Bun APIs](skills/bun-apis.md) | Bun built-in APIs: Bun.CSRF, Bun.CryptoHasher, Bun.password, etc. |
+| [Controller](skills/controller.md) | Creating routes with Controller + Request input API |
+| [Database](skills/database.md) | CI-style query builder |
+| [Auth](skills/auth.md) | Session & JWT authentication |
+| [Templates](skills/templates.md) | Rendu / MDX / React SSR |
+| [CLI](skills/cli.md) | CLI commands reference |
+| [HMVC](skills/hmvc.md) | HMVC module system |
+| [OpenAPI](skills/openapi.md) | OpenAPI documentation |
+| [Realtime](skills/realtime.md) | WebSocket & SSE |
