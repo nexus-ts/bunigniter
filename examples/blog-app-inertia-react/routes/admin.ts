@@ -6,7 +6,7 @@ export class Admin extends Controller {
   }
 
   async index() {
-    const posts = await this.db.all('SELECT p.*, u.username FROM posts p JOIN users u ON u.id = p.user_id ORDER BY p.created_at DESC')
+    const posts = await this.db.getJoin('posts p', [['users u', 'u.id = p.user_id']], { orderBy: 'p.created_at DESC' })
     return this.view('admin', { title: 'Admin', posts, user: this.auth.user() })
   }
   async show(id: number) {

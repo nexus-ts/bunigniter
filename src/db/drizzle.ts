@@ -173,6 +173,51 @@ export class DbClient {
 		return result.rows
 	}
 
+	/**
+	 * SELECT with JOIN — CodeIgniter-style.
+	 *
+	 * @example
+	 * await db.getJoin('posts p', [['users u', 'u.id = p.user_id']], { where: { 'p.status': 'published' } })
+	 * await db.getJoin('orders o', [
+	 *   ['users u', 'u.id = o.user_id'],
+	 *   ['order_items oi', 'oi.order_id = o.id', 'left'],
+	 * ], { orderBy: 'o.created_at DESC', limit: 10 })
+	 */
+	async getJoin<T = any>(
+		from: string,
+		joins: Array<[string, string] | [string, string, string]>,
+		options?: {
+			where?: Record<string, any>
+			orderBy?: string
+			limit?: number
+			offset?: number
+			select?: string
+		}
+	): Promise<T[]> {
+		let sql = `SELECT ${options?.select ?? '*'} FROM ${from}`
+		const params: unknown[] = []
+
+		for (const join of joins) {
+			const [table, on, type] = join
+			const joinType = (type?.toUpperCase() === 'LEFT' || type?.toUpperCase() === 'RIGHT' || type?.toUpperCase() === 'INNER')
+				? type.toUpperCase()
+				: type?.toUpperCase() === 'OUTER' ? 'LEFT' : ''
+			sql += joinType ? ` ${joinType} JOIN ${table} ON ${on}` : ` JOIN ${table} ON ${on}`
+		}
+
+		if (options?.where && Object.keys(options.where).length > 0) {
+			const r = buildWhere(options.where)
+			sql += ` WHERE ${r.clause}`
+			params.push(...r.vals)
+		}
+		if (options?.orderBy) sql += ` ORDER BY ${options.orderBy}`
+		if (options?.limit) { sql += ' LIMIT ?'; params.push(options.limit) }
+		if (options?.offset) { sql += ' OFFSET ?'; params.push(options.offset) }
+
+		const result = await this.query<T>(sql, params)
+		return result.rows
+	}
+
 	async query<T = any>(sql: string, params: unknown[] = []): Promise<QueryResult<T>> {
 		this.assertOpen()
 		if (!this.rawExecutor) {
