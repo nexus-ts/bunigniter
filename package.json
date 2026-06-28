@@ -20,7 +20,8 @@
 	"./helpers/upload": "./src/helpers/upload.ts",
 	"./helpers/mail": "./src/helpers/mail.ts",
 	"./helpers/modules": "./src/helpers/modules.ts",
-		"./helpers/openapi": "./src/helpers/openapi.ts"
+		"./helpers/openapi": "./src/helpers/openapi.ts",
+		"./helpers/jwt": "./src/helpers/jwt.ts"
 },
   "scripts": {
     "dev": "bun --hot run src/index.ts",
