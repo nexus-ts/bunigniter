@@ -2,6 +2,15 @@
 
 All notable changes to Bunigniter are documented in this file.
 
+## [0.3.1] — 2026-06-28
+
+### Fixed
+
+- **npm publish workflow** — Automated npm publish via GitHub Actions on release
+- **Version bump** — 0.3.0 unpublished and re-published as 0.3.1
+
+[0.3.1]: https://github.com/nexus-ts/bunigniter/compare/v0.3.0...v0.3.1
+
 ## [0.3.0] — 2026-06-28
 
 ### Added
