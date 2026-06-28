@@ -3,7 +3,7 @@
  *
  * GET /logout
  */
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Logout extends Controller {
 	async index() {

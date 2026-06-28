@@ -9,6 +9,6 @@
     "seed": "bun run db/seed.ts"
   },
   "dependencies": {
-    "@nexusts/core": "../../"
+    "bunigniter": "../../"
   }
 }

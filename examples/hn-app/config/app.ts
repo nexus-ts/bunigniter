@@ -1,4 +1,4 @@
-import { env } from '@nexusts/core/helpers/env'
+import { env } from 'bunigniter/helpers/env'
 
 export default {
 	port: env('PORT', 3000),

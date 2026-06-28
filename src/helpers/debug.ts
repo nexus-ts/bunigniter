@@ -139,7 +139,7 @@ function renderInline(data: DebugData): string {
 	return `<!-- Debug -->
 <div class="nexdb" id="__nexdb" style="all:initial;position:fixed;bottom:0;left:0;right:0;z-index:99999;font-family:system-ui,sans-serif;font-size:13px;color:#e0e0e0;background:#13131f;border-top:2px solid #e94560">
 <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer" onclick="document.getElementById('__nexdb').classList.toggle('open')">
-<span style="font-weight:700;color:#e94560">▣ NexusTS</span>
+<span style="font-weight:700;color:#e94560">▣ Bunigniter</span>
 <span style="background:#e94560;color:#fff;padding:1px 7px;border-radius:3px;font-size:11px;font-weight:600">${data.method}</span>
 <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#aaa;font-size:12px">${data.path}</span>
 <span style="background:#2d2d5e;color:#fff;padding:1px 7px;border-radius:3px;font-size:11px"><b>${data.status}</b></span>

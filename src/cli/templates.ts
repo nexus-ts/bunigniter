@@ -16,7 +16,7 @@ export function controller(name: string, prefix: string): string {
  * PUT  {{prefix}}/{{name}}/:id
  * DELETE {{prefix}}/{{name}}/:id
  */
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class {{Name}} extends Controller {
 	async index() {
@@ -93,7 +93,7 @@ export function middleware(name: string): string {
 	return render(`/**
  * {{name}} middleware
  */
-import { defineMiddleware } from '@nexusts/core'
+import { defineMiddleware } from 'bunigniter'
 
 export default defineMiddleware(async (c, next) => {
   const start = performance.now()
@@ -142,7 +142,7 @@ export function job(name: string): string {
 	return render(`/**
  * {{name}} job — queue worker
  */
-import type { Job } from '@nexusts/core/helpers/queue'
+import type { Job } from 'bunigniter/helpers/queue'
 
 export default async function (job: Job) {
   const { data } = job
@@ -158,7 +158,7 @@ export function mail(name: string): string {
  * {{name}} mail
  */
 export async function send{{Name}}(to: string, data: Record<string, any> = {}) {
-  // const { mail } = await import('@nexusts/core/helpers/mail')
+  // const { mail } = await import('bunigniter/helpers/mail')
   // await mail.send({ to, subject: '{{Name}}', html: \`<h1>\${data.title}</h1>\` })
   console.log('Sending {{name}} mail to', to, data)
 }

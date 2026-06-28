@@ -4,7 +4,7 @@
  * GET  /login → show login form
  * POST /login → authenticate
  */
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Login extends Controller {
 	async index() {

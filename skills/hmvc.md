@@ -20,7 +20,7 @@ modules/shop/routes/products.ts → /shop/products
 ## Cross-Module Calls
 
 ```ts
-import { moduleRun } from '@nexusts/core/helpers/modules'
+import { moduleRun } from 'bunigniter/helpers/modules'
 
 const posts = await moduleRun('blog/posts/index', ctx)
 ```

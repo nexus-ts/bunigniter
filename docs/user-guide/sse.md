@@ -6,8 +6,8 @@ SSE allows servers to push data to clients over a single HTTP connection. Unlike
 
 ```ts
 // routes/sse.ts
-import { defineHandler } from '@nexusts/core'
-import { sse } from '@nexusts/core/helpers/sse'
+import { defineHandler } from 'bunigniter'
+import { sse } from 'bunigniter/helpers/sse'
 
 export const GET = defineHandler(async (ctx) => {
   return sse(ctx, (send) => {

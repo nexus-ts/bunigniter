@@ -1,4 +1,4 @@
-import { Controller } from "@nexusts/core";
+import { Controller } from "bunigniter";
 export class Comment extends Controller {
 	async create(id: number) {
 		const user = this.auth.user();

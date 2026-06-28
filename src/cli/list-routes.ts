@@ -16,7 +16,7 @@ export async function listRoutes(): Promise<void> {
 	const files = readdirSync(routesDir)
 	const prefix = process.env.ROUTER_PREFIX ?? '/api'
 
-	console.log('\n  NexusTS Routes')
+	console.log('\n  Bunigniter Routes')
 	console.log('  ─────────────────────────────────')
 
 	let count = 0

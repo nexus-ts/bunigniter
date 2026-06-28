@@ -4,7 +4,7 @@
  * @example
  * ```ts
  * // routes/schedule.ts
- * import { schedule } from '@nexusts/core/helpers/schedule'
+ * import { schedule } from 'bunigniter/helpers/schedule'
  *
  * // Run every 5 seconds
  * schedule.every(5000).do(async () => {

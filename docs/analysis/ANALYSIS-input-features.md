@@ -1,4 +1,4 @@
-# NexusTS Input 기능 분석 — CodeIgniter 3/4 / Laravel / AdonisJS / Elysia 대비
+# Bunigniter Input 기능 분석 — CodeIgniter 3/4 / Laravel / AdonisJS / Elysia 대비
 
 > 분석일: 2026-06-28
 > 대상: CodeIgniter 3, CodeIgniter 4, Laravel 11, AdonisJS 6, Elysia 2.0.0-exp.9
@@ -7,7 +7,7 @@
 
 ## 1. 프레임워크별 Input 아키텍처 개요
 
-### Elysia (NexusTS 기반)
+### Elysia (Bunigniter 기반)
 
 Elysia는 Web Standard Request 기반으로 최소한의 Context만 제공한다.
 
@@ -20,7 +20,7 @@ Elysia는 Web Standard Request 기반으로 최소한의 Context만 제공한다
 - `ctx.server` — Bun server instance (Bun only)
 - `server.requestIP(request)` — IP 조회 (Bun only)
 
-NexusTS Controller는 여기에 `this.body`, `this.query`, `this.param(name)`, `this.headers` getter만 추가했다.
+Bunigniter Controller는 여기에 `this.body`, `this.query`, `this.param(name)`, `this.headers` getter만 추가했다.
 **별도의 `Request` 래퍼 클래스가 없어서** input 관련 API가 매우 빈약하다.
 
 ### CodeIgniter 3 (CI_Input)
@@ -122,7 +122,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.1 Input 데이터 접근
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | 전체 body | ✗ | `getJSON()` | `all()` | `all()` / `body()` | `ctx.body` | `this.body` | ⚠️ CI3 제외 |
 | 단일 필드 | `post('name')` | `getPost('name')` | `input('name')` | `input('name')` | `ctx.body.name` | `this.body.name` | ⚠️ |
@@ -140,7 +140,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.2 Input 존재 여부 확인
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | `has(key)` | ✗ | ✗ | ✅ | ✗ | ✗ | ✗ | **🔴** |
 | `filled(key)` | ✗ | ✗ | ✅ | ✗ | ✗ | ✗ | **🔴** |
@@ -149,7 +149,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.3 타입 캐스팅
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | `boolean(key)` | ✗ | ✗ | ✅ | ✗ | ✗ | ✗ | **🔴** |
 | `integer(key)` | ✗ | ✗ | ✅ | ✗ | ✗ | ✗ | **🔴** |
@@ -162,7 +162,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.4 요청 식별 / 메타데이터
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | `method()` | `method()` | `getMethod()` | `method()` | `method()` / `intended()` | `ctx.request.method` | ✗ | **🔴** |
 | `isAjax()` | `is_ajax_request()` | ✅ | `ajax()` | `ajax()` | ✗ | ✗ | **🔴** |
@@ -177,7 +177,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.5 IP / User Agent
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | `ip()` / `ipAddress()` | `ip_address()` | `getIPAddress()` | `ip()` | `ip()` | `server.requestIP()` | ✗ | **🔴** |
 | IP 유효성 검증 | `valid_ip($ip)` | ✗ | ✗ | ✗ | ✗ | ✗ | **🔴** |
@@ -190,7 +190,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.6 서버 / 헤더 / 쿠키
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | `server(key)` | `server()` | `getServer()` | `server()` | ✗ | ✗ | ✗ | **🔴** |
 | `header(key)` | `get_request_header()` | `header()` | `header()` | `header()` | `ctx.headers['key']` | `this.headers['key']` | ⚠️ |
@@ -202,7 +202,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.7 파일 업로드
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | `file(key)` | ✗ (별도 Upload lib) | `getFile()` | `file()` | `file()` | Elysia `body` (formdata) | `this.upload.file(body, key)` | ⚠️ |
 | 파일 검증 | ✅ (별도 Upload lib) | `isValid()` | `validate()` | `file(key, options)` | ✗ | size/MIME 검증 | ⚠️ |
@@ -211,7 +211,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.8 Old Input / Flash
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | `old(key)` | ✗ | `getOldInput()` | `old()` | ✗ (session 직접) | ✗ | ✗ | **🔴** |
 | `flash()` / `flashOnly()` / `flashExcept()` | ✗ | ✗ | ✅ | ✗ | ✗ | ✗ | **🔴** |
@@ -219,7 +219,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.9 보안
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | XSS 필터링 | ✅ (`xss_clean`) | ✅ (`xss_clean`) | Blade 자동 escape | Edge 자동 escape | ✗ | ✗ | **🔴** |
 | Input sanitize | ✗ | `filter_var` flags | ✗ (validation 사용) | ✗ | ✗ | ✗ | **🔴** |
@@ -228,7 +228,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.10 Validation 통합
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | Inline validation | ✗ (별도 Validator) | ✗ | `$request->validate()` | `request.validate()` | Elysia schema | `this.validate()` | ✅ |
 | Form Request | ✗ | ✗ | `FormRequest` class | validator class | Elysia plugin | ✗ | **🔴** |
@@ -236,7 +236,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.11 Content Negotiation
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | Accept 협상 | ✗ | `negotiate('media', ...)` | `accepts()` | `accepts()` / `is()` | ✗ | ✗ | **🔴** |
 | 언어 협상 | ✗ | `negotiate('language', ...)` | ✗ | `language()` | ✗ | ✗ | **🔴** |
@@ -244,7 +244,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ### 2.12 IP 유효성 검증 (CI3 특화)
 
-| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | NexusTS | 상태 |
+| 기능 | CI3 | CI4 | Laravel | AdonisJS | Elysia | Bunigniter | 상태 |
 |------|:---:|:---:|:-------:|:--------:|:------:|:-------:|:----:|
 | `valid_ip($ip)` | ✅ | ✗ | ✗ | ✗ | ✗ | ✗ | **🔴** |
 | `valid_ip($ip, 'ipv4')` | ✅ (프로토콜 지정) | ✗ | ✗ | ✗ | ✗ | ✗ | **🔴** |
@@ -261,7 +261,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 | **CodeIgniter 4** | ~25+ | `CodeIgniter\HTTP\IncomingRequest` | `$request->method()` |
 | **CodeIgniter 3** | ~18+ | `CI_Input` (system/core/Input.php) | `$this->input->method()` |
 | **Elysia 2.0** | ~10 (raw) | 없음 (Context 객체뿐) | `ctx.method` |
-| **NexusTS** (현재) | ~5 (getter) | 없음 (Controller getter만) | `this.body` |
+| **Bunigniter** (현재) | ~5 (getter) | 없음 (Controller getter만) | `this.body` |
 
 ---
 
@@ -313,7 +313,7 @@ Symfony Request 기반 + `InteractsWithInput` trait
 
 ---
 
-## 5. 결론: NexusTS에 가장 필요한 Input 기능 (우선순위)
+## 5. 결론: Bunigniter에 가장 필요한 Input 기능 (우선순위)
 
 ### Phase 1 — 필수 (MVP)
 

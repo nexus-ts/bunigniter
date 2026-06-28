@@ -1,7 +1,7 @@
 # CLI Commands
 
 ```bash
-bun run nx <command> [args]
+bun run bi <command> [args]
 ```
 
 ## Scaffolding

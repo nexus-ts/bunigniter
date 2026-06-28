@@ -5,7 +5,7 @@
  * POST /cart/add/:id → add pet to cart
  * POST /cart/remove/:id → remove from cart
  */
-import { Controller } from "@nexusts/core";
+import { Controller } from "bunigniter";
 
 export class Cart extends Controller {
 	async index() {

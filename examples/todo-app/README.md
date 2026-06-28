@@ -1,6 +1,6 @@
-# Todo App — NexusTS Example
+# Todo App — Bunigniter Example
 
-A full-stack Todo application demonstrating NexusTS features:
+A full-stack Todo application demonstrating Bunigniter features:
 
 - **File-based routing** (`pages/todos.ts` → `/todos`)
 - **Inertia-style page rendering** (`this.page()` → HTML/JSON)

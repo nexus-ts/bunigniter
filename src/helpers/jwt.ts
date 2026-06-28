@@ -41,7 +41,7 @@ const defaults: JwtConfig = {
  *
  * @example
  * ```ts
- * import { jwt } from '@nexusts/core/helpers/jwt'
+ * import { jwt } from 'bunigniter/helpers/jwt'
  *
  * // Login endpoint
  * const token = jwt.sign({ userId: user.id, role: user.role })

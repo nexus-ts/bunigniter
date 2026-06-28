@@ -17,7 +17,7 @@ protected _before() {
 ## JWT Auth
 
 ```ts
-import { jwt } from '@nexusts/core/helpers/jwt'
+import { jwt } from 'bunigniter/helpers/jwt'
 
 const token = jwt.sign({ userId: 1, role: 'admin' }, { secret: 'key', expiresIn: 3600 })
 const payload = jwt.verify(token, { secret: 'key' })

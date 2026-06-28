@@ -52,7 +52,7 @@ export default function TodoList({ todos, stats, filter, priority }: Props) {
 				<h1 style={{ color: '#e94560', fontSize: 28 }}>📋 Todo App</h1>
 				<a href="/about" style={{ color: '#70a1ff', fontSize: 14, textDecoration: 'none' }}>About →</a>
 			</div>
-			<p style={{ color: '#888', fontSize: 14, marginBottom: 24 }}>NexusTS + React SSR</p>
+			<p style={{ color: '#888', fontSize: 14, marginBottom: 24 }}>Bunigniter + React SSR</p>
 
 			{/* Stats */}
 			<div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>

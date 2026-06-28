@@ -7,7 +7,7 @@
 ## Pattern
 
 ```ts
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class <Name> extends Controller {
   async index() { ... }     // GET  /<name>
@@ -21,7 +21,7 @@ export class <Name> extends Controller {
 ## Rules
 
 - Only methods that exist are registered (no unused routes)
-- Import from `@nexusts/core`, NOT relative paths
+- Import from `bunigniter`, NOT relative paths
 - `_before()` runs before every method (return Response to short-circuit)
 
 ## Input Handling

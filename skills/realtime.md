@@ -3,7 +3,7 @@
 ## WebSocket — routes/ws.ts
 
 ```ts
-import { ws } from '@nexusts/core/helpers/ws'
+import { ws } from 'bunigniter/helpers/ws'
 
 ws.handle('/ws/echo', {
   open(ws) { console.log('connected') },
@@ -21,8 +21,8 @@ Methods: `ws.send(data)`, `ws.publish(room, data)`, `ws.subscribe(room)`, `ws.un
 ## SSE — routes/sse.ts
 
 ```ts
-import { defineHandler } from '@nexusts/core'
-import { sse } from '@nexusts/core/helpers/sse'
+import { defineHandler } from 'bunigniter'
+import { sse } from 'bunigniter/helpers/sse'
 
 export const GET = defineHandler(async (ctx) => {
   return sse(ctx, (send) => {

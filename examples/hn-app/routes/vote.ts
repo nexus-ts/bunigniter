@@ -3,7 +3,7 @@
  *
  * POST /vote/:id
  */
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Vote extends Controller {
 	async create(id: number) {

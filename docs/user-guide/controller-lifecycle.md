@@ -1,6 +1,6 @@
 # Controller Lifecycle Hooks
 
-NexusTS provides lifecycle hooks in the `Controller` base class that run automatically before controller methods.
+Bunigniter provides lifecycle hooks in the `Controller` base class that run automatically before controller methods.
 
 ## `_before()`
 
@@ -9,7 +9,7 @@ The `_before()` hook runs **before every controller method**. If it returns a `R
 ### Usage: Auth Guard
 
 ```ts
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Admin extends Controller {
   protected _before(): Response | undefined {

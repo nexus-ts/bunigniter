@@ -1,4 +1,4 @@
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Home extends Controller {
   async index() {

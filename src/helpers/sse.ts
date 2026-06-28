@@ -4,8 +4,8 @@
  * @example
  * ```ts
  * // routes/sse.ts
- * import { sse } from '@nexusts/core/helpers/sse'
- * import { Controller } from '@nexusts/core'
+ * import { sse } from 'bunigniter/helpers/sse'
+ * import { Controller } from 'bunigniter'
  *
  * export class Events extends Controller {
  *   async clock() {

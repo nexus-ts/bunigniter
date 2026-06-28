@@ -1,12 +1,12 @@
 # WebSocket
 
-NexusTS provides WebSocket support via `ws.handle()` for real-time, bidirectional communication.
+Bunigniter provides WebSocket support via `ws.handle()` for real-time, bidirectional communication.
 
 ## Quick Start
 
 ```ts
 // routes/ws.ts
-import { ws } from '@nexusts/core/helpers/ws'
+import { ws } from 'bunigniter/helpers/ws'
 
 ws.handle('/ws/echo', {
   message(ws, data) {
@@ -126,7 +126,7 @@ ws.handle('/ws/counter', {
 ### Authenticated WebSocket
 
 ```ts
-import { jwt } from '@nexusts/core/helpers/jwt'
+import { jwt } from 'bunigniter/helpers/jwt'
 
 ws.handle('/ws/private', {
   message(ws, data) {

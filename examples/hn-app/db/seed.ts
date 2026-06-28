@@ -53,9 +53,9 @@ if (existing.c === 0) {
   db.run("INSERT INTO users (username, password) VALUES ('bob', 'password123')")
   db.run("INSERT INTO users (username, password) VALUES ('charlie', 'password123')")
 
-  db.run("INSERT INTO stories (title, url, user_id, points) VALUES ('NexusTS — Bun-native fullstack framework', 'https://github.com/nexus-ts/nexusts', 1, 15)")
+  db.run("INSERT INTO stories (title, url, user_id, points) VALUES ('Bunigniter — Bun-native fullstack framework', 'https://github.com/nexus-ts/nexusts', 1, 15)")
   db.run("INSERT INTO stories (title, url, user_id, points) VALUES ('Bun 1.3 released with improved performance', 'https://bun.sh', 2, 42)")
-  db.run("INSERT INTO stories (title, text, user_id, points) VALUES ('Show HN: I built a Hacker News clone in one hour', 'It uses NexusTS with SQLite and Rendu templates. Check it out!', 1, 87)")
+  db.run("INSERT INTO stories (title, text, user_id, points) VALUES ('Show HN: I built a Hacker News clone in one hour', 'It uses Bunigniter with SQLite and Rendu templates. Check it out!', 1, 87)")
   db.run("INSERT INTO stories (title, url, user_id, points) VALUES ('TypeScript 6.0: What is new', 'https://typescriptlang.org', 3, 33)")
   db.run("INSERT INTO stories (title, text, user_id, points) VALUES ('Ask HN: What framework do you use in 2026?', 'I am curious what everyone is using for new projects these days.', 2, 56)")
 
@@ -63,7 +63,7 @@ if (existing.c === 0) {
   db.run("INSERT INTO comments (story_id, user_id, text) VALUES (1, 3, 'How does it compare to AdonisJS?')")
   db.run("INSERT INTO comments (story_id, user_id, text) VALUES (3, 3, 'Haha this is meta')")
   db.run("INSERT INTO comments (story_id, user_id, text) VALUES (3, 1, 'The framework is great for prototyping!')")
-  db.run("INSERT INTO comments (story_id, user_id, text) VALUES (5, 1, 'I use NexusTS for everything now')")
+  db.run("INSERT INTO comments (story_id, user_id, text) VALUES (5, 1, 'I use Bunigniter for everything now')")
 
   db.run("INSERT INTO votes (user_id, story_id) VALUES (2, 1)")
   db.run("INSERT INTO votes (user_id, story_id) VALUES (3, 3)")

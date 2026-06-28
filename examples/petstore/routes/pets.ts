@@ -1,4 +1,4 @@
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Pets extends Controller {
   async index() {

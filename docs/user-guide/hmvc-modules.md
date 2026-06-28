@@ -34,7 +34,7 @@ Each module is mounted at `/<module_name>` automatically.
 ### 1. Controller (`routes/posts.ts`)
 
 ```ts
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Posts extends Controller {
   async index() {
@@ -68,7 +68,7 @@ If not found in the module, falls back to the root `views/` directory.
 Call another module's controller programmatically with `moduleRun()`:
 
 ```ts
-import { moduleRun } from '@nexusts/core/helpers/modules'
+import { moduleRun } from 'bunigniter/helpers/modules'
 
 export class Dashboard extends Controller {
   async index() {

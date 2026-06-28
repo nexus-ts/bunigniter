@@ -3,7 +3,7 @@
  *
  * GET /welcome → renders views/welcome.html with Rendu <?= ?> syntax
  */
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Welcome extends Controller {
 	async index() {
@@ -15,7 +15,7 @@ export class Welcome extends Controller {
 		} catch {}
 
 		return this.view('welcome', {
-			title: 'Welcome to NexusTS',
+			title: 'Welcome to Bunigniter',
 			message: 'A full-stack framework inspired by CodeIgniter',
 			total,
 			uptime: `${Math.floor(process.uptime())}s`,

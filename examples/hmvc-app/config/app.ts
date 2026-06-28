@@ -1,4 +1,4 @@
-import { env } from '@nexusts/core/helpers/env'
+import { env } from 'bunigniter/helpers/env'
 export default {
   port: 3005,
   db: { dialect: 'bun-sqlite' as const, connection: { filename: env('DB_FILENAME', 'examples/hmvc-app/data/hmvc.db') } },

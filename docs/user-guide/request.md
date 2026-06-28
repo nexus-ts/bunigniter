@@ -1,6 +1,6 @@
 # Request — Input Handling
 
-> NexusTS provides a CodeIgniter-style request proxy via `this.request` in Controllers.
+> Bunigniter provides a CodeIgniter-style request proxy via `this.request` in Controllers.
 
 The `RequestProxy` wraps Elysia's Context to provide a familiar input API inspired by CodeIgniter 3/4, Laravel, and AdonisJS.
 
@@ -230,7 +230,7 @@ this.ctx_raw.request                  // Web Standard Request
 
 ## Compared to CodeIgniter
 
-| NexusTS | CodeIgniter 3/4 | Description |
+| Bunigniter | CodeIgniter 3/4 | Description |
 |---------|----------------|-------------|
 | `this.request.input('name')` | `$this->input->post('name')` | POST + GET merged |
 | `this.request.get('page')` | `$this->input->get('page')` | GET only |
@@ -254,4 +254,4 @@ this.ctx_raw.request                  // Web Standard Request
 
 - Implementation: `src/helpers/request.ts`
 - Controller integration: `src/base/controller.ts`
-- Exported from: `@nexusts/core` (`RequestProxy`)
+- Exported from: `bunigniter` (`RequestProxy`)

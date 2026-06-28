@@ -1,4 +1,4 @@
-# NexusTS
+# Bunigniter
 
 **Bun-native fullstack framework — CodeIgniter spirit × Elysia v2 performance × Edge-ready**
 
@@ -12,13 +12,13 @@ bun run examples/blog-app-tsx/dev.ts   # Blog CMS (React SSR)  :3002
 
 ---
 
-## Why NexusTS?
+## Why Bunigniter?
 
-PHP developers (CodeIgniter, Laravel) moving to TypeScript face a wall: NestJS is over-engineered, Hono is too bare, AdonisJS is Node-only. **NexusTS is the bridge.**
+PHP developers (CodeIgniter, Laravel) moving to TypeScript face a wall: NestJS is over-engineered, Hono is too bare, AdonisJS is Node-only. **Bunigniter is the bridge.**
 
 ```ts
 // routes/users.ts — file path = URL
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Users extends Controller {
   async index() {
@@ -44,7 +44,7 @@ export class Users extends Controller {
 ## Quick Start
 
 ```bash
-git clone https://github.com/nexus-ts/framework.git
+git clone https://github.com/nexus-ts/bunigniter.git
 cd framework
 bun install
 bun run examples/todo-app/db/seed.ts
@@ -68,14 +68,14 @@ bun run examples/todo-app/dev.ts
 | **Middleware** | Logger, Rate limiter, CORS, CSRF, Timing, Auth |
 | **Services** | Cache (TTL), Queue (in-memory, retry), Upload (validation), Mail (SMTP/File/Null), Image manipulation, HTTP client |
 | **Security** | CSRF tokens, Rate limiting, JWT, Session encryption (AES-256-GCM + HMAC) |
-| **Edge** | Cloudflare Workers, Deno, pre-built routes (`nx build:edge`) |
+| **Edge** | Cloudflare Workers, Deno, pre-built routes (`bi build:edge`) |
 | **Debug** | Debug toolbar with SQL profiling, session viewer, request headers, timing |
 
 ---
 
 ## Feature Comparison
 
-| Capability | NexusTS | NestJS | AdonisJS | Hono |
+| Capability | Bunigniter | NestJS | AdonisJS | Hono |
 |------------|:-------:|:------:|:--------:|:----:|
 | Bun-native runtime | ✅ | ❌ | △ | ✅ |
 | Cloudflare Workers | ✅ | △ | ❌ | ✅ |
@@ -127,33 +127,33 @@ db/seed.ts            ← Database seeder
 ## CLI Reference (27 commands)
 
 ```bash
-bun run nx                    # Show help
-bun run nx list               # List all routes
-bun run nx repl               # Interactive console
-bun run nx make:controller    # Scaffold controller
-bun run nx make:model         # Scaffold DB schema
-bun run nx make:migration     # Create migration
-bun run nx db:migrate         # Run migrations
-bun run nx db:seed            # Run seeders
-bun run nx db:rollback        # Rollback migration
-bun run nx db:wipe            # Drop all tables
-bun run nx make:seeder        # Scaffold seeder
-bun run nx make:middleware    # Scaffold middleware
-bun run nx make:command       # Scaffold CLI command
-bun run nx make:test          # Scaffold test
-bun run nx make:event         # Scaffold event class
-bun run nx make:job           # Scaffold queue job
-bun run nx make:mail          # Scaffold mail class
-bun run nx make:listener      # Scaffold event listener
-bun run nx make:provider      # Scaffold service provider
-bun run nx make:policy        # Scaffold policy
-bun run nx make:request       # Scaffold form request
-bun run nx make:resource      # Scaffold API resource
-bun run nx make:rule          # Scaffold validation rule
-bun run nx key:generate       # Generate APP_KEY
-bun run nx storage:link       # Create storage symlink
-bun run nx build:edge         # Build edge routes
-bun run nx edge:dev           # Run edge app locally
+bun run bi                    # Show help
+bun run bi list               # List all routes
+bun run bi repl               # Interactive console
+bun run bi make:controller    # Scaffold controller
+bun run bi make:model         # Scaffold DB schema
+bun run bi make:migration     # Create migration
+bun run bi db:migrate         # Run migrations
+bun run bi db:seed            # Run seeders
+bun run bi db:rollback        # Rollback migration
+bun run bi db:wipe            # Drop all tables
+bun run bi make:seeder        # Scaffold seeder
+bun run bi make:middleware    # Scaffold middleware
+bun run bi make:command       # Scaffold CLI command
+bun run bi make:test          # Scaffold test
+bun run bi make:event         # Scaffold event class
+bun run bi make:job           # Scaffold queue job
+bun run bi make:mail          # Scaffold mail class
+bun run bi make:listener      # Scaffold event listener
+bun run bi make:provider      # Scaffold service provider
+bun run bi make:policy        # Scaffold policy
+bun run bi make:request       # Scaffold form request
+bun run bi make:resource      # Scaffold API resource
+bun run bi make:rule          # Scaffold validation rule
+bun run bi key:generate       # Generate APP_KEY
+bun run bi storage:link       # Create storage symlink
+bun run bi build:edge         # Build edge routes
+bun run bi edge:dev           # Run edge app locally
 ```
 
 ---
@@ -226,4 +226,4 @@ Auto-layout: `views/_layout.html` wraps all pages automatically. Named slots: `<
 
 ## License
 
-MIT — 2026 NexusTS Contributors
+MIT — 2026 Bunigniter Contributors

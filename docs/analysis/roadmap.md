@@ -1,4 +1,4 @@
-# NexusTS — Development Roadmap
+# Bunigniter — Development Roadmap
 
 **Last updated:** 2026-06-27
 **Current version:** 0.1.0
@@ -10,7 +10,7 @@
 
 > "CodeIgniter spirit × Elysia performance × Edge-ready."
 
-NexusTS targets PHP developers (especially CodeIgniter/Laravel background) migrating to the TypeScript/Bun ecosystem. The framework provides:
+Bunigniter targets PHP developers (especially CodeIgniter/Laravel background) migrating to the TypeScript/Bun ecosystem. The framework provides:
 
 - **Familiar API** — `extends Controller`, `this.db.query()`, `this.json()`, file-path = URL
 - **Zero lock-in** — Raw SQL access alongside type-safe Drizzle ORM
@@ -46,16 +46,16 @@ NexusTS targets PHP developers (especially CodeIgniter/Laravel background) migra
 ### P2.1 — CLI Scaffolding
 
 ```
-bun run nx make:controller User
+bun run bi make:controller User
   → pages/users.ts
 
-bun run nx make:model User --columns 'name:string,email:string'
+bun run bi make:model User --columns 'name:string,email:string'
   → updates db/schema.ts
 
-bun run nx make:migration create_users_table
+bun run bi make:migration create_users_table
 
-bun run nx db:migrate
-bun run nx db:seed
+bun run bi db:migrate
+bun run bi db:seed
 ```
 
 **Priority:** High
@@ -275,7 +275,7 @@ export class Admin extends Controller {
 | Audit adapter API changes | `BunAdapter` → `createAdapter` changes | Medium |
 | Test all 5 DB dialects | Drizzle wrapper should be unaffected | Low |
 | Update file-router if Elysia `get()` API changes again | Schema-first order confirmed stable | Low |
-| Release NexusTS v0.2.0 | First stable release on stable Elysia | — |
+| Release Bunigniter v0.2.0 | First stable release on stable Elysia | — |
 
 **Priority:** Low (blocked on Elysia v2.0 stable)
 **Estimated effort:** 1–2 days
@@ -284,7 +284,7 @@ export class Admin extends Controller {
 
 ## Phase 6: Production Modules (Q3–Q4 2026)
 
-> Making NexusTS production-ready for real applications.
+> Making Bunigniter production-ready for real applications.
 
 | Module | Priority | Estimated effort | Dependencies |
 |--------|----------|-----------------|--------------|
@@ -320,9 +320,9 @@ export class Admin extends Controller {
 ```ts
 // src/index.ts — works everywhere
 import { Elysia } from 'elysia'
-import { NexusTS } from '../core'
+import { Bunigniter } from '../core'
 
-const app = new NexusTS()
+const app = new Bunigniter()
 
 // Bun
 app.listen(3000)
@@ -350,7 +350,7 @@ Deno.serve(app.fetch)
 | **npm publish** | `@nexus-ts/core`, `@nexus-ts/cli` | Medium |
 | **Community plugins** | Plugin API docs + starter template | Medium |
 | **Benchmarks** | Compare with Hono, NestJS, AdonisJS | Medium |
-| **YouTube tutorials** | "CodeIgniter to NexusTS migration" series | Low |
+| **YouTube tutorials** | "CodeIgniter to Bunigniter migration" series | Low |
 
 ---
 
@@ -374,7 +374,7 @@ Phase 9: Ecosystem             ░░░░░░░░░░  2027
 
 **Phase 2 — Developer Experience.** The next tangible goal is:
 
-1. **CLI scaffolding** — `nx make:controller/model/migration`
+1. **CLI scaffolding** — `bi make:controller/model/migration`
 2. **Validation** — String-rule validator + Zod integration
 3. **Environment config** — `.env` loading + `env()` helper
 4. **Smoke tests** — Boot + health check + CRUD round-trip

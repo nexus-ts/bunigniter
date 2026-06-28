@@ -1,4 +1,4 @@
-# NexusTS Documentation
+# Bunigniter Documentation
 
 ## User Guides
 

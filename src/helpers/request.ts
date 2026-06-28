@@ -1,5 +1,5 @@
 /**
- * Request — CodeIgniter-style request proxy for NexusTS.
+ * Request — CodeIgniter-style request proxy for Bunigniter.
  *
  * Wraps Elysia's Context to provide a familiar input API
  * inspired by CodeIgniter 3/4, Laravel, and AdonisJS.

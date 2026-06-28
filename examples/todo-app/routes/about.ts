@@ -3,7 +3,7 @@
  *
  * GET /about → renders views/About.mdx with {{ variable }} interpolation
  */
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class About extends Controller {
 	async index() {

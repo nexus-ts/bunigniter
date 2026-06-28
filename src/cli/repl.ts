@@ -1,7 +1,7 @@
 /**
- * REPL — Interactive console for NexusTS.
+ * REPL — Interactive console for Bunigniter.
  *
- * Usage: `bun run nx repl`
+ * Usage: `bun run bi repl`
  *
  * Provides access to db, cache, session, and app services.
  *
@@ -30,7 +30,7 @@ function banner(version: string, runtime: string): string {
 		"",
 		"  ╔══════════════════════════════════════════════════════╗",
 		"  ║                                                      ║",
-		"  ║              ◈  NexusTS  ◈                          ║",
+		"  ║              ◈  Bunigniter  ◈                      ║",
 		"  ║        Interactive Development Console               ║",
 		"  ║                                                      ║",
 		`  ║    version  ${version.padEnd(25)}              ║`,
@@ -402,7 +402,7 @@ async function handleCommand(
 
 		case ".version": {
 			console.log(`
-  \x1b[36mNexusTS\x1b[0m  \x1b[33mv${ctx.__version}\x1b[0m
+  \x1b[36mBunigniter\x1b[0m  \x1b[33mv${ctx.__version}\x1b[0m
   \x1b[36mRuntime\x1b[0m  ${ctx.__runtime}
 `);
 			break;

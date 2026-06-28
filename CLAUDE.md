@@ -1,4 +1,4 @@
-# NexusTS — AI Development Guide
+# Bunigniter — AI Development Guide
 
 Read `AGENTS.md` for the complete framework overview and conventions.
 
@@ -17,6 +17,6 @@ Read `AGENTS.md` for the complete framework overview and conventions.
 
 ## Always use
 
-- Import from `@nexusts/core` — NOT relative paths
+- Import from `bunigniter` — NOT relative paths
 - Controllers in `routes/` — NOT `pages/`
 - Templates in `views/` — NOT `routes/`

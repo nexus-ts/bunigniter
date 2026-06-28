@@ -1,9 +1,9 @@
-# NexusTS — Development Guide
+# Bunigniter — Development Guide
 
 Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
 
 > 82 commits, 80+ source files, 15 docs, 7 example apps.
-> GitHub: github.com/nexus-ts/framework
+> GitHub: github.com/nexus-ts/bunigniter
 
 ---
 
@@ -26,7 +26,7 @@ examples/      ← 7 example apps
 ## Key Conventions (MUST FOLLOW)
 
 1. **Controllers go in `routes/`** — NOT `pages/` or `controllers/`
-2. **Import from `@nexusts/core`** — NOT relative paths like `../../src/`
+2. **Import from `bunigniter`** — NOT relative paths like `../../src/`
 3. **View files in `views/`** — NOT `routes/`
 4. **HMVC modules in `modules/<name>/routes/`** — with their own views/
 5. **All templates share `src/cli/templates.ts`** — single source of truth
@@ -36,7 +36,7 @@ examples/      ← 7 example apps
 
 ```ts
 // routes/posts.ts
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Posts extends Controller {
   async index() { return this.json(await this.db.get('posts')) }
@@ -86,7 +86,7 @@ this.request.userAgent()           // User-Agent string
 
 ```ts
 // routes/hello.ts
-import { defineHandler } from '@nexusts/core'
+import { defineHandler } from 'bunigniter'
 
 export const GET = defineHandler(async () => ({ message: 'Hello' }))
 export const POST = defineHandler.withValidator({
@@ -129,7 +129,7 @@ this.auth.login(u)   // → set session
 this.auth.logout()   // → clear session
 
 // JWT
-import { jwt } from '@nexusts/core/helpers/jwt'
+import { jwt } from 'bunigniter/helpers/jwt'
 const token = jwt.sign({ userId: 1 })
 const payload = jwt.verify(token)
 
@@ -143,11 +143,11 @@ protected _before() {
 
 ```ts
 // routes/ws.ts
-import { ws } from '@nexusts/core/helpers/ws'
+import { ws } from 'bunigniter/helpers/ws'
 ws.handle('/ws/chat', { message(ws, data) { ws.publish('chat', data) } })
 
 // routes/sse.ts
-import { sse } from '@nexusts/core/helpers/sse'
+import { sse } from 'bunigniter/helpers/sse'
 export const GET = defineHandler(async (ctx) => sse(ctx, (send) => {
   send({ event: 'tick', data: { count: 1 } })
 }))
@@ -156,7 +156,7 @@ export const GET = defineHandler(async (ctx) => sse(ctx, (send) => {
 ## CLI
 
 ```bash
-bun run nx <command>
+bun run bi <command>
 ```
 
 Available: `make:controller`, `make:model`, `make:migration`, `db:migrate`, `db:seed`, `key:generate`, `make:middleware`, `make:test`, `make:job`, `make:mail`, `make:event`, `make:listener`, `make:provider`, `make:policy`, `make:request`, `make:resource`, `make:rule`, `storage:link`, `build:edge`, `list`, `repl`.

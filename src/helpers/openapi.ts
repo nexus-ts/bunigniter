@@ -33,7 +33,7 @@ interface RouteDoc {
 }
 
 const defaults: OpenAPIConfig = {
-	title: 'NexusTS API',
+	title: 'Bunigniter API',
 	version: '1.0.0',
 	specPath: '/openapi.json',
 	docsPath: '/docs',
@@ -50,7 +50,7 @@ const routeDocs = new Map<string, Map<string, RouteDoc>>()
  * @example
  * ```ts
  * // routes/posts.ts
- * import { OpenAPIRegistry } from '@nexusts/core/helpers/openapi'
+ * import { OpenAPIRegistry } from 'bunigniter/helpers/openapi'
  *
  * OpenAPIRegistry.add('/posts', 'GET', {
  *   summary: 'List all posts',

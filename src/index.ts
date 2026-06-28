@@ -1,5 +1,5 @@
 /**
- * NexusTS — Main Entry Point.
+ * Bunigniter — Main Entry Point.
  *
  * Bun-native fullstack framework inspired by CodeIgniter.
  * Built on Elysia v2 + Drizzle ORM.
@@ -186,7 +186,7 @@ async function main() {
 
 	// ─── OpenAPI Documentation ───────────────────────────────
 	openapi(app, {
-		title: "NexusTS API",
+		title: "Bunigniter API",
 		version: "0.1.0",
 	});
 
@@ -208,7 +208,7 @@ async function main() {
 
 	// ─── Start Server ─────────────────────────────────────────
 	app.listen(port, () => {
-		console.log(`\n  🚀 NexusTS ready at http://localhost:${port}`);
+		console.log(`\n  🚀 Bunigniter ready at http://localhost:${port}`);
 		console.log(`  📁 Routes:   ./${pagesDir}/`);
 		console.log(`  🔗 Routes:   ${routerPrefix}/*`);
 		console.log(`  💾 Database: ${dbConfig?.dialect ?? "none"}\n`);

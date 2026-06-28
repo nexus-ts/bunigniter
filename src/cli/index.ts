@@ -1,7 +1,7 @@
 /**
- * NexusTS CLI — scaffolding and utility commands.
+ * Bunigniter CLI — scaffolding and utility commands.
  *
- * Usage: `bun run nx <command> [args]`
+ * Usage: `bun run bi <command> [args]`
  *
  * All templates live in src/cli/templates.ts — single source of truth.
  */
@@ -49,14 +49,14 @@ function argValue(args: string[], key: string, fallback = ''): string {
 
 register('make:controller', 'Scaffold a route controller', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:controller <name>')
+	if (!name) throw new Error('Usage: bi make:controller <name>')
 	const { controller } = await import('./templates')
 	write(name, join(ROUTES_DIR, `${name}.ts`), controller(name, process.env.ROUTER_PREFIX || '/api'))
 })
 
 register('make:model', 'Create DB schema', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:model <name> --columns "name:string,email:string"')
+	if (!name) throw new Error('Usage: bi make:model <name> --columns "name:string,email:string"')
 	const cols = argValue(args, '--columns', 'name:string')
 	const { model } = await import('./templates')
 	const schemaDir = join(DB_DIR, 'schema')
@@ -65,7 +65,7 @@ register('make:model', 'Create DB schema', async (args) => {
 
 register('make:migration', 'Create a migration file', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:migration <name>')
+	if (!name) throw new Error('Usage: bi make:migration <name>')
 	const { migration } = await import('./templates')
 	write(name, join(MIGRATIONS_DIR, `${Date.now()}_${name}.sql`), migration(name))
 })
@@ -126,7 +126,7 @@ register('db:seed', 'Run database seeders', async (args) => {
 
 register('make:seeder', 'Scaffold a seeder file', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:seeder <name>')
+	if (!name) throw new Error('Usage: bi make:seeder <name>')
 	const { seeder } = await import('./templates')
 	write(name, join(SEEDS_DIR, `${name}.ts`), seeder(name))
 })
@@ -159,84 +159,84 @@ register('key:generate', 'Generate APP_KEY', async () => {
 
 register('make:middleware', 'Scaffold a middleware', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:middleware <name>')
+	if (!name) throw new Error('Usage: bi make:middleware <name>')
 	const { middleware } = await import('./templates')
 	write(name, join(MIDDLEWARE_DIR, `${name}.ts`), middleware(name))
 })
 
 register('make:test', 'Scaffold a test file', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:test <name>')
+	if (!name) throw new Error('Usage: bi make:test <name>')
 	const { test } = await import('./templates')
 	write(name, join(TESTS_DIR, `${name}.test.ts`), test(name))
 })
 
 register('make:command', 'Scaffold a CLI command', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:command <name>')
+	if (!name) throw new Error('Usage: bi make:command <name>')
 	const { command } = await import('./templates')
 	write(name, join(CWD, 'commands', `${name}.ts`), command(name))
 })
 
 register('make:job', 'Scaffold a queue job', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:job <name>')
+	if (!name) throw new Error('Usage: bi make:job <name>')
 	const { job } = await import('./templates')
 	write(name, join(CWD, 'jobs', `${name}.ts`), job(name))
 })
 
 register('make:mail', 'Scaffold a mail class', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:mail <name>')
+	if (!name) throw new Error('Usage: bi make:mail <name>')
 	const { mail } = await import('./templates')
 	write(name, join(CWD, 'mails', `${name}.ts`), mail(name))
 })
 
 register('make:event', 'Scaffold an event class', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:event <name>')
+	if (!name) throw new Error('Usage: bi make:event <name>')
 	const { eventTemplate } = await import('./templates')
 	write(name, join(CWD, 'events', `${name}.ts`), eventTemplate(name))
 })
 
 register('make:listener', 'Scaffold an event listener', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:listener <name>')
+	if (!name) throw new Error('Usage: bi make:listener <name>')
 	const { listener } = await import('./templates')
 	write(name, join(CWD, 'listeners', `${name}.ts`), listener(name))
 })
 
 register('make:provider', 'Scaffold a service provider', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:provider <name>')
+	if (!name) throw new Error('Usage: bi make:provider <name>')
 	const { provider } = await import('./templates')
 	write(name, join(CWD, 'providers', `${name}.ts`), provider(name))
 })
 
 register('make:policy', 'Scaffold an authorization policy', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:policy <name>')
+	if (!name) throw new Error('Usage: bi make:policy <name>')
 	const { policy } = await import('./templates')
 	write(name, join(CWD, 'policies', `${name}.ts`), policy(name))
 })
 
 register('make:request', 'Scaffold a form request (validation)', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:request <name>')
+	if (!name) throw new Error('Usage: bi make:request <name>')
 	const { formRequest } = await import('./templates')
 	write(name, join(CWD, 'requests', `${name}.ts`), formRequest(name))
 })
 
 register('make:resource', 'Scaffold an API resource', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:resource <name>')
+	if (!name) throw new Error('Usage: bi make:resource <name>')
 	const { resource } = await import('./templates')
 	write(name, join(CWD, 'resources', `${name}.ts`), resource(name))
 })
 
 register('make:rule', 'Scaffold a validation rule', async (args) => {
 	const name = args[0]
-	if (!name) throw new Error('Usage: nx make:rule <name>')
+	if (!name) throw new Error('Usage: bi make:rule <name>')
 	const { rule } = await import('./templates')
 	write(name, join(CWD, 'rules', `${name}.ts`), rule(name))
 })
@@ -279,7 +279,7 @@ register('repl', 'Start interactive console', async () => {
 })
 
 register('help', 'Show this help', async () => {
-	console.log('\n  NexusTS CLI')
+	console.log('\n  Bunigniter CLI')
 	console.log('  ─────────────────────────────────')
 	for (const [name, cmd] of Object.entries(commands)) {
 		console.log(`  ${name.padEnd(25)} ${cmd.desc}`)

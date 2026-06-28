@@ -9,7 +9,7 @@
     "seed": "bun run ../blog-app-html/db/seed.ts"
   },
   "dependencies": {
-    "@nexusts/core": "../../",
+    "bunigniter": "../../",
     "react": "^19",
     "react-dom": "^19"
   }

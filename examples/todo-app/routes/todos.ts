@@ -7,7 +7,7 @@
  *   PUT    /:id       → Update todo (toggle completed / edit title)
  *   DELETE /:id       → Delete todo
  */
-import { Controller } from "@nexusts/core";
+import { Controller } from "bunigniter";
 
 interface Todo {
 	id: number;

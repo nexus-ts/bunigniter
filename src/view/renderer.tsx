@@ -1,5 +1,5 @@
 /**
- * View Renderer — Simple server-side React rendering for NexusTS.
+ * View Renderer — Simple server-side React rendering for Bunigniter.
  *
  * Controllers return `this.view('ComponentName', { props })` and the
  * framework SSR-renders the React component to HTML.

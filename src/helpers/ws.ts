@@ -4,7 +4,7 @@
  * @example
  * ```ts
  * // routes/ws.ts — define WebSocket handlers per room/topic
- * import { ws } from '@nexusts/core/helpers/ws'
+ * import { ws } from 'bunigniter/helpers/ws'
  *
  * // Echo server
  * ws.handle('/ws/echo', {

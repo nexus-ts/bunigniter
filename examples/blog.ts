@@ -1,5 +1,5 @@
 /**
- * Blog example — demonstrates NexusTS features.
+ * Blog example — demonstrates Bunigniter features.
  *
  * To run: `cd examples/blog && bun run dev`
  *

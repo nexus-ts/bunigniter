@@ -1,11 +1,11 @@
 # JWT Authentication
 
-NexusTS provides JWT (JSON Web Token) support for stateless API authentication.
+Bunigniter provides JWT (JSON Web Token) support for stateless API authentication.
 
 ## Quick Start
 
 ```ts
-import { jwt } from '@nexusts/core/helpers/jwt'
+import { jwt } from 'bunigniter/helpers/jwt'
 
 // Sign a token (payload + optional config)
 const token = jwt.sign({ userId: 1, role: 'admin' })
@@ -45,8 +45,8 @@ const token = jwt.sign({ userId: 1 }, { secret: env('JWT_SECRET') })
 
 ```ts
 // routes/auth.ts
-import { Controller } from '@nexusts/core'
-import { jwt } from '@nexusts/core/helpers/jwt'
+import { Controller } from 'bunigniter'
+import { jwt } from 'bunigniter/helpers/jwt'
 
 export class Auth extends Controller {
   async create() {
@@ -75,7 +75,7 @@ export class Auth extends Controller {
 
 ```ts
 // middleware/02_auth.ts
-import { jwtMiddleware } from '@nexusts/core/helpers/jwt'
+import { jwtMiddleware } from 'bunigniter/helpers/jwt'
 
 export default jwtMiddleware({ secret: process.env.JWT_SECRET })
 ```
@@ -84,8 +84,8 @@ Apply to specific routes:
 
 ```ts
 // routes/api/users.ts
-import { defineHandler } from '@nexusts/core'
-import { jwtMiddleware } from '@nexusts/core/helpers/jwt'
+import { defineHandler } from 'bunigniter'
+import { jwtMiddleware } from 'bunigniter/helpers/jwt'
 
 const requireAuth = jwtMiddleware()
 
@@ -98,8 +98,8 @@ export const GET = defineHandler(requireAuth, async (c) => {
 ### Option 2: Controller `_before()` Hook
 
 ```ts
-import { Controller } from '@nexusts/core'
-import { jwt } from '@nexusts/core/helpers/jwt'
+import { Controller } from 'bunigniter'
+import { jwt } from 'bunigniter/helpers/jwt'
 
 export class AdminController extends Controller {
   protected _before(): Response | undefined {
@@ -204,8 +204,8 @@ jwtMiddleware(config?)
 
 ```ts
 // routes/auth.ts
-import { Controller } from '@nexusts/core'
-import { jwt } from '@nexusts/core/helpers/jwt'
+import { Controller } from 'bunigniter'
+import { jwt } from 'bunigniter/helpers/jwt'
 
 export class Auth extends Controller {
   async create() {
@@ -221,8 +221,8 @@ export class Auth extends Controller {
 }
 
 // routes/api/users.ts
-import { Controller } from '@nexusts/core'
-import { jwt } from '@nexusts/core/helpers/jwt'
+import { Controller } from 'bunigniter'
+import { jwt } from 'bunigniter/helpers/jwt'
 
 export class Users extends Controller {
   // This endpoint returns the token — no auth needed

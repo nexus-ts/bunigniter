@@ -33,7 +33,7 @@ db.run(`
 // Seed data
 const existing = db.query('SELECT count(*) as count FROM todos').get() as any
 if (existing.count === 0) {
-	db.run("INSERT INTO todos (title, priority) VALUES ('Learn NexusTS', 'high')")
+	db.run("INSERT INTO todos (title, priority) VALUES ('Learn Bunigniter', 'high')")
 	db.run("INSERT INTO todos (title, priority) VALUES ('Build a Todo app', 'high')")
 	db.run("INSERT INTO todos (title, priority, completed) VALUES ('Write docs', 'medium', 1)")
 	db.run("INSERT INTO todos (title, priority) VALUES ('Add authentication', 'medium')")

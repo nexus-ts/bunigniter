@@ -12,3 +12,6 @@ dist/
 *.db-wal
 *.db-journal
 .test_uploads
+
+# Build output
+dist/

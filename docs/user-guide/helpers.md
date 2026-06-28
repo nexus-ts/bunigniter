@@ -3,7 +3,7 @@
 ## Environment
 
 ```ts
-import { env, envOrFail } from '@nexusts/core/helpers/env'
+import { env, envOrFail } from 'bunigniter/helpers/env'
 ```
 
 | Function | Description |
@@ -24,7 +24,7 @@ const dbUrl = envOrFail('DATABASE_URL') // → string or throws
 ## Validation
 
 ```ts
-import { validate, validateStringRules, validateZod } from '@nexusts/core/helpers/validator'
+import { validate, validateStringRules, validateZod } from 'bunigniter/helpers/validator'
 ```
 
 ### String Rules (CodeIgniter-style)
@@ -88,7 +88,7 @@ class Users extends Controller {
 ## HTTP Client
 
 ```ts
-import { HttpClient, createHttp } from '@nexusts/core/helpers/http'
+import { HttpClient, createHttp } from 'bunigniter/helpers/http'
 ```
 
 ```ts
@@ -117,7 +117,7 @@ Options: `query`, `headers`, `timeout`, `baseURL`, `auth` (Basic or Bearer).
 ## Pagination
 
 ```ts
-import { paginate } from '@nexusts/core/helpers/pagination'
+import { paginate } from 'bunigniter/helpers/pagination'
 ```
 
 ```ts
@@ -148,7 +148,7 @@ const result = await db.paginate('SELECT * FROM users', [], { page: 2, perPage: 
 ## Cache
 
 ```ts
-import { Cache, createCache } from '@nexusts/core/helpers/cache'
+import { Cache, createCache } from 'bunigniter/helpers/cache'
 ```
 
 ```ts
@@ -171,7 +171,7 @@ const data = await cache.remember('users', 300, async () => {
 ## Queue
 
 ```ts
-import { Queue, createQueue } from '@nexusts/core/helpers/queue'
+import { Queue, createQueue } from 'bunigniter/helpers/queue'
 ```
 
 ```ts
@@ -196,7 +196,7 @@ Features: retry with exponential backoff, max concurrency, error isolation.
 ## Upload
 
 ```ts
-import { Upload, createUpload } from '@nexusts/core/helpers/upload'
+import { Upload, createUpload } from 'bunigniter/helpers/upload'
 ```
 
 ```ts
@@ -224,7 +224,7 @@ const path = upload.store(file, 'avatars') // → 'avatars/1712345678_abc123.jpg
 ## Image Manipulation
 
 ```ts
-import { Image } from '@nexusts/core/helpers/image'
+import { Image } from 'bunigniter/helpers/image'
 ```
 
 ```ts
@@ -252,7 +252,7 @@ await Image.open('photo.jpg')
 ## Mail
 
 ```ts
-import { Mail, createMail, SmtpTransport, FileTransport, NullTransport } from '@nexusts/core/helpers/mail'
+import { Mail, createMail, SmtpTransport, FileTransport, NullTransport } from 'bunigniter/helpers/mail'
 ```
 
 ```ts
@@ -280,7 +280,7 @@ await mail.send({
 ## CORS
 
 ```ts
-import { corsMiddleware } from '@nexusts/core/helpers/cors'
+import { corsMiddleware } from 'bunigniter/helpers/cors'
 ```
 
 ```ts
@@ -304,7 +304,7 @@ app.use(corsMiddleware({
 ## Logger
 
 ```ts
-import { loggerMiddleware } from '@nexusts/core/helpers/logger'
+import { loggerMiddleware } from 'bunigniter/helpers/logger'
 ```
 
 ```ts
@@ -322,7 +322,7 @@ Output: `2026-06-28 14:30:00 GET /api/users 200 12ms`
 ## CSRF Protection
 
 ```ts
-import { csrfMiddleware } from '@nexusts/core/helpers/csrf'
+import { csrfMiddleware } from 'bunigniter/helpers/csrf'
 ```
 
 ```ts
@@ -337,7 +337,7 @@ app.use(csrfMiddleware({
 ## Rate Limiter
 
 ```ts
-import { rateLimiter } from '@nexusts/core/helpers/throttle'
+import { rateLimiter } from 'bunigniter/helpers/throttle'
 ```
 
 ```ts
@@ -356,7 +356,7 @@ Sets headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
 ## Debug Toolbar
 
 ```ts
-import { debugToolbar, debugQuery, getStore } from '@nexusts/core/helpers/debug'
+import { debugToolbar, debugQuery, getStore } from 'bunigniter/helpers/debug'
 ```
 
 Enable with `?debug=1` or `DEBUG=true` env var. Shows collapsible toolbar with:
@@ -376,7 +376,7 @@ debugQuery(ctx, 'SELECT * FROM users', 2.5, 10)
 ## Moduler (HMVC)
 
 ```ts
-import { registerModules, moduleRun } from '@nexusts/core/helpers/modules'
+import { registerModules, moduleRun } from 'bunigniter/helpers/modules'
 ```
 
 See [HMVC Modules](hmvc-modules.md) for full documentation.
@@ -386,7 +386,7 @@ See [HMVC Modules](hmvc-modules.md) for full documentation.
 ## OpenAPI
 
 ```ts
-import { openapi, OpenAPIRegistry } from '@nexusts/core/helpers/openapi'
+import { openapi, OpenAPIRegistry } from 'bunigniter/helpers/openapi'
 ```
 
 See [OpenAPI](openapi.md) for full documentation.
@@ -396,7 +396,7 @@ See [OpenAPI](openapi.md) for full documentation.
 ## JWT
 
 ```ts
-import { jwt, jwtMiddleware } from '@nexusts/core/helpers/jwt'
+import { jwt, jwtMiddleware } from 'bunigniter/helpers/jwt'
 ```
 
 See [JWT Auth](jwt-auth.md) for full documentation.
@@ -406,7 +406,7 @@ See [JWT Auth](jwt-auth.md) for full documentation.
 ## WebSocket
 
 ```ts
-import { ws } from '@nexusts/core/helpers/ws'
+import { ws } from 'bunigniter/helpers/ws'
 ```
 
 See [WebSocket](websocket.md) for full documentation.
@@ -416,7 +416,7 @@ See [WebSocket](websocket.md) for full documentation.
 ## SSE
 
 ```ts
-import { sse } from '@nexusts/core/helpers/sse'
+import { sse } from 'bunigniter/helpers/sse'
 ```
 
 See [SSE](sse.md) for full documentation.
@@ -426,7 +426,7 @@ See [SSE](sse.md) for full documentation.
 ## Schedule
 
 ```ts
-import { schedule } from '@nexusts/core/helpers/schedule'
+import { schedule } from 'bunigniter/helpers/schedule'
 ```
 
 See `routes/schedule.ts` for examples.

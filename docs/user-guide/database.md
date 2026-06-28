@@ -1,6 +1,6 @@
 # Database Query Builder
 
-NexusTS provides a CodeIgniter-style query builder through `DbClient`. All methods are SQL-injection safe (parameterized queries).
+Bunigniter provides a CodeIgniter-style query builder through `DbClient`. All methods are SQL-injection safe (parameterized queries).
 
 ## Configuration
 

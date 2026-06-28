@@ -1,12 +1,12 @@
 # Template Engine Guide
 
-NexusTS uses **Rendu** as its primary template engine — a PHP-style syntax engine that compiles templates to JavaScript at runtime. On top of Rendu, NexusTS adds **auto-layouts**, **partial includes**, **MDX support**, and **multiple named slots**.
+Bunigniter uses **Rendu** as its primary template engine — a PHP-style syntax engine that compiles templates to JavaScript at runtime. On top of Rendu, Bunigniter adds **auto-layouts**, **partial includes**, **MDX support**, and **multiple named slots**.
 
 ---
 
 ## Quick Comparison
 
-| Feature | PHP (CodeIgniter) | NexusTS (Rendu) |
+| Feature | PHP (CodeIgniter) | Bunigniter (Rendu) |
 |---------|-------------------|-----------------|
 | Output variable | `<?= $title ?>` | `<?= title ?>` |
 | Escaped output | `<?= htmlspecialchars($x) ?>` | `{{ x }}` |
@@ -72,7 +72,7 @@ NexusTS uses **Rendu** as its primary template engine — a PHP-style syntax eng
 
 ## File Resolution Order
 
-When `this.view('name', props)` is called, NexusTS looks for files in this order:
+When `this.view('name', props)` is called, Bunigniter looks for files in this order:
 
 ```
 views/name.tsx    → React SSR component (JSX)

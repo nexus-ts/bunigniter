@@ -4,7 +4,7 @@
  * GET  /item/:id → show story + comments
  * POST /item/:id → add comment
  */
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 function timeago(dateStr: string): string {
 	const d = new Date(dateStr + 'Z')

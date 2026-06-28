@@ -1,2 +1,2 @@
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 export class Index extends Controller { async index() { return this.redirect('/posts') } }

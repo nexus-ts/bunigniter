@@ -1,5 +1,5 @@
-import { Controller } from '@nexusts/core'
-import { moduleRun } from '@nexusts/core/helpers/modules'
+import { Controller } from 'bunigniter'
+import { moduleRun } from 'bunigniter/helpers/modules'
 
 export class Dashboard extends Controller {
   async index() {

@@ -1,6 +1,6 @@
 # OpenAPI Documentation
 
-NexusTS automatically generates OpenAPI 3.1 specs for all registered routes. A Scalar UI is served at `/docs` for interactive browsing.
+Bunigniter automatically generates OpenAPI 3.1 specs for all registered routes. A Scalar UI is served at `/docs` for interactive browsing.
 
 ## Quick Start
 
@@ -17,7 +17,7 @@ Use `OpenAPIRegistry.add()` to add descriptions, tags, and details to your route
 
 ```ts
 // routes/posts.ts
-import { OpenAPIRegistry } from '@nexusts/core/helpers/openapi'
+import { OpenAPIRegistry } from 'bunigniter/helpers/openapi'
 
 OpenAPIRegistry.add('/posts', 'GET', {
   summary: 'List all posts',
@@ -121,7 +121,7 @@ Works the same way in modules:
 
 ```ts
 // modules/blog/routes/posts.ts
-import { OpenAPIRegistry } from '@nexusts/core/helpers/openapi'
+import { OpenAPIRegistry } from 'bunigniter/helpers/openapi'
 
 OpenAPIRegistry.add('/blog/posts', 'GET', {
   summary: 'List blog posts',
@@ -169,8 +169,8 @@ openapi(app, {
 
 ```ts
 // routes/posts.ts
-import { Controller } from '@nexusts/core'
-import { OpenAPIRegistry } from '@nexusts/core/helpers/openapi'
+import { Controller } from 'bunigniter'
+import { OpenAPIRegistry } from 'bunigniter/helpers/openapi'
 
 OpenAPIRegistry.add('/posts', 'GET', {
   summary: 'List all posts',

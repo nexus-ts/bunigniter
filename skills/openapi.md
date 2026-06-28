@@ -5,7 +5,7 @@ Auto-generated at `/openapi.json`. UI at `/docs`.
 ## Customize Route Docs
 
 ```ts
-import { OpenAPIRegistry } from '@nexusts/core/helpers/openapi'
+import { OpenAPIRegistry } from 'bunigniter/helpers/openapi'
 
 OpenAPIRegistry.add('/posts', 'GET', {
   summary: 'List all posts',

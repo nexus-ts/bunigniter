@@ -4,7 +4,7 @@
  * GET  /submit → show form
  * POST /submit → create story
  */
-import { Controller } from "@nexusts/core";
+import { Controller } from "bunigniter";
 
 export class Submit extends Controller {
 	async index() {

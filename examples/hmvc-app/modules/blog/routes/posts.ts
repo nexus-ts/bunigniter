@@ -1,5 +1,5 @@
-import { Controller } from '@nexusts/core'
-import { OpenAPIRegistry } from '@nexusts/core/helpers/openapi'
+import { Controller } from 'bunigniter'
+import { OpenAPIRegistry } from 'bunigniter/helpers/openapi'
 
 OpenAPIRegistry.add('/blog/posts', 'GET', {
   summary: 'List all blog posts',

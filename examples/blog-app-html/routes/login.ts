@@ -1,4 +1,4 @@
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 export class Login extends Controller {
   async index() {
     if (this.auth.check()) return this.redirect('/admin')

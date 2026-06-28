@@ -1,4 +1,4 @@
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 export class Products extends Controller {
   async index() {
     const products = await this.db.get('products', null, { orderBy: 'name ASC' })

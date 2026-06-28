@@ -10,7 +10,7 @@
     "nx": "bun run ../../src/cli/index.ts"
   },
   "dependencies": {
-    "@nexusts/core": "../../",
+    "bunigniter": "../../",
     "drizzle-orm": "^0.45.0",
     "zod": "^4.4.3"
   }

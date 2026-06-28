@@ -552,9 +552,9 @@ app.get('/ping', () => 'pong')  // OK, no change
 | **Community plugin incompatibility** | 🟡 Moderate | All community plugins built for v1.x API |
 | **Squashed commit** | 🟢 Low | Only 1 commit on kiana — hard to trace iterative changes |
 
-### 9.3 Risk Comparison: Elysia v2.0 vs NexusTS v0.9
+### 9.3 Risk Comparison: Elysia v2.0 vs Bunigniter v0.9
 
-| Risk Factor | Elysia v2.0-exp.8 | NexusTS v0.9.13 |
+| Risk Factor | Elysia v2.0-exp.8 | Bunigniter v0.9.13 |
 |-------------|-------------------|-----------------|
 | **Project age** | 4+ years | 3 months |
 | **Maintainer count** | 1 (saltyaom) | 1 (kabyeon) |
@@ -590,17 +590,17 @@ Elysia v2.0 is more mature as a project but **equally unstable for new developme
 | **Plugin author** | Start reading v2.0 changelog, prepare dual-support PRs | The adapter system changes everything |
 | **Learning/Prototyping** | v2.0-exp.8 is fine | API surface is set; behavior changes are minor |
 
-### 10.3 Why v2.0 Matters for NexusTS
+### 10.3 Why v2.0 Matters for Bunigniter
 
-The `kiana` branch proves that **Elysia is evolving in exactly the direction NexusTS needs**:
+The `kiana` branch proves that **Elysia is evolving in exactly the direction Bunigniter needs**:
 
-1. **Multi-runtime** — No longer Bun-only. Same destination as NexusTS (Bun + Edge)
+1. **Multi-runtime** — No longer Bun-only. Same destination as Bunigniter (Bun + Edge)
 2. **Type safety** — Sucrose engine and AOT compilation are unique advantages over Hono
 3. **Tree-shaking** — TypeBox-free base import for minimal bundle
 4. **WebSocket with schemas** — First-class WS type safety, not an afterthought
 5. **Adapter pattern** — Clean separation that makes it easy to add custom runtimes
 
-The gap between "using Elysia" and "building NexusTS on Elysia" has narrowed significantly with v2.0. The adapter system means NexusTS can add its CodeIgniter-style `Controller` base class, session, view engine, and other modules **as Elysia plugins** rather than as a separate framework layer.
+The gap between "using Elysia" and "building Bunigniter on Elysia" has narrowed significantly with v2.0. The adapter system means Bunigniter can add its CodeIgniter-style `Controller` base class, session, view engine, and other modules **as Elysia plugins** rather than as a separate framework layer.
 
 ---
 

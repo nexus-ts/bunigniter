@@ -46,7 +46,7 @@ export default {
 ## Usage in Controllers
 
 ```ts
-import { Controller } from '@nexusts/core'
+import { Controller } from 'bunigniter'
 
 export class Dashboard extends Controller {
   async index() {
@@ -141,7 +141,7 @@ Both `this.db` and `this.dbs.<name>` share the same `DbClient` API:
 ## Without a Controller
 
 ```ts
-import { DbClient } from '@nexusts/core'
+import { DbClient } from 'bunigniter'
 
 const db = new DbClient({
   dialect: 'postgres',

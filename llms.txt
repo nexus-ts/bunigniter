@@ -1,4 +1,4 @@
-# NexusTS — LLM Context
+# Bunigniter — LLM Context
 
 Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
 83 commits, 80+ source files, 15 docs, 7 example apps.

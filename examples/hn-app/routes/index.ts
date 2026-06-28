@@ -4,7 +4,7 @@
  * GET / → top stories
  * GET /new → newest stories
  */
-import { Controller } from "@nexusts/core";
+import { Controller } from "bunigniter";
 
 function timeago(dateStr: string): string {
 	const d = new Date(dateStr + "Z");
