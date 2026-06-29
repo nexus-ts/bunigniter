@@ -137,7 +137,7 @@ async function promptOptions(skip: boolean, projectName: string): Promise<Prompt
 	console.log(`  ${D("Project:")}  ${projectName}`)
 	console.log(`  ${D("Runtime:")}  ${runtime === "cloudflare" ? "Bun + Cloudflare Workers" : "Bun-only"}`)
 	console.log(`  ${D("Database:")} ${database === "none" ? "None" : database}`)
-	console.log(`  ${openapi ? D("OpenAPI:") + "  Yes" : ""}`)
+	console.log(`  ${openapi ? `${D("OpenAPI:")}  Yes` : ""}`)
 	console.log(`  ${D("Template:")} ${template}`)
 	if (!install) console.log(`  ${D("Install:")}  No (run 'bun install' later)`)
 	console.log(`  ${D("─".repeat(40))}\n`)
@@ -222,7 +222,7 @@ function mergePackageJson(
 	if (!merged.type) merged.type = "module"
 	if (merged.private === undefined) merged.private = true
 
-	return JSON.stringify(merged, null, 2) + "\n"
+	return `${JSON.stringify(merged, null, 2)}\n`
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -245,7 +245,7 @@ function genPkgJson(
 	if (cloudflare) {
 		scripts["cf:dev"] = "wrangler dev"
 		scripts["cf:deploy"] = "wrangler deploy"
-		scripts["cf:db:init"] = "wrangler d1 execute ${npm_package_name}-db --file=./db/init.sql"
+		scripts["cf:db:init"] = `wrangler d1 execute \${npm_package_name}-db --file=./db/init.sql`
 	}
 
 	const deps: Record<string, string> = {
@@ -261,20 +261,19 @@ function genPkgJson(
 	if (openapi) deps["openapi-types"] = "^12"
 
 	return {
-		content:
-			JSON.stringify(
-				{
-					name,
-					version: "1.0.0",
-					type: "module",
-					private: true,
-					scripts,
-					dependencies: deps,
-					devDependencies: devDeps,
-				},
-				null,
-				2,
-			) + "\n",
+		content: `${JSON.stringify(
+			{
+				name,
+				version: "1.0.0",
+				type: "module",
+				private: true,
+				scripts,
+				dependencies: deps,
+				devDependencies: devDeps,
+			},
+			null,
+			2,
+		)}\n`,
 		scripts,
 		deps,
 		devDeps,
@@ -282,61 +281,57 @@ function genPkgJson(
 }
 
 function genTsCfg(): string {
-	return (
-		JSON.stringify(
-			{
-				compilerOptions: {
-					target: "ES2022",
-					module: "ESNext",
-					moduleResolution: "Bundler",
-					lib: ["ESNext", "DOM"],
-					types: ["bun-types"],
-					resolveJsonModule: true,
-					allowImportingTsExtensions: true,
-					noEmit: true,
-					strict: true,
-					skipLibCheck: true,
-					esModuleInterop: true,
-					isolatedModules: true,
-				},
-				include: [
-					"config/**/*.ts",
-					"routes/**/*.ts",
-					"db/**/*.ts",
-					"views/**/*.ts",
-					"views/**/*.tsx",
-					"middleware/**/*.ts",
-					"modules/**/*.ts",
-					"src/**/*.ts",
-					"dev.ts",
-				],
+	return `${JSON.stringify(
+		{
+			compilerOptions: {
+				target: "ES2022",
+				module: "ESNext",
+				moduleResolution: "Bundler",
+				lib: ["ESNext", "DOM"],
+				types: ["bun-types"],
+				resolveJsonModule: true,
+				allowImportingTsExtensions: true,
+				noEmit: true,
+				strict: true,
+				skipLibCheck: true,
+				esModuleInterop: true,
+				isolatedModules: true,
 			},
-			null,
-			2,
-		) + "\n"
-	)
+			include: [
+				"config/**/*.ts",
+				"routes/**/*.ts",
+				"db/**/*.ts",
+				"views/**/*.ts",
+				"views/**/*.tsx",
+				"middleware/**/*.ts",
+				"modules/**/*.ts",
+				"src/**/*.ts",
+				"dev.ts",
+			],
+		},
+		null,
+		2,
+	)}\n`
 }
 
 function genGitignore(): string {
-	return (
-		[
-			"node_modules/",
-			"dist/",
-			"*.db",
-			".env",
-			".env.local",
-			".bi_repl_history",
-			"*.db-shm",
-			"*.db-wal",
-			"*.db-journal",
-			".test_uploads",
-			".playwright-mcp/",
-			"",
-			"# Cloudflare / Wrangler",
-			".wrangler/",
-			"worker/",
-		].join("\n") + "\n"
-	)
+	return `${[
+		"node_modules/",
+		"dist/",
+		"*.db",
+		".env",
+		".env.local",
+		".bi_repl_history",
+		"*.db-shm",
+		"*.db-wal",
+		"*.db-journal",
+		".test_uploads",
+		".playwright-mcp/",
+		"",
+		"# Cloudflare / Wrangler",
+		".wrangler/",
+		"worker/",
+	].join("\n")}\n`
 }
 
 function genEnvExample(database: string, cloudflare: boolean): string {
@@ -354,7 +349,7 @@ function genEnvExample(database: string, cloudflare: boolean): string {
 		lines.push("DB_DIALECT=postgres", "DATABASE_URL=postgres://user:pass@localhost:5432/mydb")
 	else if (database === "mysql") lines.push("DB_DIALECT=mysql", "DATABASE_URL=mysql://user:pass@localhost:3306/mydb")
 	if (cloudflare) lines.push("EDGE=false")
-	return lines.join("\n") + "\n"
+	return `${lines.join("\n")}\n`
 }
 
 function genDevEntry(name: string): string {

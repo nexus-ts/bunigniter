@@ -9,7 +9,7 @@
  * Run: `bun x vitest run tests/examples.test.ts`
  */
 
-import { spawn, type ChildProcess } from "node:child_process"
+import { type ChildProcess, spawn } from "node:child_process"
 import { readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
