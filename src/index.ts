@@ -35,7 +35,7 @@ import { registerServerRoutes } from "./router/server-router"
 import { setViewsDir } from "./view/renderer"
 
 export { Controller, Service } from "./base/index"
-export { DbClient, type Dialect, type DbConfig, type QueryResult } from "./db/drizzle"
+export { DbClient, type DbConfig, type Dialect, type QueryResult } from "./db/drizzle"
 export { defineHandler } from "./helpers/handler"
 export { RequestProxy } from "./helpers/request"
 

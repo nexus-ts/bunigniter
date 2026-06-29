@@ -40,12 +40,12 @@
  */
 import { Elysia } from "elysia"
 import { DbClient } from "./db/drizzle"
-import { applyMiddleware } from "./helpers/middleware"
 import { EdgeController } from "./edge-controller"
+import { applyMiddleware } from "./helpers/middleware"
 
 // ─── Cloudflare Workers D1 type declaration ─────────────────
 // Declared here so edge.ts compiles without @cloudflare/workers-types.
-// @ts-ignore — not all environments have D1
+// @ts-expect-error — not all environments have D1
 declare class D1Database {
 	prepare(sql: string): D1PreparedStatement
 }
@@ -54,7 +54,7 @@ declare class D1PreparedStatement {
 	run(): Promise<{ results?: any[]; meta?: { changes?: number } }>
 }
 
-export { EdgeController, DbClient }
+export { DbClient, EdgeController }
 
 /**
  * Create an edge-compatible application.
@@ -110,16 +110,11 @@ export function createEdgeApp(config?: { middleware?: any }) {
  * }
  * ```
  */
-export function createD1App(
-	db: D1Database | DbClient,
-	registerRoutes: (app: Elysia) => void,
-): Elysia {
+export function createD1App(db: D1Database | DbClient, registerRoutes: (app: Elysia) => void): Elysia {
 	const app = createEdgeApp()
 
 	// Wrap raw D1 binding as DbClient if needed
-	const dbClient: DbClient = db instanceof DbClient
-		? db
-		: new DbClient({ dialect: "d1", connection: { binding: db } })
+	const dbClient: DbClient = db instanceof DbClient ? db : new DbClient({ dialect: "d1", connection: { binding: db } })
 
 	// Make dbClient available via Elysia decorate
 	app.decorate("db", dbClient)
