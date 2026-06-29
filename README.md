@@ -84,11 +84,11 @@ git clone https://github.com/nexus-ts/bunigniter.git
 cd bunigniter && bun install
 
 # Pick an example — all working out of the box
-bun run examples/simple-app/dev.ts    # Welcome page  :3000  ← simplest
-bun run examples/todo-app/dev.ts      # React SSR    :3000
-bun run examples/slack-app/dev.ts     # Full-stack    :3000  ← recommended
-bun run examples/hn-app/dev.ts        # Rendu HTML    :3000
-bun run examples/petstore/dev.ts      # Rendu HTML    :3000
+bun run examples/simple-app/main.ts    # Welcome page  :3000  ← simplest
+bun run examples/todo-app/main.ts      # React SSR    :3000
+bun run examples/slack-app/main.ts     # Full-stack    :3000  ← recommended
+bun run examples/hn-app/main.ts        # Rendu HTML    :3000
+bun run examples/petstore/main.ts      # Rendu HTML    :3000
 ```
 
 Slack clone covers every feature: auth, uploads, images, WebSocket, sessions, CLI seeding.

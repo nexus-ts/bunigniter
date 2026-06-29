@@ -39,15 +39,15 @@ Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
 
 ## Example Apps (all on port 3000)
 
-- examples/simple-app/dev.ts: Welcome page (Rendu, simplest)
-- examples/todo-app/dev.ts: Todo (React SSR)
-- examples/hn-app/dev.ts: Hacker News (Rendu)
-- examples/petstore/dev.ts: Pet Store (Rendu)
-- examples/blog-app-html/dev.ts: Blog CMS (Rendu)
-- examples/blog-app-tsx/dev.ts: Blog CMS (React SSR)
-- examples/blog-app-inertia-react/dev.ts: Blog CMS (Inertia React)
-- examples/hmvc-app/dev.ts: HMVC modules
-- examples/slack-app/dev.ts: Full-stack Slack clone (recommended)
+- examples/simple-app/main.ts: Welcome page (Rendu, simplest)
+- examples/todo-app/main.ts: Todo (React SSR)
+- examples/hn-app/main.ts: Hacker News (Rendu)
+- examples/petstore/main.ts: Pet Store (Rendu)
+- examples/blog-app-html/main.ts: Blog CMS (Rendu)
+- examples/blog-app-tsx/main.ts: Blog CMS (React SSR)
+- examples/blog-app-inertia-react/main.ts: Blog CMS (Inertia React)
+- examples/hmvc-app/main.ts: HMVC modules
+- examples/slack-app/main.ts: Full-stack Slack clone (recommended)
 
 ## Quick Commands
 
@@ -58,7 +58,7 @@ Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
 - bun run bi new: Interactive project scaffold
 - bun run bi init: Scaffold into current directory
 - bun run bi repl: Interactive console
-- bun run examples/<app>/dev.ts: Run example app
+- bun run examples/<app>/main.ts: Run example app
 
 ## Architecture (3 layers)
 

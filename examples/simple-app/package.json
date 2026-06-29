@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run dev.ts",
-    "start": "bun run dev.ts"
+    "dev": "bun run main.ts",
+    "start": "bun run main.ts"
   },
   "dependencies": {
     "bunigniter": "../../"

@@ -1,7 +1,7 @@
 /**
  * Hacker News App — entry point.
  *
- * Run: `bun run examples/hn-app/dev.ts`
+ * Run: `bun run examples/hn-app/main.ts`
  */
 import { join } from 'node:path'
 import { chdir } from 'node:process'

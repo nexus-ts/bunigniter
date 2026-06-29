@@ -1,7 +1,7 @@
 /**
  * Examples smoke test — verifies every example app boots and responds.
  *
- * For each example/ subdirectory with a dev.ts:
+ * For each example/ subdirectory with a main.ts:
  *   1. Start the server on a unique port
  *   2. Verify HTTP 200 and expected content
  *   3. Kill the server
@@ -22,12 +22,12 @@ interface Example {
 	port: number // unique test port (base 16100+)
 }
 
-// Discover all examples with dev.ts. Assign unique test ports
+// Discover all examples with main.ts. Assign unique test ports
 // so all can run concurrently without conflict.
 const examples: Example[] = readdirSync(EXAMPLES_DIR)
 	.filter((name) => {
 		try {
-			return statSync(join(EXAMPLES_DIR, name, "dev.ts")).isFile()
+			return statSync(join(EXAMPLES_DIR, name, "main.ts")).isFile()
 		} catch {
 			return false
 		}
@@ -43,7 +43,7 @@ const servers: Map<string, ChildProcess> = new Map()
 // Start all examples in parallel before tests
 async function startExample(example: Example): Promise<void> {
 	return new Promise((resolve, reject) => {
-		const server = spawn("bun", ["run", "dev.ts"], {
+		const server = spawn("bun", ["run", "main.ts"], {
 			cwd: example.dir,
 			env: { ...process.env, PORT: String(example.port) },
 			stdio: ["ignore", "pipe", "pipe"],

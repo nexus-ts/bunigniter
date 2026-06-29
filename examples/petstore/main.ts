@@ -1,6 +1,6 @@
 /**
  * Pet Store — entry point.
- * Run: `bun run examples/petstore/dev.ts`
+ * Run: `bun run examples/petstore/main.ts`
  */
 import { join } from 'node:path'
 import { chdir } from 'node:process'

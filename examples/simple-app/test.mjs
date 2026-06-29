@@ -15,7 +15,7 @@ let server = null
 
 function startServer() {
 	return new Promise((resolve, reject) => {
-		server = spawn("bun", ["run", "dev.ts"], {
+		server = spawn("bun", ["run", "main.ts"], {
 			cwd: DIR,
 			stdio: ["ignore", "pipe", "pipe"],
 		})

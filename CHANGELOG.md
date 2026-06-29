@@ -2,6 +2,20 @@
 
 All notable changes to Bunigniter are documented in this file.
 
+## [0.5.4] — 2026-07-01
+
+### Changed
+
+- **Entry point renamed** — `dev.ts` → `main.ts` across all example apps, scaffold templates, and documentation. The entry point now follows the conventional `main.ts` naming pattern used by most Bun frameworks.
+- **TypeBox updated** — Bumped from `1.2.16` to `^1.3` in scaffold templates for new projects.
+- **Elysia updated** — Bumped from `2.0.0-exp.12` to `2.0.0-exp.13` in both `package.json` and scaffold templates.
+
+### Fixed
+
+- **Test discovery** — Updated `tests/examples.test.ts` to discover example apps by `main.ts` instead of `dev.ts`.
+
+[0.5.4]: https://github.com/nexus-ts/bunigniter/compare/v0.5.3...v0.5.4
+
 ## [0.5.3] — 2026-06-29
 
 ### Added

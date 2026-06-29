@@ -1,6 +1,6 @@
 {
   "name": "bunigniter",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Bun-native fullstack framework — CodeIgniter spirit × Elysia performance × Edge-ready",
   "homepage": "https://github.com/nexus-ts/bunigniter",
   "type": "module",
@@ -79,7 +79,7 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.45.0",
-    "elysia": "2.0.0-exp.12",
+    "elysia": "2.0.0-exp.13",
     "openapi-types": "^12.1.3",
     "rendu": "^0.1.0",
     "sharp": "^0.35.2",

@@ -7,7 +7,7 @@
  *
  * Usage:
  *   bun run examples/slack-app/db/seed.ts    # Seed database
- *   bun run examples/slack-app/dev.ts         # Start dev server :3006
+ *   bun run examples/slack-app/main.ts         # Start dev server :3006
  */
 import { join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";

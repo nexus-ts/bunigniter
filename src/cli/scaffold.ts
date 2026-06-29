@@ -252,8 +252,8 @@ function genPkgJson(
 	cloudflare: boolean,
 ): { content: string; scripts: Record<string, string>; deps: Record<string, string>; devDeps: Record<string, string> } {
 	const scripts: Record<string, string> = {
-		dev: "bun --hot run dev.ts",
-		start: "bun run dev.ts",
+		dev: "bun --hot run main.ts",
+		start: "bun run main.ts",
 		seed: "bun run db/seed.ts",
 		bi: "bun run node_modules/bunigniter/dist/cli/index.ts",
 		"bi:repl": "bun run node_modules/bunigniter/dist/cli/index.ts repl",
@@ -268,8 +268,8 @@ function genPkgJson(
 	const deps: Record<string, string> = {
 		bunigniter: "^0.5",
 		"drizzle-orm": "^0.45",
-		elysia: "^2.0.0-exp.12",
-		typebox: "1.2.16",
+		elysia: "^2.0.0-exp.13",
+		typebox: "^1.3",
 		rendu: "^0.1.0",
 		react: "^19",
 		"react-dom": "^19",
@@ -324,7 +324,7 @@ function genTsCfg(): string {
 				"middleware/**/*.ts",
 				"modules/**/*.ts",
 				"src/**/*.ts",
-				"dev.ts",
+				"main.ts",
 			],
 		},
 		null,
@@ -370,7 +370,7 @@ function genEnvExample(database: string, cloudflare: boolean): string {
 	return `${lines.join("\n")}\n`
 }
 
-function genDevEntry(name: string): string {
+function genMainEntry(name: string): string {
 	return t(
 		`/**\n * {{name}} — Dev entry point.\n *\n * Debug toolbar & SQL query logging are enabled by default\n * in dev mode. Set DEBUG=false in .env to disable.\n */\nconsole.log("[app] Starting...")\n\n// Enable debug toolbar in development\nif (!process.env.DEBUG) process.env.DEBUG = "true"\n\nimport "bunigniter"\n`,
 		{ name },
@@ -554,7 +554,7 @@ export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
 	makeFile(join(projectDir, "tsconfig.json"), genTsCfg())
 	makeFile(join(projectDir, ".gitignore"), genGitignore())
 	makeFile(join(projectDir, ".env.example"), genEnvExample(database, isCf))
-	makeFile(join(projectDir, "dev.ts"), genDevEntry(projectName))
+	makeFile(join(projectDir, "main.ts"), genMainEntry(projectName))
 	makeFile(join(projectDir, "config", "app.ts"), genConfigApp(database, isCf, openapi))
 
 	if (database !== "none") {

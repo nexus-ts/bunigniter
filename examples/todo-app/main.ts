@@ -1,7 +1,7 @@
 /**
  * Todo App — entry point.
  *
- * Run: `bun run examples/todo-app/dev.ts`
+ * Run: `bun run examples/todo-app/main.ts`
  */
 import { join } from 'node:path'
 import { chdir } from 'node:process'

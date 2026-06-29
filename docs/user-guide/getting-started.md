@@ -82,7 +82,7 @@ my-app/
 ├── db/
 │   └── seed.ts              ← 데이터베이스 시더
 ├── helpers/                 ← (database=none일 때 JSON 저장소)
-├── dev.ts                   ← 엔트리 포인트
+├── main.ts                   ← 엔트리 포인트
 ├── package.json
 ├── tsconfig.json
 ├── .env.example

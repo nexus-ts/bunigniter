@@ -168,14 +168,14 @@ Available: `new`, `init`, `make:controller`, `make:model`, `make:migration`, `db
 
 | Command | App | Stack |
 |---------|-----|-------|
-| `examples/simple-app/dev.ts` | Simple (CI3 welcome) | Rendu HTML |
-| `examples/todo-app/dev.ts` | Todo | React SSR |
-| `examples/hn-app/dev.ts` | Hacker News | Rendu HTML |
-| `examples/petstore/dev.ts` | Pet Store | Rendu HTML |
-| `examples/blog-app-html/dev.ts` | Blog CMS | Rendu HTML |
-| `examples/blog-app-tsx/dev.ts` | Blog CMS | React SSR |
-| `examples/blog-app-inertia-react/dev.ts` | Blog CMS | Inertia React |
-| `examples/slack-app/dev.ts` | Slack Clone | Full-stack |
+| `examples/simple-app/main.ts` | Simple (CI3 welcome) | Rendu HTML |
+| `examples/todo-app/main.ts` | Todo | React SSR |
+| `examples/hn-app/main.ts` | Hacker News | Rendu HTML |
+| `examples/petstore/main.ts` | Pet Store | Rendu HTML |
+| `examples/blog-app-html/main.ts` | Blog CMS | Rendu HTML |
+| `examples/blog-app-tsx/main.ts` | Blog CMS | React SSR |
+| `examples/blog-app-inertia-react/main.ts` | Blog CMS | Inertia React |
+| `examples/slack-app/main.ts` | Slack Clone | Full-stack |
 
 ## Testing
 

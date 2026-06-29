@@ -2,7 +2,7 @@
  * Simple App — CodeIgniter 3-style welcome page.
  *
  * Minimal Bunigniter example: one route, one view, no database.
- * Run: `bun run examples/simple-app/dev.ts`
+ * Run: `bun run examples/simple-app/main.ts`
  */
 import { join } from 'node:path'
 import { chdir } from 'node:process'

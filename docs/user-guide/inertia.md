@@ -2,7 +2,7 @@
 
 Bunigniter supports **Inertia-style** page rendering — a protocol where the first request returns a full HTML shell with embedded page data, and subsequent navigations return JSON only. This gives you **SPA-like navigation** with **server-side rendering** on first load.
 
-> **Example app:** `bun run examples/blog-app-inertia-react/dev.ts`
+> **Example app:** `bun run examples/blog-app-inertia-react/main.ts`
 
 ---
 
@@ -195,7 +195,7 @@ examples/blog-app-inertia-react/
 │   ├── comment.ts     # Comment moderation
 │   └── login.ts       # Authentication
 ├── config/app.ts     # App configuration
-└── dev.ts            # Entry point
+└── main.ts            # Entry point
 ```
 
 ### Route example with Inertia
