@@ -4,6 +4,7 @@
 
 | Document | Description |
 |----------|-------------|
+| [Getting Started](getting-started.md) | First project from zero — recommend starting here |
 | [Request Input](request.md) | 16 input methods: input, get, post, only, has, ip, ajax, etc. |
 | [Controller Lifecycle](controller-lifecycle.md) | Request lifecycle, `_before()` hook |
 | [Template Engine](template-engine.md) | Rendu, MDX, React SSR — 3 engines |
@@ -20,6 +21,7 @@
 | [File Upload](upload.md) | Upload, validate, store, delete files |
 | [Image Manipulation](image.md) | Resize, crop, filters, watermarks, format conversion |
 | [OpenAPI](openapi.md) | Auto-generated API docs |
+| [Middleware](middleware.md) | Creating and using middleware |
 | [SSE](sse.md) | Server-Sent Events |
 | [WebSocket](websocket.md) | WebSocket handler manager |
 
