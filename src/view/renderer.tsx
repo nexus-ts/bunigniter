@@ -63,6 +63,82 @@ export function registerView(name: string, component: any): void {
  * @param options - Rendering options
  * @returns HTML string
  */
+/**
+ * Same as renderView, but takes a pre-loaded template SOURCE string
+ * instead of a file path. Use this on Edge runtimes (Cloudflare Workers)
+ * where readFileSync / node:fs is not available.
+ *
+ * The source should be a compiled Rendu template string or React component.
+ *
+ * @example
+ * ```ts
+ * import { renderViewFromSource } from "bunigniter/view/renderer"
+ *
+ * const TEMPLATE = `<!DOCTYPE html>...<h1><?= title ?></h1>...`
+ *
+ * app.get("/", async () => {
+ *   return renderViewFromSource(TEMPLATE, { title: "Hello" })
+ * })
+ * ```
+ */
+export async function renderViewFromSource(
+	source: string,
+	props: Record<string, any> = {},
+	options: { title?: string; scripts?: string[] } = {},
+): Promise<Response> {
+	const { compileTemplate } = await import("rendu")
+
+	const fn = compileTemplate(source)
+	const ctx = {
+		htmlspecialchars: (s: unknown) =>
+			String(s ?? "")
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;"),
+		...props,
+	}
+
+	const stream = await fn(ctx)
+	const reader = stream.getReader()
+	const chunks: Uint8Array[] = []
+	while (true) {
+		const { done, value } = await reader.read()
+		if (done) break
+		chunks.push(value)
+	}
+
+	let html = new TextDecoder().decode(concatUint8Arrays(chunks))
+
+	const title = options.title ?? "Bunigniter"
+	const scripts = (options.scripts ?? []).map((s) => `<script src="${s}"></script>`).join("\n")
+
+	if (!html.includes("<!DOCTYPE")) {
+		html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(title)}</title>
+</head>
+<body>
+  ${html}
+  ${scripts}
+</body>
+</html>`
+	}
+
+	return new Response(html, {
+		headers: { "content-type": "text/html; charset=utf-8" },
+	})
+}
+
+/**
+ * Render a view component to an HTML string.
+ *
+ * NOTE: Uses readFileSync internally — NOT edge-compatible.
+ * For Edge runtimes, use renderViewFromSource() instead.
+ */
 export async function renderView(
 	name: string,
 	props: Record<string, any> = {},

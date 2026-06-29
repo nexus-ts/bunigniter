@@ -1,3 +1,5 @@
+> **⚠️ Experimental** — This framework is actively evolving. APIs may change before 1.0.
+
 # Bunigniter
 
 [![npm](https://img.shields.io/npm/v/bunigniter)](https://www.npmjs.com/package/bunigniter)
