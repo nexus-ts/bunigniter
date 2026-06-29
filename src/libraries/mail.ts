@@ -20,7 +20,7 @@
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { env } from "./env"
+import { env } from "../helpers/env"
 
 // ─── Types ─────────────────────────────────────────────────────
 

@@ -20,7 +20,7 @@
 import crypto from "node:crypto"
 import { existsSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs"
 import { extname, join } from "node:path"
-import { env } from "./env"
+import { env } from "../helpers/env"
 
 export interface UploadOptions {
 	/** Maximum file size in bytes. Default: 10MB */
