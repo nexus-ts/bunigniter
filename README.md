@@ -26,10 +26,11 @@ bunx create-bunigniter@latest my-app
 
 # Add to existing project:
 bun add bunigniter
+bun run bi init          # Scaffold into current dir (merges package.json)
 ```
 
-> New to Bunigniter? `bun create bunigniter@latest my-app` scaffolds a working CRUD app
-> with zero config — controllers, views, database, auth scaffolding included.
+> New to Bunigniter? `bun create bunigniter@latest my-app` scaffolds a ready-to-run
+> project with interactive prompts — runtime, database, templates.
 
 ---
 
@@ -158,20 +159,47 @@ bun run bi build:edge         # Build for Cloudflare Workers
 
 ---
 
-## Feature Comparison
+## Template Engines — Three Ways to Render
 
-| Capability | Bunigniter | NestJS | AdonisJS | Hono |
-|------------|:-------:|:------:|:--------:|:----:|
-| Bun-native | ✅ | ❌ | △ | ✅ |
-| Edge (Workers) | ✅ | △ | ❌ | ✅ |
-| Class controllers | ✅ | ✅ | ✅ | ❌ |
-| File-path routing | ✅ | ❌ | ❌ | ✅ |
-| PHP-style templates | ✅ | ❌ | △ | ❌ |
-| CI query builder | ✅ | ❌ | ✅ | ❌ |
-| HMVC modules | ✅ | ✅ | ❌ | ❌ |
-| 27 CLI commands | ✅ | ✅ | ✅ | ❌ |
-| Debug toolbar | ✅ | ❌ | ❌ | ❌ |
-| No build step | ✅ | ❌ | ❌ | ✅ |
+| Engine | File | Syntax | Best For |
+|--------|------|--------|----------|
+| **Rendu** | `.html` | `<?= title ?>`, `<? if(...) { ?>` | PHP/Laravel developers, designers |
+| **MDX** | `.mdx` | `{{ title }}` + Markdown | Documentation, content sites |
+| **React SSR** | `.tsx` | `{title}` (JSX) | Complex UI, component libraries |
+
+All three support **auto-layout** (`views/_layout.html` → `<?= slot ?>`), **named slots**, and **nested templates**.
+No build step required — Bun serves `.html`/`.mdx`/`.tsx` directly.
+
+```html
+{{! Rendu (.html) — PHP-style, familiar for Laravel/CI devs }}
+<h1><?= title ?></h1>
+<? for (const item of items) { ?>
+  <li><?= item.name ?> — <?= item.price ?>$</li>
+<? } ?>
+```
+
+```mdx
+{{! MDX (.mdx) — Markdown + variables, great for docs }}
+# {{ title }}
+
+**Stats:** {{ total }} items ({{ active }} active)
+
+![Diagram]({{ diagramUrl }})
+```
+
+```tsx
+{{! React SSR (.tsx) — JSX for complex UIs }}
+export default function Items({ items }: { items: Item[] }) {
+  return (
+    <div>
+      <h1>{title}</h1>
+      {items.map(item => (
+        <ItemCard key={item.id} item={item} />
+      ))}
+    </div>
+  )
+}
+```
 
 ---
 
