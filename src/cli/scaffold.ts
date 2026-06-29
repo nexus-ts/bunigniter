@@ -18,6 +18,10 @@ import { render } from "./templates"
 
 // External template files
 const CONFIG_TPL = readFileSync(join(import.meta.dirname, "templates", "config-app.ts.tpl"), "utf-8")
+const TODO_CTRL_TPL = readFileSync(join(import.meta.dirname, "templates", "todo-controller.ts.tpl"), "utf-8")
+const TODO_VIEW_TPL = readFileSync(join(import.meta.dirname, "templates", "todo-view.html.tpl"), "utf-8")
+const JSON_DB_TPL = readFileSync(join(import.meta.dirname, "templates", "json-db.ts.tpl"), "utf-8")
+const TODO_JSON_CTRL_TPL = readFileSync(join(import.meta.dirname, "templates", "todo-controller-json.ts.tpl"), "utf-8")
 
 // ═══════════════════════════════════════════════════════════════════
 // COLORS
@@ -670,124 +674,20 @@ export class Home extends Controller {
 }
 
 function genTodoRouteTodos(): string {
-	return `/**
- * Todos Controller — full CRUD with Rendu views.
- *
- * GET    /todos        -> List all todos
- * GET    /todos/new    -> Show create form
- * POST   /todos        -> Create todo
- * POST   /todos/:id    -> Update or delete (via _method)
- */
-import { Controller } from "bunigniter"
-
-interface Todo {
-	id: number
-	title: string
-	completed: number
-	created_at: string
+	return TODO_CTRL_TPL
 }
 
-export class Todos extends Controller {
-	async index() {
-		const result = await this.db.query<Todo>("SELECT * FROM todos ORDER BY created_at DESC")
-		const todos = result.rows ?? []
-		const activeCount = todos.filter((t: Todo) => !t.completed).length
-		return this.view("todos", {
-			title: "Todos",
-			todos,
-			total: todos.length,
-			activeCount,
-		})
-	}
-
-	async create() {
-		const v = this.validate(this.body, { title: "required|min:1|max:500" })
-		if (v.fails()) {
-			const result = await this.db.query<Todo>("SELECT * FROM todos ORDER BY created_at DESC")
-			return this.view("todos", {
-				title: "Todos",
-				todos: result.rows ?? [],
-				total: result.rows?.length ?? 0,
-				activeCount: result.rows?.filter((t: Todo) => !t.completed).length ?? 0,
-				errors: v.errors,
-				oldTitle: this.request.post("title", ""),
-			})
-		}
-		await this.db.query("INSERT INTO todos (title) VALUES (?)", [v.data.title.trim()])
-		return this.redirect("/todos")
-	}
-
-	async update(id: number) {
-		const body = this.body
-		if (body?.title !== undefined) {
-			const v = this.validate(body, { title: "required|min:1|max:500" })
-			if (v.fails()) return this.badRequest(v.errors)
-			await this.db.query("UPDATE todos SET title = ?, completed = ? WHERE id = ?", [
-				v.data.title.trim(), body.completed ? 1 : 0, id,
-			])
-		} else {
-			await this.db.query("UPDATE todos SET completed = ? WHERE id = ?", [
-				body?.completed ? 1 : 0, id,
-			])
-		}
-		return this.redirect("/todos")
-	}
-
-	async destroy(id: number) {
-		await this.db.query("DELETE FROM todos WHERE id = ?", [id])
-		return this.redirect("/todos")
-	}
+function genJsonDbHelper(): string {
+	return JSON_DB_TPL
 }
-`
-}
+// JSON-BASED TODO CONTROLLER (for database=none mode)
+// ═══════════════════════════════════════════════════════════════════
 
+function genTodoRouteTodosJson(): string {
+	return TODO_JSON_CTRL_TPL
+}
 function genTodoViewTodos(): string {
-	return `<div style="max-width: 560px; margin: 0 auto;">
-  <h1>📋 Todos (<?= activeCount ?? 0 ?> active)</h1>
-
-  <? if (errors) { ?>
-    <div style="background: #5c1a1a; border: 1px solid #e94560; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
-      <? for (const err of Object.values(errors)) { ?>
-        <p style="color: #e94560; font-size: 13px;"><?= Array.isArray(err) ? err[0] : err ?></p>
-      <? } ?>
-    </div>
-  <? } ?>
-
-  <form action="/todos" method="POST" style="display: flex; gap: 8px; margin-bottom: 24px;">
-    <input type="text" name="title" placeholder="What needs to be done?" value="<?= oldTitle ?? '' ?>"
-      style="flex:1; padding:10px 14px; border-radius:8px; border:1px solid #333; background:#1a1a3e; color:#fff; font-size:14px;" required />
-    <button type="submit" class="btn btn-primary" style="white-space: nowrap;">+ Add</button>
-  </form>
-
-  <? if (todos && todos.length > 0) { ?>
-    <? for (const todo of todos) { ?>
-      <div class="card" style="display: flex; align-items: center; gap: 12px;">
-        <form action="/todos/<?= todo.id ?>" method="POST" style="margin: 0;">
-          <input type="hidden" name="_method" value="PUT" />
-          <input type="hidden" name="completed" value="<?= todo.completed ? 0 : 1 ?>" />
-          <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 18px;">
-            <? if (todo.completed) { ?>✅<? } else { ?>⬜<? } ?>
-          </button>
-        </form>
-        <span style="flex:1; <?= todo.completed ? 'text-decoration: line-through; color: #555;' : '' ?>">
-          <?= todo.title ?>
-        </span>
-        <form action="/todos/<?= todo.id ?>" method="POST" style="margin: 0;">
-          <input type="hidden" name="_method" value="DELETE" />
-          <button type="submit" style="background: none; border: none; color: #666; cursor: pointer; font-size: 16px;">✕</button>
-        </form>
-      </div>
-    <? } ?>
-    <p style="text-align: center; color: #555; font-size: 12px; margin-top: 16px;">
-      <?= total ?> total · <?= activeCount ?> active · <?= total - activeCount ?> completed
-    </p>
-  <? } else { ?>
-    <div style="text-align: center; padding: 60px 0; color: #666;">
-      <p style="font-size: 48px; margin-bottom: 16px;">📭</p>
-      <p>No todos yet. Add one above!</p>
-    </div>
-  <? } ?>
-</div>`
+	return TODO_VIEW_TPL
 }
 
 function genTodoSeedScript(): string {
@@ -826,129 +726,5 @@ if (existing.count === 0) {
 
 db.close()
 console.log("[seed] done")
-`
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// JSON DATA STORE — in-memory storage for database=none mode
-// ═══════════════════════════════════════════════════════════════════
-
-function genJsonDbHelper(): string {
-	return `/**
- * JSON data store — lightweight in-memory storage for demo/DB-less mode.
- * Used when no database is configured. Data resets on server restart.
- */
-interface StoreItem {
-	id: number
-	[key: string]: any
-}
-
-const stores = new Map<string, StoreItem[]>()
-const counters = new Map<string, number>()
-
-export function jsonDb(table: string) {
-	if (!stores.has(table)) {
-		stores.set(table, [])
-		counters.set(table, 1)
-	}
-	const items = stores.get(table)!
-	let counter = counters.get(table)!
-
-	return {
-		all<T = StoreItem>(): T[] { return items as T[] },
-
-		get<T = StoreItem>(id: number): T | undefined { return items.find(i => i.id === id) as T },
-
-		insert(data: Record<string, any>): StoreItem {
-			const item = { id: counter++, ...data, created_at: new Date().toISOString() }
-			items.push(item)
-			counters.set(table, counter)
-			return item
-		},
-
-		update(id: number, data: Record<string, any>): StoreItem | null {
-			const idx = items.findIndex(i => i.id === id)
-			if (idx === -1) return null
-			items[idx] = { ...items[idx], ...data }
-			return items[idx]
-		},
-
-		delete(id: number): boolean {
-			const idx = items.findIndex(i => i.id === id)
-			if (idx === -1) return false
-			items.splice(idx, 1)
-			return true
-		},
-
-		count(): number { return items.length },
-	}
-}
-
-// Seed data for demo
-export function seedTodos() {
-	const db = jsonDb("todos")
-	if (db.count() > 0) return
-	db.insert({ title: "Learn Bunigniter", completed: false })
-	db.insert({ title: "Build an app", completed: false })
-	db.insert({ title: "Deploy to production", completed: false })
-	db.insert({ title: "Done task", completed: true })
-}
-`
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// JSON-BASED TODO CONTROLLER (for database=none mode)
-// ═══════════════════════════════════════════════════════════════════
-
-function genTodoRouteTodosJson(): string {
-	return `/**
- * Todos Controller — full CRUD with JSON data store.
- * No database required — data resets on server restart.
- */
-import { Controller } from "bunigniter"
-import { jsonDb, seedTodos } from "../helpers/json-db"
-
-interface Todo {
-	id: number
-	title: string
-	completed: boolean
-	created_at: string
-}
-
-export class Todos extends Controller {
-	async index() {
-		seedTodos() // ensure demo data on first run
-		const todos = jsonDb<Todo>("todos").all().reverse()
-		const activeCount = todos.filter(t => !t.completed).length
-		return this.view("todos", {
-			title: "Todos",
-			todos,
-			total: todos.length,
-			activeCount,
-		})
-	}
-
-	async create() {
-		const v = this.validate(this.body, { title: "required|min:1|max:500" })
-		if (v.fails()) return this.redirect("/todos")
-		jsonDb("todos").insert({ title: this.request.post("title", "").trim(), completed: false })
-		return this.redirect("/todos")
-	}
-
-	async update(id: number) {
-		const body = this.body
-		if (body?.title !== undefined) {
-			jsonDb("todos").update(id, { title: body.title.trim(), completed: body.completed ? true : false })
-		} else {
-			jsonDb("todos").update(id, { completed: body?.completed ? true : false })
-		}
-		return this.redirect("/todos")
-	}
-
-	async destroy(id: number) {
-		jsonDb("todos").delete(id)
-		return this.redirect("/todos")
-	}
-}
 `
 }
