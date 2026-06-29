@@ -1,71 +1,89 @@
 # Bunigniter — LLM Context
 
 Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
-83 commits, 80+ source files, 15 docs, 7 example apps.
+90+ commits, 85+ source files, 16 docs, 9 example apps, 28 CLI commands.
 
 ## Quick Links
 
 - AGENTS.md: Full development guide
-- CLAUDE.md: AI reference
 - README.md: Feature overview
-- docs/user-guide/request.md: Input handling (16 methods: input, get, post, only, has, filled, method, isAjax, ip, boolean, integer, json, bearerToken, userAgent, cookie, server)
-- docs/helpers.md: 27 helpers reference
-- docs/database.md: Query builder guide
-- docs/template-engine.md: 3 template engines
-- docs/hmvc-modules.md: HMVC module system
-- docs/jwt-auth.md: JWT authentication
-- docs/websocket.md: WebSocket support
-- docs/sse.md: Server-Sent Events
-- docs/openapi.md: OpenAPI documentation
-- docs/cli-reference.md: 25 CLI commands
-- skills/: 8 focused skill files
+- docs/user-guide/getting-started.md: First project from zero
+- docs/user-guide/request.md: 16 input methods
+- docs/user-guide/helpers.md: 14 stateless helpers
+- docs/user-guide/services.md: 7 stateful services (Cache, Queue, Mail, Upload, Image, Session, WS)
+- docs/user-guide/database.md: CI-style query builder
+- docs/user-guide/template-engine.md: 3 engines (Rendu, MDX, React SSR)
+- docs/user-guide/middleware.md: Creating middleware
+- docs/user-guide/inertia.md: Inertia-style SPA pages
+- docs/user-guide/cli-reference.md: 28 CLI commands
+- docs/analysis/architecture.md: Helpers vs Services vs Middleware
+- skills/: 9 focused skill files
 
 ## Key Files
 
-- package.json: bunigniter, exports 22 entry points
-- src/index.ts: App boot, route registration, middleware
-- src/base/controller.ts: Controller base class with _before() hook
+- package.json: bunigniter, exports 35+ entry points (helpers/, services/, edge, view, router, db)
+- src/index.ts: App boot, dynamic service imports (tree-shakeable via config)
+- src/base/controller.ts: Controller base class with _before() hook, this.page(), this.load
 - src/db/drizzle.ts: DbClient with CI-style query builder
 - src/view/renderer.tsx: Template rendering (Rendu/MDX/React)
 - src/router/file-router.ts: Auto file-path routing
 - src/router/server-router.ts: Void-style defineHandler routing
-- src/helpers/request.ts: RequestProxy — CI-style input API
-- src/helpers/: 27 modules (env, validator, jwt, ws, sse, schedule, request, etc.)
-- src/cli/index.ts: 25 CLI commands
+- src/helpers/: 15 stateless modules (env, validator, jwt, cors, sse, schedule, request, etc.)
+- src/services/: 7 stateful service classes (cache, queue, mail, upload, image, session, ws)
+- src/helpers/load.ts: CI3-style helper & service loader (this.load.helper/service)
+- src/cli/index.ts: 28 CLI commands
 - src/cli/templates.ts: Shared templates for make:* commands
-- config/app.ts: Single config file
-- routes/: Controllers and API handlers
-- views/: Templates
-- modules/: HMVC modules
+- src/cli/scaffold.ts: Project scaffold for bi new/init (reads external .tpl files)
+- src/cli/templates/: External template files (config-app, todo-controller, json-db, etc.)
+- config/app.ts: Single config file (db, services, middleware, views, router)
 
-## Example Apps
+## Example Apps (all on port 3000)
 
+- examples/simple-app/dev.ts: Welcome page (Rendu, simplest)
 - examples/todo-app/dev.ts: Todo (React SSR)
 - examples/hn-app/dev.ts: Hacker News (Rendu)
 - examples/petstore/dev.ts: Pet Store (Rendu)
 - examples/blog-app-html/dev.ts: Blog CMS (Rendu)
 - examples/blog-app-tsx/dev.ts: Blog CMS (React SSR)
-- examples/blog-app-inertia-react/dev.ts: Blog CMS (Inertia)
+- examples/blog-app-inertia-react/dev.ts: Blog CMS (Inertia React)
+- examples/hmvc-app/dev.ts: HMVC modules
+- examples/slack-app/dev.ts: Full-stack Slack clone (recommended)
 
 ## Quick Commands
 
 - bun run dev: Start dev server
+- bun run seed: Seed database
 - bun run test: Run tests
-- bun run nx list: List routes
-- bun run nx repl: Interactive console
+- bun run bi list: List routes
+- bun run bi new: Interactive project scaffold
+- bun run bi init: Scaffold into current directory
+- bun run bi repl: Interactive console
 - bun run examples/<app>/dev.ts: Run example app
 
-## Architecture
+## Architecture (3 layers)
 
-```
-routes/*.ts          → Controllers (extends Controller) + API handlers (defineHandler)
-views/*.html/.mdx/.tsx → Templates (Rendu/MDX/React SSR)
-modules/<name>/      → HMVC modules with own routes/views
-middleware/*.ts      → Global middleware
-config/app.ts        → Single config
-src/helpers/*.ts     → 25 helper modules
-```
+- **Helpers** (`bunigniter/helpers/*`): `export function` — stateless, pure utilities
+- **Services** (`bunigniter/services/*`): `export class` — stateful, needs initialization
+- **Middleware** (`middleware/*`): `export default defineMiddleware((c, next) => ...)` — HTTP pipeline hooks
 
 ## Import Convention
 
 Always use `bunigniter` — NOT relative paths like `../../src/`.
+For services: `import { Cache } from 'bunigniter/services/cache'`
+For helpers: `import { jwt } from 'bunigniter/helpers/jwt'`
+
+## Config-Driven Tree Shaking
+
+Set `services: { cache: false }` in config/app.ts to exclude unused services from build.
+
+## Project Structure
+
+```
+routes/*.ts          → Controllers (extends Controller) + handlers (defineHandler)
+views/*.html/.mdx/.tsx → Templates (Rendu/MDX/React SSR)
+config/app.ts        → Single config
+middleware/*.ts      → Global middleware (01_*.ts order)
+modules/<name>/     → HMVC modules
+helpers/            → User-defined helper functions (this.load.helper)
+services/           → User-defined service classes (this.load.service)
+```
