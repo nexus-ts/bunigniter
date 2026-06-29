@@ -68,7 +68,8 @@ No decorators. No DI containers. No boilerplate. Just `this.db`, `this.request`,
 | **CLI** | 28 artisan-style commands: `bi new`, `bi init`, `make:*`, `db:*`, `repl`, `list` |
 | **Realtime** | WebSocket (rooms, broadcast), SSE, cron scheduler |
 | **Middleware** | Logger, rate limiter, CORS, CSRF, timing |
-| **Services** | Cache, Queue, Mail, Upload, Image, Session, WS — tree-shakeable via `config/app.ts` |
+| **Services** | Cache, Queue, Mail, Upload, Image, Session, WS — tree-shakeable via `services:` in `config/app.ts` |
+| **Endpoints** | `/health`, OpenAPI docs — toggle via `endpoints:` in `config/app.ts` |
 | **Security** | AES-256-GCM session encryption + HMAC, CSRF, rate limiting, JWT |
 | **Edge** | Cloudflare Workers, Deno — `bun run bi build:edge` |
 | **Debug** | Toolbar with SQL profiling, session viewer, request headers |
@@ -130,18 +131,18 @@ this.auth.logout()         // clear session
 
 ```bash
 bun run bi                    # Help
-bun run bi list               # List routes
+bun run bi list               # List all routes (file + system endpoints)
 bun run bi new                # Interactive project scaffold (new directory)
 bun run bi init               # Interactive scaffold into current dir
-bun run bi repl               # Interactive console
-bun run bi make:controller    # Scaffold controller, model, migration, middleware, ...
-bun run bi db:migrate         # Run/rollback/seed/wipe
-bun run bi key:generate       # Generate APP_KEY
+bun run bi repl               # Interactive console with auto-imports
+bun run bi make:*             # Scaffold controller, model, migration, middleware, ...
+bun run bi db:migrate         # Run/rollback/seed/wipe database
+bun run bi key:generate       # Generate APP_KEY for encryption
 bun run bi storage:link       # Create public storage symlink
 bun run bi build:edge         # Build for Cloudflare Workers
 ```
 
-28 commands total. All in `bun run bi list`.
+28+ commands total. Run `bun run bi list` to see all.
 
 ---
 

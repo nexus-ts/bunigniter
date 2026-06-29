@@ -13,7 +13,7 @@ Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
 routes/        ← Controllers (Export class extends Controller)
 views/         ← Templates (.html Rendu / .mdx / .tsx React)
 modules/       ← HMVC modules (blog/shop/admin)
-config/app.ts  ← Single config file
+config/app.ts  ← Single config (services, endpoints, middleware)
 middleware/    ← Global middleware (01_*.ts)
 src/helpers/   ← 15 stateless helper modules
 src/services/  ← 7 stateful service classes (Cache, Queue, Mail, Upload, Image, Session, WS)
