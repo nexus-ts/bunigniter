@@ -28,6 +28,7 @@
     "./helpers/modules": "./src/helpers/modules.ts",
     "./helpers/openapi": "./src/helpers/openapi.ts",
     "./helpers/jwt": "./src/helpers/jwt.ts",
+    "./helpers/load": "./src/helpers/load.ts",
     "./helpers/ws": "./src/helpers/ws.ts",
     "./helpers/sse": "./src/helpers/sse.ts",
     "./helpers/schedule": "./src/helpers/schedule.ts",

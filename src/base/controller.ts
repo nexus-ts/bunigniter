@@ -27,6 +27,7 @@ import { RequestProxy } from "../helpers/request"
 import type { Session } from "../helpers/session"
 import type { Upload } from "../helpers/upload"
 import { type ValidationResult, validate } from "../helpers/validator"
+import { LoadService } from "../helpers/load"
 import { type PageOptions, PageResponse } from "../view/page"
 import { ViewResponse } from "../view/view-response"
 
@@ -77,6 +78,9 @@ export class Controller {
 
 	/** Default HTTP client instance. */
 	private _http: HttpClient = createHttp()
+
+	/** Load — CI3-style helper & library loader. */
+	declare load: LoadService
 
 	/** Paginate helper bound to this controller. */
 	protected paginate = paginateFn

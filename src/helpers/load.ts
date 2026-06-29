@@ -1,0 +1,127 @@
+/**
+ * Load — CI3-style helper & library loader for controllers.
+ *
+ * Scans project-level directories:
+ *   helpers/   → export function (stateless)
+ *   libraries/ → export class   (stateful, instantiated once)
+ *
+ * @example
+ * ```ts
+ * // Project structure:
+ * //   helpers/format_date.ts     → export function formatDate(date)
+ * //   libraries/payment.ts      → export class PaymentGateway
+ *
+ * class Orders extends Controller {
+ *   async index() {
+ *     // Load helper (returns function)
+ *     const { formatDate } = await this.load.helper('format_date')
+ *     const formatted = formatDate(new Date())
+ *
+ *     // Load library (instantiates class, cached per request)
+ *     const payment = await this.load.library('payment', { apiKey: 'xxx' })
+ *     await payment.charge(100)
+ *   }
+ * }
+ * ```
+ */
+import { existsSync } from "node:fs"
+import { join } from "node:path"
+import { cwd } from "node:process"
+
+export class LoadService {
+	private _helperCache = new Map<string, Record<string, any>>()
+	private _libraryCache = new Map<string, any>()
+	private _projectDir: string
+
+	constructor(projectDir?: string) {
+		this._projectDir = projectDir ?? cwd()
+	}
+
+	/**
+	 * Load a helper module from the project's helpers/ directory.
+	 *
+	 * Helpers are stateless function collections.
+	 * Subsequent calls return the cached module.
+	 *
+	 * @param name - File name without extension (e.g. "format_date")
+	 * @returns All exports from the helper module
+	 *
+	 * @example
+	 * ```ts
+	 * const { formatDate } = await this.load.helper('format_date')
+	 * ```
+	 */
+	async helper(name: string): Promise<Record<string, any>> {
+		if (this._helperCache.has(name)) {
+			return this._helperCache.get(name)!
+		}
+
+		const paths = [
+			join(this._projectDir, "helpers", `${name}.ts`),
+			join(this._projectDir, "helpers", `${name}.js`),
+			join(this._projectDir, "helpers", name, "index.ts"),
+			join(this._projectDir, "helpers", name, "index.js"),
+		]
+
+		for (const filePath of paths) {
+			if (existsSync(filePath)) {
+				const mod = await import(filePath)
+				this._helperCache.set(name, mod)
+				return mod
+			}
+		}
+
+		throw new Error(`Helper not found: ${name} (looked in helpers/${name}.ts)`)
+	}
+
+	/**
+	 * Load a library class from the project's libraries/ directory.
+	 *
+	 * Libraries are stateful classes. The class is instantiated with
+	 * the provided options on first call and cached for the request.
+	 *
+	 * @param name - File name without extension (e.g. "payment")
+	 * @param options - Constructor options passed to the class
+	 * @returns Instance of the library class
+	 *
+	 * @example
+	 * ```ts
+	 * const payment = await this.load.library('payment', { apiKey: 'xxx' })
+	 * await payment.charge(100)
+	 * ```
+	 */
+	async library<T = any>(name: string, options?: Record<string, any>): Promise<T> {
+		const cacheKey = `${name}:${JSON.stringify(options ?? {})}`
+		if (this._libraryCache.has(cacheKey)) {
+			return this._libraryCache.get(cacheKey) as T
+		}
+
+		const paths = [
+			join(this._projectDir, "libraries", `${name}.ts`),
+			join(this._projectDir, "libraries", `${name}.js`),
+			join(this._projectDir, "libraries", name, "index.ts"),
+			join(this._projectDir, "libraries", name, "index.js"),
+		]
+
+		for (const filePath of paths) {
+			if (existsSync(filePath)) {
+				const mod = await import(filePath)
+				const ExportedClass = mod.default || Object.values(mod)[0]
+				if (typeof ExportedClass === "function" || typeof ExportedClass === "object") {
+					const instance = typeof ExportedClass === "function" ? new ExportedClass(options ?? {}) : ExportedClass
+					this._libraryCache.set(cacheKey, instance)
+					return instance as T
+				}
+				throw new Error(`Library "${name}" must export a class or default export`)
+			}
+		}
+
+		throw new Error(`Library not found: ${name} (looked in libraries/${name}.ts)`)
+	}
+
+	/** Clear all cached helpers and libraries. */
+	clear(): void {
+		this._helperCache.clear()
+		this._libraryCache.clear()
+	}
+}
