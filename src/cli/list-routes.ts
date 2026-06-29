@@ -6,6 +6,8 @@ import { join } from "node:path"
 
 const CWD = process.cwd()
 
+const D = (s: string) => `\x1b[90m${s}\x1b[0m`
+
 export async function listRoutes(): Promise<void> {
 	const routesDir = join(CWD, "routes")
 	if (!existsSync(routesDir)) {
@@ -20,6 +22,28 @@ export async function listRoutes(): Promise<void> {
 	console.log("  ─────────────────────────────────")
 
 	let count = 0
+
+	// ─── System routes (conditional) ──────────────
+	if (existsSync(join(CWD, "config", "app.ts"))) {
+		const configContent = readFileSync(join(CWD, "config", "app.ts"), "utf-8")
+
+		// Check if health endpoint is enabled (default: true)
+		if (!configContent.includes("health: false") && !configContent.includes('"health": false')) {
+			console.log(`\n  ${D("[system]".padEnd(48))}`)
+			console.log(`  ${D("GET".padEnd(6))} ${D("/health".padEnd(25))} ${D("System.health()")}`)
+			count++
+		}
+
+		// Check if OpenAPI is enabled (default: true)
+		if (!configContent.includes("openapi: false") && !configContent.includes('"openapi": false')) {
+			console.log(`  ${D("GET".padEnd(6))} ${D("/openapi.json".padEnd(25))} ${D("OpenAPI.spec()")}`)
+			console.log(`  ${D("GET".padEnd(6))} ${D("/docs".padEnd(25))} ${D("OpenAPI.docsUI()")}`)
+			count += 2
+		}
+	}
+
+	// ─── File routes ─────────────────────────────────────
+	console.log(`\n  ${"File Routes".padEnd(48)}`)
 	for (const file of files.sort()) {
 		if (!file.endsWith(".ts") || file.endsWith(".server.ts")) continue
 

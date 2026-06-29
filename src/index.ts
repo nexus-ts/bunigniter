@@ -47,8 +47,12 @@ interface AppConfig {
 		mail?: false
 		upload?: false
 		ws?: false
-		openapi?: false
 		modules?: false
+	}
+
+	endpoints?: {
+		health?: false // Health check endpoint (/health)
+		openapi?: false // OpenAPI spec + Scalar UI (/docs)
 	}
 }
 
@@ -218,27 +222,29 @@ async function main() {
 		await registerServerRoutes(app, routesDir, "")
 	}
 
-	// ─── OpenAPI Documentation ───────────────────────────────
-	if (svc.openapi !== false) {
+	// ─── OpenAPI Documentation (disabled via endpoints.openapi = false) ──
+	if (config.endpoints?.openapi !== false) {
 		const { openapi: openapiFn } = await import("./helpers/openapi")
 		openapiFn(app, { title: "Bunigniter API", version: "0.1.0" })
 	}
 
-	// ─── Health Check ─────────────────────────────────────────
-	app.get(
-		"/health",
-		() =>
-			new Response(
-				JSON.stringify({
-					status: "ok",
-					uptime: process.uptime(),
-					timestamp: new Date().toISOString(),
-				}),
-				{
-					headers: { "content-type": "application/json" },
-				},
-			),
-	)
+	// ─── Health Check (disabled via endpoints.health = false) ──────
+	if (config.endpoints?.health !== false) {
+		app.get(
+			"/health",
+			() =>
+				new Response(
+					JSON.stringify({
+						status: "ok",
+						uptime: process.uptime(),
+						timestamp: new Date().toISOString(),
+					}),
+					{
+						headers: { "content-type": "application/json" },
+					},
+				),
+		)
+	}
 
 	// ─── Start Server ─────────────────────────────────────────
 	app.listen(port, () => {

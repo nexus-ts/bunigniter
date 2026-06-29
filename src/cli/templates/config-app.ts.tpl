@@ -36,11 +36,6 @@ export default {
 	// debug: Enable debug toolbar + SQL query logging
 	app: { key: env("APP_KEY", ""), debug: env("DEBUG", false) as unknown as boolean }{{EDGE}}{{SERVICES}}
 
-	// ─── Services (false = exclude from build) ────────────────
-	// cache, queue, mail, upload, ws, openapi, modules
-	// Set a service to false to tree-shake it from the production build.
-	// Default: all enabled (delete this block to keep defaults)
-
 	// ─── Middleware ───────────────────────────────────────────
 	// CORS, Logger, CSRF, Rate Limiter — all optional
 	middleware: {

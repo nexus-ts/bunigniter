@@ -377,7 +377,7 @@ function genDevEntry(name: string): string {
 	)
 }
 
-function genConfigApp(database: string, cloudflare: boolean, openapi?: boolean): string {
+function genConfigApp(database: string, cloudflare: boolean, _openapi?: boolean): string {
 	const dbLines: Record<string, string> = {
 		sqlite: `\t\tdialect: env("DB_DIALECT", "bun-sqlite") as any,\n\t\tconnection: { filename: env("DB_FILENAME", "data/app.db") },`,
 		postgresql: `\t\tdialect: "postgres",\n\t\tconnection: { url: env("DATABASE_URL", "postgres://localhost:5432/mydb") },`,
@@ -390,15 +390,7 @@ function genConfigApp(database: string, cloudflare: boolean, openapi?: boolean):
 	// ─── Edge / Cloudflare ──────────────────────────────
 	edge: { enabled: env("EDGE", "false") as unknown as boolean, d1Binding: "DB" },`
 		: ""
-	const servicesBlock =
-		openapi === false
-			? `,
-
-	// ─── Services ───────────────────────────────────────────
-	services: {
-		openapi: false,
-	},`
-			: ""
+	const servicesBlock = `,\n\n\t// ─── Services (true = enabled, false = tree-shake from build) ──────\n\tservices: {\n\t\tcache: false,   // In-memory cache layer\n\t\tqueue: false,   // Background job queue\n\t\tmail: false,    // Email sending (SMTP)\n\t\tupload: false,  // File upload handler\n\t\tws: false,      // WebSocket server\n\t\tmodules: false, // HMVC module system\n\t},\n\n\t// ─── Built-in Endpoints (false = disable) ──────────────\n\tendpoints: {\n\t\thealth: true,  // Health check endpoint (/health)\n\t\topenapi: false, // OpenAPI spec + Scalar UI (/docs)\n\t},`
 
 	// Replace placeholders in the template
 	let out = CONFIG_TPL.replace("{{DB}}", dbLines[database] ?? dbLines.sqlite)

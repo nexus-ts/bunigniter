@@ -2,6 +2,25 @@
 
 All notable changes to Bunigniter are documented in this file.
 
+## [0.5.3] — 2026-06-29
+
+### Added
+
+- **`endpoints` config section** — Separate from `services`, controls built-in framework endpoints (`health`, `openapi`). Default: `health: true`, `openapi: false`.
+- **Config-driven route visibility** — `/health` and OpenAPI routes now respect `config.endpoints.*` settings in `bi list` output.
+
+### Changed
+
+- **Moved `openapi` from `services` to `endpoints`** — OpenAPI is no longer a tree-shakeable service but a built-in endpoint controlled via config.
+- **Moved `/health` from always-enabled to config-controlled** — Now disabled via `endpoints.health: false` instead of hard-coded.
+- **Improved `bi list` output** — System routes section now shows only enabled endpoints based on config.
+
+### Fixed
+
+- **TypeScript interface compliance** — Fixed `AppConfig.endpoints` type definition to match runtime usage.
+
+[0.5.3]: https://github.com/nexus-ts/bunigniter/compare/v0.5.2...v0.5.3
+
 ## [0.5.0] — 2026-06-29
 
 ### Added
@@ -68,7 +87,6 @@ All notable changes to Bunigniter are documented in this file.
 
 - **`scripts/build-dist.ts`** — Added `edge-controller.ts` to ALLOWLIST so the file is included in the `dist/` bundle. Previously caused `Cannot find module './edge-controller'` at runtime.
 - **Scaffold `package.json`** — Added `react` and `react-dom` to generated dependencies (required by `bunigniter`'s view renderer).
-
 
 ## [0.4.1] — 2026-06-29
 

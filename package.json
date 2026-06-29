@@ -1,6 +1,6 @@
 {
   "name": "bunigniter",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Bun-native fullstack framework — CodeIgniter spirit × Elysia performance × Edge-ready",
   "homepage": "https://github.com/nexus-ts/bunigniter",
   "type": "module",
