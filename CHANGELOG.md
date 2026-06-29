@@ -2,6 +2,29 @@
 
 All notable changes to Bunigniter are documented in this file.
 
+## [0.4.1] — 2026-06-29
+
+### Added
+
+- **EdgeController** — Lightweight base class for Cloudflare Workers (`bunigniter/edge-controller`). No `node:fs` dependency, fully edge-compatible.
+- **createD1App()** — Factory for building edge apps from a D1 database binding or `DbClient` (`bunigniter/edge`).
+- **registerController()** — Register an `EdgeController` class on an Elysia edge app (`bunigniter/edge`).
+- **renderViewFromSource()** — Edge-safe Rendu template rendering that accepts source strings instead of file paths (`bunigniter/view/renderer`).
+- **Type exports** — `Dialect`, `DbConfig`, `QueryResult` now exported from the main entry point.
+- **Package exports** — New subpath exports: `./edge`, `./db/drizzle`, `./view/renderer`, `./edge-controller`.
+
+### Changed
+
+- **elysia** — Updated from `2.0.0-exp.9` to `2.0.0-exp.12`.
+- **README** — Rewritten with concise badges, value-first messaging, removed repetition.
+
+### Fixed
+
+- **CI lockfile freeze** — `bun.lock` now matches `package.json` (elysia version bump).
+- **Biome lint errors** — `@ts-ignore` → `@ts-expect-error`, import/export sorting, formatting.
+
+[0.4.1]: https://github.com/nexus-ts/bunigniter/compare/v0.4.0...v0.4.1
+
 ## [0.4.0] — 2026-06-28
 
 ### Fixed
