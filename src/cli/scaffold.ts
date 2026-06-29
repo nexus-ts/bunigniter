@@ -75,6 +75,19 @@ function ask(query: string, defaultVal = ""): Promise<string> {
 	})
 }
 
+/** Keep asking until the answer matches one of the valid options. */
+async function askUntil(query: string, options: string[], defaultVal: string): Promise<string> {
+	const display = options.join(" / ")
+	while (true) {
+		const ans = (await ask(`${query} (${display})`, defaultVal)).toLowerCase()
+		if (options.includes(ans)) return ans
+		// Allow short prefixes ("p" → "postgresql", "c" → "cloudflare")
+		const match = options.find((o) => o.startsWith(ans))
+		if (match) return match
+		console.log(`  ${Y("!")}  Invalid choice. Please enter: ${display}`)
+	}
+}
+
 function sanitize(name: string): string {
 	return name
 		.replace(/\s+/g, "-")
@@ -104,18 +117,15 @@ async function promptOptions(skip: boolean, projectName: string): Promise<Prompt
 	// ─── 1. Runtime ──────────────────────────────────────────
 	let runtime: "bun" | "cloudflare" = "bun"
 	if (!skip) {
-		const ans = await ask("Runtime?", "bun (Bun-only) / cloudflare (Bun + Cloudflare Workers)")
-		runtime = ans === "cloudflare" || ans === "c" ? "cloudflare" : "bun"
+		const ans = await askUntil("Runtime?", ["bun", "cloudflare"], "bun")
+		runtime = ans as "bun" | "cloudflare"
 	}
 
 	// ─── 2. Database ─────────────────────────────────────────
 	let database: "sqlite" | "postgresql" | "mysql" | "none" = "sqlite"
 	if (!skip) {
-		const ans = (await ask("Database? (sqlite / postgresql / mysql / none)", "sqlite")).toLowerCase()
-		if (ans === "postgresql" || ans === "postgres" || ans === "p") database = "postgresql"
-		else if (ans === "mysql" || ans === "m") database = "mysql"
-		else if (ans === "none" || ans === "n") database = "none"
-		else database = "sqlite"
+		const ans = await askUntil("Database?", ["sqlite", "postgresql", "mysql", "none"], "sqlite")
+		database = ans as "sqlite" | "postgresql" | "mysql" | "none"
 	}
 
 	// ─── 3. OpenAPI ───────────────────────────────────────────
@@ -128,8 +138,8 @@ async function promptOptions(skip: boolean, projectName: string): Promise<Prompt
 	// ─── 4. Template ──────────────────────────────────────────
 	let template: "simple" | "todo" = "simple"
 	if (!skip) {
-		const ans = (await ask("Template?", "simple (welcome page) / todo (full CRUD)")).toLowerCase()
-		if (ans === "todo" || ans === "t") template = "todo"
+		const ans = await askUntil("Template?", ["simple", "todo"], "simple")
+		template = ans as "simple" | "todo"
 	}
 
 	// ─── 5. Install ───────────────────────────────────────────
