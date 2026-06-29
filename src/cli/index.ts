@@ -35,7 +35,7 @@ function write(_name: string, filePath: string, content: string): void {
 	ensureDir(filePath.substring(0, filePath.lastIndexOf("/")))
 	if (existsSync(filePath)) throw new Error(`Already exists: ${filePath}`)
 	writeFileSync(filePath, content, "utf-8")
-	console.log(`[nx] Created: ${filePath}`)
+	console.log(`[bi] Created: ${filePath}`)
 }
 
 function argValue(args: string[], key: string, fallback = ""): string {
@@ -77,24 +77,27 @@ register("db:migrate", "Run pending migrations", async () => {
 		.filter((f) => f.endsWith(".sql"))
 		.sort()
 	if (files.length === 0) {
-		console.log("[nx] No pending migrations.")
+		console.log("[bi] No pending migrations.")
 		return
 	}
 	for (const file of files) {
 		const sql = readFileSync(join(MIGRATIONS_DIR, file), "utf-8")
-		console.log(`[nx] Running: ${file}`)
+		console.log(`[bi] Running: ${file}`)
 		// Execute SQL via bun:sqlite
 		try {
 			const { Database } = await import("bun:sqlite")
 			const dbPath = arg(["DB_FILENAME"], "app.db")
 			const db = new Database(dbPath)
-			for (const stmt of sql.split(";").filter(Boolean)) {
-				db.run(stmt.trim())
+			for (const stmt of sql
+				.split(";")
+				.map((s) => s.trim())
+				.filter((s) => s.length > 0)) {
+				db.run(stmt)
 			}
 			db.close()
-			console.log(`[nx]   ✓ ${file}`)
+			console.log(`[bi]   ✓ ${file}`)
 		} catch (e: any) {
-			console.error(`[nx]   ✗ ${e.message}`)
+			console.error(`[bi]   ✗ ${e.message}`)
 		}
 	}
 })
@@ -105,16 +108,16 @@ register("db:rollback", "Rollback last migration", async () => {
 		.filter((f) => f.endsWith(".sql"))
 		.sort()
 	if (files.length === 0) {
-		console.log("[nx] No migrations to rollback.")
+		console.log("[bi] No migrations to rollback.")
 		return
 	}
 	const last = files[files.length - 1]
 	try {
 		const fs = await import("node:fs")
 		fs.unlinkSync(join(MIGRATIONS_DIR, last))
-		console.log(`[nx] Rolled back: ${last}`)
+		console.log(`[bi] Rolled back: ${last}`)
 	} catch (e: any) {
-		console.error(`[nx] Error: ${e.message}`)
+		console.error(`[bi] Error: ${e.message}`)
 	}
 })
 
@@ -122,7 +125,7 @@ register("db:seed", "Run database seeders", async (args) => {
 	const specific = argValue(args, "--file", "")
 	const dir = specific ? join(SEEDS_DIR, specific) : SEEDS_DIR
 	if (!existsSync(dir)) {
-		console.log("[nx] No seeders directory found.")
+		console.log("[bi] No seeders directory found.")
 		return
 	}
 	if (specific && !existsSync(dir)) throw new Error(`Seeder not found: ${specific}`)
@@ -136,7 +139,7 @@ register("db:seed", "Run database seeders", async (args) => {
 		const mod = await import(join(SEEDS_DIR, file))
 		const fn = mod.default || mod.seed
 		if (typeof fn === "function") {
-			console.log(`[nx] Seeding: ${file}`)
+			console.log(`[bi] Seeding: ${file}`)
 			await fn({ db: null, dialect: "sqlite" })
 		}
 	}
@@ -150,7 +153,7 @@ register("make:seeder", "Scaffold a seeder file", async (args) => {
 })
 
 register("db:wipe", "Drop all tables (DESTRUCTIVE)", async () => {
-	console.log("[nx] WARNING: This will drop ALL tables!")
+	console.log("[bi] WARNING: This will drop ALL tables!")
 	try {
 		const { Database } = await import("bun:sqlite")
 		const dbPath = arg(["DB_FILENAME"], "app.db")
@@ -159,12 +162,12 @@ register("db:wipe", "Drop all tables (DESTRUCTIVE)", async () => {
 		for (const t of tables) {
 			if (t.name === "sqlite_sequence") continue
 			db.run(`DROP TABLE IF EXISTS "${t.name}"`)
-			console.log(`[nx]   Dropped: ${t.name}`)
+			console.log(`[bi]   Dropped: ${t.name}`)
 		}
 		db.close()
-		console.log(`[nx] Done. ${tables.length - 1} tables dropped.`)
+		console.log(`[bi] Done. ${tables.length - 1} tables dropped.`)
 	} catch (e: any) {
-		console.error(`[nx] Error: ${e.message}`)
+		console.error(`[bi] Error: ${e.message}`)
 	}
 })
 
@@ -263,7 +266,7 @@ register("storage:link", "Create storage symlink", async () => {
 	const target = join(CWD, "storage", "app")
 	const link = join(CWD, "public", "storage")
 	if (existsSync(link)) {
-		console.log("[nx] Storage link already exists.")
+		console.log("[bi] Storage link already exists.")
 		return
 	}
 	ensureDir(join(CWD, "storage"))
@@ -271,9 +274,9 @@ register("storage:link", "Create storage symlink", async () => {
 	try {
 		const fs = await import("node:fs")
 		fs.symlinkSync(target, link, "dir")
-		console.log(`[nx] Linked: ${link} → ${target}`)
+		console.log(`[bi] Linked: ${link} → ${target}`)
 	} catch (e: any) {
-		console.error(`[nx] Error: ${e.message}`)
+		console.error(`[bi] Error: ${e.message}`)
 	}
 })
 
@@ -340,7 +343,7 @@ async function main() {
 	try {
 		await commands[cmd].run(args.slice(1))
 	} catch (err) {
-		console.error(`[nx] Error: ${(err as Error).message}`)
+		console.error(`[bi] Error: ${(err as Error).message}`)
 		process.exit(1)
 	}
 }

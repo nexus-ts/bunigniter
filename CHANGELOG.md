@@ -2,6 +2,12 @@
 
 All notable changes to Bunigniter are documented in this file.
 
+## [0.5.5] — 2026-07-01
+
+### Fixed
+
+- **`db:migrate` empty SQL execution** — Fixed crash when running migrations with trailing semicolons or whitespace-only statements. Now filters out blank SQL strings before passing to bun:sqlite.
+
 ## [0.5.4] — 2026-07-01
 
 ### Changed

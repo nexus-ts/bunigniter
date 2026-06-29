@@ -372,7 +372,7 @@ function genEnvExample(database: string, cloudflare: boolean): string {
 
 function genMainEntry(name: string): string {
 	return t(
-		`/**\n * {{name}} — Dev entry point.\n *\n * Debug toolbar & SQL query logging are enabled by default\n * in dev mode. Set DEBUG=false in .env to disable.\n */\nconsole.log("[app] Starting...")\n\n// Enable debug toolbar in development\nif (!process.env.DEBUG) process.env.DEBUG = "true"\n\nimport "bunigniter"\n`,
+		`/**\n * {{name}} — Bunigniter app entry point.\n *\n * Debug toolbar and SQL query logging are enabled by default.\n * Disable with DEBUG=false in .env or production builds.\n */\nconsole.log("[app] Starting...")\n\n// Enable debug toolbar in development\nif (!process.env.DEBUG) process.env.DEBUG = "true"\n\nimport "bunigniter"\n`,
 		{ name },
 	)
 }
