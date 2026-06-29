@@ -302,6 +302,16 @@ register("list", "Show all registered routes", async () => {
 	await listRoutes()
 })
 
+register("new", "Scaffold a new project in new directory", async (args) => {
+	const { newProject } = await import("./scaffold")
+	await newProject(args)
+})
+
+register("init", "Scaffold bunigniter into current directory (merges package.json)", async (args) => {
+	const { initProject } = await import("./scaffold")
+	await initProject(args)
+})
+
 register("repl", "Start interactive console", async () => {
 	const { startRepl } = await import("./repl")
 	await startRepl()

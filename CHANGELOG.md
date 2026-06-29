@@ -2,6 +2,36 @@
 
 All notable changes to Bunigniter are documented in this file.
 
+## [0.4.2] — 2026-06-29
+
+### Added
+
+- **`bi new` command** — Interactive project scaffold with 5-step wizard:
+  1. Runtime (Bun-only / Cloudflare Workers)
+  2. Database (SQLite / PostgreSQL / MySQL / none)
+  3. OpenAPI docs (y/N)
+  4. Template (simple welcome page / todo — placeholder)
+  5. Install dependencies (Y/n)
+  Generates routes, views, config, DB seed, `.env.example`, `.gitignore`, `tsconfig.json`.
+- **`bi init` command** — Same interactive wizard as `new`, but scaffolds into the **current directory** and **merges** existing `package.json` (preserving scripts, deps, devDeps). Perfect for adding Bunigniter to an existing project.
+- **`src/cli/scaffold.ts`** — Single source of truth for all project scaffold templates. Previously scattered across `create-bunigniter/src/index.ts` (1200+ lines).
+- **`examples/simple-app/`** — Minimal CodeIgniter 3-style welcome page example. `/` renders a Rendu welcome view, `/api` returns JSON. Playwright E2E test included.
+
+### Changed
+
+- **`create-bunigniter`** — Simplified from 1200+ lines to a ~190-line thin wrapper. All scaffolding logic now lives in `bunigniter`'s `bi new` command. The wrapper creates the project directory, installs `bunigniter`, then delegates to `bun run bi new`.
+- **`README.md`** — Install section now warns to always use `@latest`. CLI reference includes `bi new` / `bi init`. Example apps table includes `simple-app`.
+- **`AGENTS.md`** — Updated CLI count (25→28), added `scaffold.ts` conventions, added example apps.
+- **`docs/user-guide/cli-reference.md`** — Updated with all 20 implemented commands (many previously marked as missing). `bi new` and `bi init` added to current commands.
+- **`skills/cli.md`** — Added `new`/`init` commands, `scaffold.ts` reference.
+
+### Fixed
+
+- **`scripts/build-dist.ts`** — Added `edge-controller.ts` to ALLOWLIST so the file is included in the `dist/` bundle. Previously caused `Cannot find module './edge-controller'` at runtime.
+- **Scaffold `package.json`** — Added `react` and `react-dom` to generated dependencies (required by `bunigniter`'s view renderer).
+
+[0.4.2]: https://github.com/nexus-ts/bunigniter/compare/v0.4.1...v0.4.2
+
 ## [0.4.1] — 2026-06-29
 
 ### Added

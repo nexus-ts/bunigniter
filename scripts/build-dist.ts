@@ -25,6 +25,7 @@ const ALLOWLIST = [
 	"cli/",
 	"edge.ts",
 	"edge-builder.ts",
+	"edge-controller.ts",
 	"client/",
 ];
 

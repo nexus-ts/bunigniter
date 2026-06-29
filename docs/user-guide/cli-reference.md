@@ -8,6 +8,8 @@ Bunigniter CLI (`bun run bi`) is inspired by Laravel Artisan and CodeIgniter's C
 |---------|-------------|--------|
 | `bi` | Show help | ✅ |
 | `bi help` | Show help | ✅ |
+| `bi new [name]` | Interactive project scaffold (runtime, DB, OpenAPI, template) | ✅ |
+| `bi init` | Scaffold into current directory (merges existing package.json) | ✅ |
 | `bi list` | List all routes with controller.method | ✅ |
 | `bi repl` | Interactive console (db, cache, http) | ✅ |
 | `bi make:controller <name>` | Scaffold a route controller | ✅ |
@@ -26,45 +28,58 @@ Bunigniter CLI (`bun run bi`) is inspired by Laravel Artisan and CodeIgniter's C
 | `route:list` | `list` | Shows routes with controller.method |
 | `tinker` | `repl` | Interactive console with DB access |
 
-### Missing — High Priority
+### Also Implemented (✅)
+
+| Laravel `php artisan` | Bunigniter `bun run bi` | Notes |
+|---|---|---|
+| `make:migration` | `make:migration` | Creates a migration SQL file |
+| `migrate` | `db:migrate` | Runs pending migrations |
+| `migrate:rollback` | `db:rollback` | Removes last migration file |
+| `db:seed` | `db:seed` | Runs seeders |
+| `make:seeder` | `make:seeder` | Scaffolds a seeder file |
+| `db:wipe` | `db:wipe` | Drops all tables |
+| `make:middleware` | `make:middleware` | Scaffolds middleware |
+| `make:command` | `make:command` | Scaffolds a CLI command |
+| `make:event` / `make:listener` | `make:event` / `make:listener` | Scaffolds events and listeners |
+| `make:job` | `make:job` | Scaffolds a queue job |
+| `make:mail` | `make:mail` | Scaffolds a mail class |
+| `make:policy` | `make:policy` | Scaffolds an authorization policy |
+| `make:provider` | `make:provider` | Scaffolds a service provider |
+| `make:request` | `make:request` | Scaffolds a form request |
+| `make:resource` | `make:resource` | Scaffolds an API resource |
+| `make:rule` | `make:rule` | Scaffolds a validation rule |
+| `make:test` | `make:test` | Scaffolds a test file |
+| `storage:link` | `storage:link` | Creates storage symlink |
+| `key:generate` | `key:generate` | Generates APP_KEY |
+
+### Missing — Remaining
 
 | Laravel Command | Bunigniter | Why |
 |----------------|---------|-----|
-| `make:migration` | ❌ | Create migration file from schema changes |
-| `migrate` | ❌ | Run pending migrations |
-| `migrate:rollback` | ❌ | Rollback last migration |
-| `db:seed` | ❌ | Run database seeders |
-| `make:seeder` | ❌ | Scaffold a seeder file |
-| `db:wipe` | ❌ | Drop all tables |
-| `serve` | ❌ | Start dev server (already `bun run dev`) |
-| `down` / `up` | ❌ | Maintenance mode |
-
-### Missing — Medium Priority
-
-| Laravel Command | Bunigniter | Why |
-|----------------|---------|-----|
-| `make:middleware` | ❌ | Scaffold middleware (manual: create in middleware/) |
-| `make:command` | ❌ | Scaffold a new CLI command |
-| `make:event` / `make:listener` | ❌ | Scaffold events and listeners |
-| `make:job` | ❌ | Scaffold a queue job |
-| `make:mail` | ❌ | Scaffold a mail class |
 | `make:notification` | ❌ | Scaffold a notification |
 | `make:observer` | ❌ | Scaffold a model observer |
-| `make:policy` | ❌ | Scaffold an authorization policy |
-| `make:provider` | ❌ | Scaffold a service provider |
-| `make:request` | ❌ | Scaffold a form request (validation) |
-| `make:resource` | ❌ | Scaffold an API resource |
-| `make:rule` | ❌ | Scaffold a validation rule |
-| `make:test` | ❌ | Scaffold a test file |
+| `serve` | ❌ | Start dev server (already `bun run dev`) |
+| `down` / `up` | ❌ | Maintenance mode |
 | `config:cache` | ❌ | Cache configuration (N/A in Bun) |
 | `config:clear` | ❌ | Clear cached config |
 | `route:cache` | ❌ | Cache routes |
 | `route:clear` | ❌ | Clear cached routes |
 | `view:cache` | ❌ | Cache compiled views |
 | `view:clear` | ❌ | Clear cached views |
-| `storage:link` | ❌ | Create storage symlink |
-| `key:generate` | ❌ | Generate APP_KEY |
 | `optimize` | ❌ | Optimize for production |
+| `make:channel` | ❌ | Broadcasting channel |
+| `make:console` | ❌ | Console command (alias for make:command) |
+| `make:exception` | ❌ | Exception handler |
+| `make:factory` | ❌ | Model factory (Bunigniter uses Factory in drizzle) |
+| `make:scope` | ❌ | Eloquent global scope |
+| `notifications:table` | ❌ | Notifications table migration |
+| `queue:table` | ❌ | Queue table migration |
+| `queue:failed` | ❌ | List failed queue jobs |
+| `queue:retry` | ❌ | Retry failed queue jobs |
+| `queue:work` | ❌ | Process queue (Bunigniter has in-memory queue) |
+| `schedule:run` | ❌ | Run scheduled tasks |
+| `schedule:list` | ❌ | List scheduled tasks |
+| `vendor:publish` | ❌ | Publish vendor assets (N/A) |
 
 ### Missing — Low Priority
 
@@ -102,21 +117,9 @@ These commands don't need a CLI equivalent because Bun or Bunigniter handles the
 ## Proposed Roadmap
 
 ```
-Phase 1 (Next):
-  bi make:migration          ← Create migration file
-  bi db:migrate              ← Run pending migrations
-  bi db:seed                 ← Run database seeders
-  bi key:generate            ← Generate APP_KEY
-
-Phase 2:
-  bi make:middleware          ← Scaffold middleware
-  bi make:command             ← Scaffold CLI command
-  bi make:test               ← Scaffold test file
-  bi db:rollback              ← Rollback migration
-
-Phase 3:
-  bi make:job                 ← Scaffold queue job
-  bi make:mail                ← Scaffold mail class
-  bi queue:work               ← Process queue jobs
-  bi schedule:run             ← Run scheduled tasks
+Next:
+  bi make:notification       ← Scaffold a notification
+  bi make:observer           ← Scaffold a model observer
+  bi schedule:list            ← List scheduled tasks
+  bi openapi:serve            ← Serve OpenAPI docs UI
 ```

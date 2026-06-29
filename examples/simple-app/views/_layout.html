@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><?= title ?? 'Simple App' ?></title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+        color: #e0e0e0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .container {
+        max-width: 640px;
+        padding: 40px;
+        text-align: center;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 48px 40px;
+        backdrop-filter: blur(8px);
+      }
+      .logo {
+        font-size: 64px;
+        margin-bottom: 16px;
+      }
+      h1 {
+        color: #e94560;
+        font-size: 36px;
+        margin-bottom: 12px;
+        letter-spacing: -0.5px;
+      }
+      p {
+        color: #888;
+        line-height: 1.7;
+        font-size: 15px;
+      }
+      .badge {
+        display: inline-block;
+        background: rgba(233, 69, 96, 0.15);
+        color: #e94560;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        margin-top: 20px;
+      }
+      code {
+        background: rgba(255, 255, 255, 0.06);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #70a1ff;
+      }
+      .footer {
+        margin-top: 32px;
+        color: #555;
+        font-size: 12px;
+      }
+      .footer a {
+        color: #70a1ff;
+        text-decoration: none;
+      }
+      .footer a:hover {
+        color: #e94560;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card"><?= slot ?></div>
+      <div class="footer">
+        <p>
+          Powered by
+          <a href="https://github.com/nexus-ts/bunigniter">Bunigniter</a>
+          &middot; MIT License
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

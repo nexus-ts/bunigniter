@@ -4,6 +4,18 @@
 bun run bi <command> [args]
 ```
 
+## New Project
+
+```
+new [name]      Create new project in new directory
+                Prompts: runtime, database, OpenAPI, template, install
+
+init            Scaffold into current directory (merges existing package.json)
+                Same prompts as `new`, but works in current dir
+
+Both share:     Template source: src/cli/scaffold.ts
+```
+
 ## Scaffolding
 
 ```
@@ -13,6 +25,7 @@ make:migration <name>      db/migrations/<ts>_<name>.sql
 make:seeder <name>         db/seeds/<name>.ts
 make:middleware <name>     middleware/<name>.ts
 make:test <name>           tests/<name>.test.ts
+make:command <name>        commands/<name>.ts
 make:job <name>            jobs/<name>.ts
 make:mail <name>           mails/<name>.ts
 make:event <name>          events/<name>.ts
@@ -43,4 +56,5 @@ list              Show all routes
 repl              Interactive console
 ```
 
-Templates are in `src/cli/templates.ts` — single source of truth for all generators.
+- **`src/cli/templates.ts`** — single source of truth for `make:*` scaffolding commands
+- **`src/cli/scaffold.ts`** — single source of truth for `bi new` project scaffold

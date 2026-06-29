@@ -1,0 +1,13 @@
+{
+  "name": "simple-app",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run dev.ts",
+    "start": "bun run dev.ts"
+  },
+  "dependencies": {
+    "bunigniter": "../../"
+  }
+}

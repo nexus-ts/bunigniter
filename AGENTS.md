@@ -2,7 +2,7 @@
 
 Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
 
-> 82 commits, 80+ source files, 15 docs, 7 example apps.
+> 90+ commits, 85+ source files, 15 docs, 8 example apps.
 > GitHub: github.com/nexus-ts/bunigniter
 
 ---
@@ -16,11 +16,11 @@ modules/       ← HMVC modules (blog/shop/admin)
 config/app.ts  ← Single config file
 middleware/    ← Global middleware (01_*.ts)
 src/helpers/   ← 25 helper modules
-src/cli/       ← 25 CLI commands
+src/cli/       ← 28 CLI commands
 docs/
 ├── user-guide/  ← 13 user-facing docs
 └── analysis/   ← 3 analysis docs
-examples/      ← 7 example apps
+examples/      ← 8 example apps
 ```
 
 ## Key Conventions (MUST FOLLOW)
@@ -29,8 +29,9 @@ examples/      ← 7 example apps
 2. **Import from `bunigniter`** — NOT relative paths like `../../src/`
 3. **View files in `views/`** — NOT `routes/`
 4. **HMVC modules in `modules/<name>/routes/`** — with their own views/
-5. **All templates share `src/cli/templates.ts`** — single source of truth
-6. **Docs in English + Korean** — both files simultaneously
+5. **All `make:*` templates share `src/cli/templates.ts`** — single source of truth for scaffolding commands
+6. **Project scaffold templates in `src/cli/scaffold.ts`** — single source of truth for `bi new`
+7. **Docs in English + Korean** — both files simultaneously
 
 ## Creating a Controller
 
@@ -159,12 +160,13 @@ export const GET = defineHandler(async (ctx) => sse(ctx, (send) => {
 bun run bi <command>
 ```
 
-Available: `make:controller`, `make:model`, `make:migration`, `db:migrate`, `db:seed`, `key:generate`, `make:middleware`, `make:test`, `make:job`, `make:mail`, `make:event`, `make:listener`, `make:provider`, `make:policy`, `make:request`, `make:resource`, `make:rule`, `storage:link`, `build:edge`, `list`, `repl`.
+Available: `new`, `init`, `make:controller`, `make:model`, `make:migration`, `db:migrate`, `db:rollback`, `db:seed`, `db:wipe`, `key:generate`, `make:middleware`, `make:test`, `make:command`, `make:job`, `make:mail`, `make:event`, `make:listener`, `make:provider`, `make:policy`, `make:request`, `make:resource`, `make:rule`, `storage:link`, `build:edge`, `edge:dev`, `list`, `repl`.
 
 ## Example Apps
 
 | Command | App | Stack |
 |---------|-----|-------|
+| `examples/simple-app/dev.ts` | Simple (CI3 welcome) | Rendu HTML |
 | `examples/todo-app/dev.ts` | Todo | React SSR |
 | `examples/hn-app/dev.ts` | Hacker News | Rendu HTML |
 | `examples/petstore/dev.ts` | Pet Store | Rendu HTML |

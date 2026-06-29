@@ -13,13 +13,23 @@ PHP/Laravel developers moving to TypeScript face a wall: NestJS over-engineers, 
 
 ## Install
 
+> ⚠️ **Always use `@latest`** — Bun caches `create-*` packages locally. Without `@latest`,
+> you may install an older scaffold. The scaffold template and the framework are
+> published as separate packages; keep both in sync.
+
 ```bash
-bun create bunigniter my-app   # Recommended — full scaffold
-# or add to existing project:
+# Recommended — full scaffold (always get the latest)
+bun create bunigniter@latest my-app
+
+# Alternative — same result
+bunx create-bunigniter@latest my-app
+
+# Add to existing project:
 bun add bunigniter
 ```
 
-> New to Bunigniter? Use `create-bunigniter` — it scaffolds a working CRUD app with zero config.
+> New to Bunigniter? `bun create bunigniter@latest my-app` scaffolds a working CRUD app
+> with zero config — controllers, views, database, auth scaffolding included.
 
 ---
 
@@ -72,10 +82,11 @@ git clone https://github.com/nexus-ts/bunigniter.git
 cd bunigniter && bun install
 
 # Pick an example — all working out of the box
-bun run examples/todo-app/dev.ts      # React SSR  :3000
-bun run examples/slack-app/dev.ts     # Full-stack  :3006  ← recommended
-bun run examples/hn-app/dev.ts        # Rendu HTML  :3000
-bun run examples/petstore/dev.ts      # Rendu HTML  :3000
+bun run examples/simple-app/dev.ts    # Welcome page  :3000  ← simplest
+bun run examples/todo-app/dev.ts      # React SSR    :3000
+bun run examples/slack-app/dev.ts     # Full-stack    :3006  ← recommended
+bun run examples/hn-app/dev.ts        # Rendu HTML    :3000
+bun run examples/petstore/dev.ts      # Rendu HTML    :3000
 ```
 
 Slack clone covers every feature: auth, uploads, images, WebSocket, sessions, CLI seeding.
@@ -119,6 +130,8 @@ this.auth.logout()         // clear session
 ```bash
 bun run bi                    # Help
 bun run bi list               # List routes
+bun run bi new                # Interactive project scaffold (new directory)
+bun run bi init               # Interactive scaffold into current dir
 bun run bi repl               # Interactive console
 bun run bi make:controller    # Scaffold controller, model, migration, middleware, ...
 bun run bi db:migrate         # Run/rollback/seed/wipe
@@ -127,7 +140,7 @@ bun run bi storage:link       # Create public storage symlink
 bun run bi build:edge         # Build for Cloudflare Workers
 ```
 
-27 commands total. All in `bun run bi list`.
+28 commands total. All in `bun run bi list`.
 
 ---
 
@@ -166,6 +179,7 @@ bun run bi build:edge         # Build for Cloudflare Workers
 
 | App | Stack | Port |
 |-----|-------|:----:|
+| [Simple App](examples/simple-app) | Rendu HTML (CI3 welcome) | 3000 |
 | [Todo App](examples/todo-app) | React SSR | 3000 |
 | [Hacker News](examples/hn-app) | Rendu HTML | 3000 |
 | [Pet Store](examples/petstore) | Rendu HTML | 3000 |
