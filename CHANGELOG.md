@@ -2,7 +2,46 @@
 
 All notable changes to Bunigniter are documented in this file.
 
-## [0.4.2] — 2026-06-29
+## [0.5.0] — 2026-06-29
+
+### Added
+
+- **`bi new` command** — Interactive project scaffold with 5-step wizard:
+  1. Runtime (Bun-only / Cloudflare Workers)
+  2. Database (SQLite / PostgreSQL / MySQL / none)
+  3. OpenAPI docs (y/N)
+  4. Template (simple welcome page / full CRUD todo app)
+  5. Install dependencies (Y/n)
+- **`bi init` command** — Same wizard but scaffolds into current directory, merges existing package.json.
+- **`bi init` with `--yes` flag** — Skips all prompts, uses defaults (CI-friendly).
+- **Todo template** for `bi new` — Full CRUD todo app with toggle, delete, stats, validation.
+- **JSON data store** (`helpers/json-db.ts`) — In-memory storage for `database=none` mode. No DB setup required.
+- **`this.load.helper('name')` / `this.load.service('name')`** — CI3-style loader for user-defined helpers and services.
+- **`askUntil()` prompt validation** — Invalid input re-prompts instead of silently defaulting.
+- **External template files** (`src/cli/templates/*.tpl`) — Large template content extracted from scaffold.ts for maintainability.
+- **Config-driven tree shaking** — Set `services: { cache: false }` in `config/app.ts` to exclude unused services from build.
+- **`create-bunigniter` simplified** — From 1200+ lines to ~190-line thin wrapper delegating to `bi init --yes`.
+
+### Changed
+
+- **`src/helpers/` → `src/services/`** — Stateful service classes (Cache, Queue, Mail, Upload, Image, Session, WS) moved out of helpers. Backward-compatible re-exports maintained.
+- **Architecture simplified** — Three layers only: Helper (stateless function), Service (stateful class), Middleware (HTTP pipeline).
+- **Dynamic service imports** — Cache, Queue, Mail, Upload, WS, OpenAPI, Modules now `await import()`'d at boot. Unused services are tree-shaken by Bun's bundler.
+- **All example ports unified to 3000** — Previously used scattered ports (3000-3006).
+- **`config/app.ts` template** — Extracted to `src/cli/templates/config-app.ts.tpl` with comprehensive inline comments.
+- **Doc structure** — `helpers.md` split into `helpers.md` (14 modules) + `services.md` (7 classes).
+
+### Fixed
+
+- **`edge-controller.ts` missing from dist** — Added to build allowlist.
+- **`scaffold.ts` import ordering** — Biome lint compliance.
+- **Relative imports in services** — `mail.ts` and `upload.ts` now correctly import `env` from `../helpers/env`.
+- **package.json duplicate key** — `./helpers/image` was listed twice in exports.
+
+### Docs
+
+- **New guides**: Getting Started, Middleware Guide, Inertia-style Pages, Architecture doc.
+- **New skills**: Skills README index with
 
 ### Added
 
@@ -30,7 +69,6 @@ All notable changes to Bunigniter are documented in this file.
 - **`scripts/build-dist.ts`** — Added `edge-controller.ts` to ALLOWLIST so the file is included in the `dist/` bundle. Previously caused `Cannot find module './edge-controller'` at runtime.
 - **Scaffold `package.json`** — Added `react` and `react-dom` to generated dependencies (required by `bunigniter`'s view renderer).
 
-[0.4.2]: https://github.com/nexus-ts/bunigniter/compare/v0.4.1...v0.4.2
 
 ## [0.4.1] — 2026-06-29
 
