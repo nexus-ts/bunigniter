@@ -278,15 +278,58 @@ export class Posts extends Controller {
 
 ---
 
-## When to Use Inertia vs Traditional Views
+## React SSR (`.tsx`) vs Inertia-style (`this.page()`)
 
-| Feature | `this.view()` (Rendu/MDX/React) | `this.page()` (Inertia) |
-|---------|-------------------------------|------------------------|
-| Rendering | Server-side only | First load SSR, then client-side |
-| Navigation | Full page reload | SPA-style (JSON swap) |
-| SEO | ✅ Full HTML | ✅ First load is HTML |
-| JavaScript | Optional | Required for navigation |
-| Best for | Simple pages, docs, APIs | Interactive dashboards, admin panels |
+Bunigniter offers two React-based rendering approaches. Both are server-rendered on first load, but differ in how they handle subsequent navigation.
+
+### Comparison
+
+| Aspect | React SSR `.tsx` (`this.view()`) | Inertia-style (`this.page()`) |
+|--------|----------------------------------|-------------------------------|
+| **First request** | Full HTML via `renderToString()` | HTML shell with `data-page` JSON |
+| **Subsequent nav** | Full page reload (new HTML) | JSON-only swap (`X-Inertia` header) |
+| **Client JS required** | No — server HTML works standalone | Yes — must hydrate from `data-page` |
+| **State persistence** | Lost on every navigation | Preserved (client mounts continuously) |
+| **Navigation UX** | Traditional page flash | SPA-like smooth transitions |
+| **Bundle size** | Minimal (can ship zero JS) | Larger (React + router + app code) |
+| **SEO** | ✅ Full semantic HTML | ✅ First load is full HTML |
+
+### Code Comparison
+
+```ts
+// React SSR (.tsx) — full HTML on every request
+class Posts extends Controller {
+  async index() {
+    const posts = await this.db.query('SELECT * FROM posts')
+    return this.view('PostsList', { posts })  // renders views/PostsList.tsx entirely
+  }
+}
+// → Browser receives new full HTML each time
+```
+
+```ts
+// Inertia-style — HTML first, then JSON only
+class Posts extends Controller {
+  async index() {
+    const posts = await this.db.query('SELECT * FROM posts')
+    return this.page('Posts/Index', { posts })  // first: HTML shell
+  }                                              // later: { component, props }
+}
+// → After first load, navigation swaps JSON → no flash
+```
+
+### When to Choose
+
+| Situation | Recommendation |
+|-----------|---------------|
+| Documentation site, blog, landing page | **React SSR `.tsx`** — simpler, no JS required |
+| Admin dashboard with frequent interactions | **Inertia-style** — SPA UX without API sprawl |
+| SEO-critical with minimal JS budget | **React SSR `.tsx`** |
+| Real-time data, complex client state | **Inertia-style** — state persists across navigations |
+| PHP/Laravel dev learning React | **React SSR `.tsx`** — `this.view()` is one consistent API |
+| Team familiar with Inertia.js (Laravel) | **Inertia-style** — same mental model |
+
+> **Summary:** `.tsx` is traditional SSR — the server renders full HTML on every request. Inertia-style is a hybrid SPA — the server renders HTML only on first load, then sends JSON for subsequent navigations. If you want zero-JS pages, use `.tsx`. If you want app-like navigation with React state, use `this.page()`.
 
 ---
 

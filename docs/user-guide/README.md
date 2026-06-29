@@ -7,12 +7,12 @@
 | [Request Input](request.md) | 16 input methods: input, get, post, only, has, ip, ajax, etc. |
 | [Controller Lifecycle](controller-lifecycle.md) | Request lifecycle, `_before()` hook |
 | [Template Engine](template-engine.md) | Rendu, MDX, React SSR — 3 engines |
+| [Inertia-style Pages](inertia.md) | SPA-like navigation with this.page(), this.share() |
 | [Database](database.md) | CI-style query builder, pagination, joins |
 | [Validation](helpers.md#validation) | String rules + Zod schema |
 | [Helpers](helpers.md) | 27 helper modules reference |
 | [CLI Reference](cli-reference.md) | 27 CLI commands |
 | [HMVC Modules](hmvc-modules.md) | Modular HMVC architecture |
-| [Inertia-style Pages](inertia.md) | SPA-like navigation with this.page(), this.share() |
 | [JWT Auth](jwt-auth.md) | JWT sign/verify, middleware |
 | [Multi-Database](multi-database.md) | Named connections via `this.dbs.*` |
 | [File Upload](upload.md) | Upload, validate, store, delete files |
