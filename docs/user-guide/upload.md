@@ -259,6 +259,6 @@ console.log(file.absolutePath)  // '/app/storage/docs/1748200000_abc123.pdf'
 
 ## Source
 
-- Implementation: `src/helpers/upload.ts`
+- Implementation: `src/libraries/upload.ts`
 - Controller injection: `src/router/file-router.ts`
 - Exported from: `bunigniter`

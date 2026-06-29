@@ -1,4 +1,8 @@
-# Helpers Reference
+# Helpers & Libraries Reference
+
+> **Helpers** (`bunigniter/helpers/*`) are stateless function collections — pure utilities like `env()`, `jwt.sign()`, `corsMiddleware()`.
+> **Libraries** (`bunigniter/libraries/*`) are stateful service classes — Cache, Queue, Mail, Upload, Image, Session, WebSocket.
+> See [Architecture](../analysis/architecture.md) for the full design rationale.
 
 ## Environment
 
@@ -148,7 +152,7 @@ const result = await db.paginate('SELECT * FROM users', [], { page: 2, perPage: 
 ## Cache
 
 ```ts
-import { Cache, createCache } from 'bunigniter/helpers/cache'
+import { Cache, createCache } from 'bunigniter/libraries/cache'
 ```
 
 ```ts
@@ -171,7 +175,7 @@ const data = await cache.remember('users', 300, async () => {
 ## Queue
 
 ```ts
-import { Queue, createQueue } from 'bunigniter/helpers/queue'
+import { Queue, createQueue } from 'bunigniter/libraries/queue'
 ```
 
 ```ts
@@ -196,7 +200,7 @@ Features: retry with exponential backoff, max concurrency, error isolation.
 ## Upload
 
 ```ts
-import { Upload, createUpload } from 'bunigniter/helpers/upload'
+import { Upload, createUpload } from 'bunigniter/libraries/upload'
 ```
 
 ```ts
@@ -224,7 +228,7 @@ const path = upload.store(file, 'avatars') // → 'avatars/1712345678_abc123.jpg
 ## Image Manipulation
 
 ```ts
-import { Image } from 'bunigniter/helpers/image'
+import { Image } from 'bunigniter/libraries/image'
 ```
 
 ```ts
@@ -252,7 +256,7 @@ await Image.open('photo.jpg')
 ## Mail
 
 ```ts
-import { Mail, createMail, SmtpTransport, FileTransport, NullTransport } from 'bunigniter/helpers/mail'
+import { Mail, createMail, SmtpTransport, FileTransport, NullTransport } from 'bunigniter/libraries/mail'
 ```
 
 ```ts
@@ -360,6 +364,7 @@ import { debugToolbar, debugQuery, getStore } from 'bunigniter/helpers/debug'
 ```
 
 Enable with `?debug=1` or `DEBUG=true` env var. Shows collapsible toolbar with:
+
 - Method, path, status, duration
 - SQL queries with timing bars
 - Session data
@@ -406,7 +411,7 @@ See [JWT Auth](jwt-auth.md) for full documentation.
 ## WebSocket
 
 ```ts
-import { ws } from 'bunigniter/helpers/ws'
+import { ws } from 'bunigniter/libraries/ws'
 ```
 
 See [WebSocket](websocket.md) for full documentation.

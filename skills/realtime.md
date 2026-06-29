@@ -3,7 +3,7 @@
 ## WebSocket — routes/ws.ts
 
 ```ts
-import { ws } from 'bunigniter/helpers/ws'
+import { ws } from 'bunigniter/libraries/ws'
 
 ws.handle('/ws/echo', {
   open(ws) { console.log('connected') },

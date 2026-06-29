@@ -6,7 +6,7 @@ Bunigniter provides WebSocket support via `ws.handle()` for real-time, bidirecti
 
 ```ts
 // routes/ws.ts
-import { ws } from 'bunigniter/helpers/ws'
+import { ws } from 'bunigniter/libraries/ws'
 
 ws.handle('/ws/echo', {
   message(ws, data) {
