@@ -85,7 +85,7 @@ cd bunigniter && bun install
 # Pick an example — all working out of the box
 bun run examples/simple-app/dev.ts    # Welcome page  :3000  ← simplest
 bun run examples/todo-app/dev.ts      # React SSR    :3000
-bun run examples/slack-app/dev.ts     # Full-stack    :3006  ← recommended
+bun run examples/slack-app/dev.ts     # Full-stack    :3000  ← recommended
 bun run examples/hn-app/dev.ts        # Rendu HTML    :3000
 bun run examples/petstore/dev.ts      # Rendu HTML    :3000
 ```
@@ -214,10 +214,10 @@ export default function Items({ items }: { items: Item[] }) {
 | [Todo App](examples/todo-app) | React SSR | 3000 |
 | [Hacker News](examples/hn-app) | Rendu HTML | 3000 |
 | [Pet Store](examples/petstore) | Rendu HTML | 3000 |
-| [Blog CMS](examples/blog-app-html) | Rendu HTML | 3001 |
-| [Blog CMS (React)](examples/blog-app-tsx) | React SSR | 3002 |
-| [Blog CMS (Inertia)](examples/blog-app-inertia-react) | Inertia React | 3003 |
-| [HMVC Demo](examples/hmvc-app) | Rendu HTML | 3005 |
+| [Blog CMS](examples/blog-app-html) | Rendu HTML | 3000 |
+| [Blog CMS (React)](examples/blog-app-tsx) | React SSR | 3000 |
+| [Blog CMS (Inertia)](examples/blog-app-inertia-react) | Inertia React | 3000 |
+| [HMVC Demo](examples/hmvc-app) | Rendu HTML | 3000 |
 
 ---
 

@@ -10,7 +10,7 @@
  */
 
 import { spawn, type ChildProcess } from "node:child_process"
-import { readFileSync, readdirSync, statSync } from "node:fs"
+import { readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 
@@ -19,33 +19,23 @@ const EXAMPLES_DIR = join(import.meta.dirname, "..", "examples")
 interface Example {
 	name: string
 	dir: string
-	port: number
+	port: number // unique test port (base 16100+)
 }
 
-// Read the port an example actually listens on (from dev.ts process.env.PORT)
-function readExamplePort(dir: string): number {
-	try {
-		const src = readFileSync(join(dir, "dev.ts"), "utf-8")
-		const match = src.match(/PORT\s*=\s*['"](\d+)['"]/)
-		if (match) return Number(match[1])
-	} catch { /* fallback */ }
-	return 3000
-}
-
-// Discover all examples with dev.ts
+// Discover all examples with dev.ts. Assign unique test ports
+// so all can run concurrently without conflict.
 const examples: Example[] = readdirSync(EXAMPLES_DIR)
 	.filter((name) => {
-		const devPath = join(EXAMPLES_DIR, name, "dev.ts")
 		try {
-			return statSync(devPath).isFile()
+			return statSync(join(EXAMPLES_DIR, name, "dev.ts")).isFile()
 		} catch {
 			return false
 		}
 	})
-	.map((name) => ({
+	.map((name, i) => ({
 		name,
 		dir: join(EXAMPLES_DIR, name),
-		port: readExamplePort(join(EXAMPLES_DIR, name)),
+		port: 16100 + i,
 	}))
 
 const servers: Map<string, ChildProcess> = new Map()
@@ -55,7 +45,7 @@ async function startExample(example: Example): Promise<void> {
 	return new Promise((resolve, reject) => {
 		const server = spawn("bun", ["run", "dev.ts"], {
 			cwd: example.dir,
-			env: { ...process.env },
+			env: { ...process.env, PORT: String(example.port) },
 			stdio: ["ignore", "pipe", "pipe"],
 		})
 		servers.set(example.name, server)
@@ -92,32 +82,91 @@ async function startExample(example: Example): Promise<void> {
 
 const routeChecks: Record<string, Array<{ path: string; check: (body: string, status: number) => void }>> = {
 	"simple-app": [
-		{ path: "/", check: (body, status) => { expect(status).toBe(200); expect(body).toContain("Bunigniter") } },
+		{
+			path: "/",
+			check: (body, status) => {
+				expect(status).toBe(200)
+				expect(body).toContain("Bunigniter")
+			},
+		},
 	],
 	"hn-app": [
-		{ path: "/", check: (body, status) => { expect(status).toBe(200); expect(body).toContain("Hacker") } },
+		{
+			path: "/",
+			check: (body, status) => {
+				expect(status).toBe(200)
+				expect(body).toContain("Hacker")
+			},
+		},
 	],
-	"petstore": [
-		{ path: "/", check: (body, status) => { expect(status).toBe(200); expect(body).toContain("Pet") } },
+	petstore: [
+		{
+			path: "/",
+			check: (body, status) => {
+				expect(status).toBe(200)
+				expect(body).toContain("Pet")
+			},
+		},
 	],
 	"todo-app": [
-		{ path: "/", check: (body, status) => { expect(status).toBe(200); expect(body).toContain("Todo") } },
+		{
+			path: "/",
+			check: (body, status) => {
+				expect(status).toBe(200)
+				expect(body).toContain("Todo")
+			},
+		},
 	],
 	"blog-app-html": [
-		{ path: "/", check: (body, status) => { expect(status).toBe(200); expect(body).toContain("Blog") } },
+		{
+			path: "/",
+			check: (body, status) => {
+				expect(status).toBe(200)
+				expect(body).toContain("Blog")
+			},
+		},
 	],
 	"blog-app-tsx": [
-		{ path: "/", check: (body, status) => { expect(status).toBe(200); expect(body).toContain("Blog") } },
+		{
+			path: "/",
+			check: (body, status) => {
+				expect(status).toBe(200)
+				expect(body).toContain("Blog")
+			},
+		},
 	],
 	"blog-app-inertia-react": [
-		{ path: "/", check: (body, status) => { expect(status).toBe(302); expect(body).toBe("") } }, // redirects to /posts
+		{
+			path: "/",
+			check: (body, status) => {
+				expect(status).toBe(302)
+				expect(body).toBe("")
+			},
+		}, // redirects to /posts
 	],
 	"hmvc-app": [
-		{ path: "/admin/dashboard", check: (body, status) => { expect(status).toBe(200); expect(body).toContain("Dashboard") } },
+		{
+			path: "/admin/dashboard",
+			check: (body, status) => {
+				expect(status).toBe(200)
+				expect(body).toContain("Dashboard")
+			},
+		},
 	],
 	"slack-app": [
-		{ path: "/", check: (body, status) => { expect(status).toBe(200); expect(body).toContain("Slack") } },
-		{ path: "/api", check: (_body, status) => { expect(status).toBe(200) } },
+		{
+			path: "/",
+			check: (body, status) => {
+				expect(status).toBe(200)
+				expect(body).toContain("Slack")
+			},
+		},
+		{
+			path: "/api",
+			check: (_body, status) => {
+				expect(status).toBe(200)
+			},
+		},
 	],
 }
 
@@ -134,7 +183,11 @@ describe("Examples smoke test", () => {
 
 	afterAll(() => {
 		for (const [, server] of servers) {
-			try { server.kill("SIGTERM") } catch { /* server already dead */ }
+			try {
+				server.kill("SIGTERM")
+			} catch {
+				/* server already dead */
+			}
 		}
 	}, 5000)
 
@@ -142,9 +195,16 @@ describe("Examples smoke test", () => {
 	for (const example of examples) {
 		const checks = routeChecks[example.name] ?? defaultChecks()
 
-function defaultChecks(): Array<{ path: string; check: (body: string, status: number) => void }> {
-		return [{ path: "/", check: (_body: string, status: number) => { expect(status).toBe(200) } }]
-}
+		function defaultChecks(): Array<{ path: string; check: (body: string, status: number) => void }> {
+			return [
+				{
+					path: "/",
+					check: (_body: string, status: number) => {
+						expect(status).toBe(200)
+					},
+				},
+			]
+		}
 
 		it(`${example.name}: GET / returns ${checks[0].path === "/" ? "200" : "response"}`, async () => {
 			if (!servers.has(example.name)) {
@@ -159,7 +219,7 @@ function defaultChecks(): Array<{ path: string; check: (body: string, status: nu
 					})
 					const body = await res.text()
 					check(body, res.status)
-				} catch { 
+				} catch {
 					// Retry once after short delay (server might still be booting)
 					await new Promise((r) => setTimeout(r, 2000))
 					const res = await fetch(`http://localhost:${example.port}${path}`, {
