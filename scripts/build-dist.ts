@@ -51,7 +51,7 @@ function copyDir(srcDir: string, dstDir: string): void {
 			copyDir(srcPath, dstPath);
 		} else if (
 			entry.isFile() &&
-			(entry.name.endsWith(".ts") || entry.name.endsWith(".tsx"))
+			(entry.name.endsWith(".ts") || entry.name.endsWith(".tsx") || entry.name.endsWith(".tpl"))
 		) {
 			mkdirSync(dstDir, { recursive: true });
 			cpSync(srcPath, dstPath);
