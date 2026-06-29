@@ -16,6 +16,9 @@ import { join, relative } from "node:path"
 import { cwd, exit, stdin, stdout } from "node:process"
 import { render } from "./templates"
 
+// External template files
+const CONFIG_TPL = readFileSync(join(import.meta.dirname, "templates", "config-app.ts.tpl"), "utf-8")
+
 // ═══════════════════════════════════════════════════════════════════
 // COLORS
 // ═══════════════════════════════════════════════════════════════════
@@ -357,19 +360,33 @@ function genDevEntry(name: string): string {
 }
 
 function genConfigApp(database: string, cloudflare: boolean, openapi?: boolean): string {
-	const dbMap: Record<string, string> = {
-		sqlite: `dialect: env("DB_DIALECT", "bun-sqlite") as any,\n\t\tconnection: { filename: env("DB_FILENAME", "data/app.db") },`,
-		postgresql: `dialect: "postgres",\n\t\tconnection: { url: env("DATABASE_URL", "postgres://localhost:5432/mydb") },`,
-		mysql: `dialect: "mysql",\n\t\tconnection: { url: env("DATABASE_URL", "mysql://localhost:3306/mydb") },`,
-		none: `dialect: "bun-sqlite" as any,\n\t\tconnection: { filename: ":memory:" },`,
+	const dbLines: Record<string, string> = {
+		sqlite: `\t\tdialect: env("DB_DIALECT", "bun-sqlite") as any,\n\t\tconnection: { filename: env("DB_FILENAME", "data/app.db") },`,
+		postgresql: `\t\tdialect: "postgres",\n\t\tconnection: { url: env("DATABASE_URL", "postgres://localhost:5432/mydb") },`,
+		mysql: `\t\tdialect: "mysql",\n\t\tconnection: { url: env("DATABASE_URL", "mysql://localhost:3306/mydb") },`,
+		none: `\t\tdialect: "bun-sqlite" as any,\n\t\tconnection: { filename: ":memory:" },`,
 	}
-	const edge = cloudflare ? `\n\n\tedge: { enabled: env("EDGE", "false") as unknown as boolean, d1Binding: "DB" },` : ""
-	// services section: only include when explicitly disabling openapi
-	const services = openapi === false ? `\n\n\tservices: {\n\t\topenapi: false,\n\t},` : ""
-	return t(
-		`/**\n * Application configuration.\n */\nimport { env } from "bunigniter/helpers/env"\n\nexport default {\n\tport: Number(process.env.PORT) || env("PORT", 3000),\n\n\tdb: {\n\t\t{{db}}\n\t},{{edge}}\n\n\trouter: { prefix: env("ROUTER_PREFIX", ""), directory: "routes" },\n\tview: { directory: "views" },\n\tapp: { key: env("APP_KEY", ""), debug: env("DEBUG", false) as unknown as boolean },{{services}}\n\tmiddleware: {\n\t\tcors: { origin: env("CORS_ORIGIN", "*"), credentials: true },\n\t\tlogger: { enabled: env("DEBUG", false) as unknown as boolean, showQuery: true },\n\t\tcsrf: { secret: env("APP_KEY", "") },\n\t\tthrottle: { max: 100, window: 60000 },\n\t},\n}\n`,
-		{ db: dbMap[database] ?? dbMap.sqlite, edge, services },
-	)
+	const edgeBlock = cloudflare
+		? `,
+
+	// ─── Edge / Cloudflare ──────────────────────────────
+	edge: { enabled: env("EDGE", "false") as unknown as boolean, d1Binding: "DB" },`
+		: ""
+	const servicesBlock =
+		openapi === false
+			? `,
+
+	// ─── Services ───────────────────────────────────────────
+	services: {
+		openapi: false,
+	},`
+			: ""
+
+	// Replace placeholders in the template
+	let out = CONFIG_TPL.replace("{{DB}}", dbLines[database] ?? dbLines.sqlite)
+	out = out.replace("{{EDGE}}", edgeBlock)
+	out = out.replace("{{SERVICES}}", servicesBlock)
+	return out
 }
 
 function genSeedScript(database: string): string {
