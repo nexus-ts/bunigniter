@@ -356,7 +356,7 @@ function genDevEntry(name: string): string {
 	return t(`/**\n * {{name}} — Entry point.\n */\nconsole.log("[app] Starting...")\nimport "bunigniter"\n`, { name })
 }
 
-function genConfigApp(database: string, cloudflare: boolean): string {
+function genConfigApp(database: string, cloudflare: boolean, openapi?: boolean): string {
 	const dbMap: Record<string, string> = {
 		sqlite: `dialect: env("DB_DIALECT", "bun-sqlite") as any,\n\t\tconnection: { filename: env("DB_FILENAME", "data/app.db") },`,
 		postgresql: `dialect: "postgres",\n\t\tconnection: { url: env("DATABASE_URL", "postgres://localhost:5432/mydb") },`,
@@ -364,9 +364,11 @@ function genConfigApp(database: string, cloudflare: boolean): string {
 		none: `dialect: "bun-sqlite" as any,\n\t\tconnection: { filename: ":memory:" },`,
 	}
 	const edge = cloudflare ? `\n\n\tedge: { enabled: env("EDGE", "false") as unknown as boolean, d1Binding: "DB" },` : ""
+	// services section: only include when explicitly disabling openapi
+	const services = openapi === false ? `\n\n\tservices: {\n\t\topenapi: false,\n\t},` : ""
 	return t(
-		`/**\n * Application configuration.\n */\nimport { env } from "bunigniter/helpers/env"\n\nexport default {\n\tport: Number(process.env.PORT) || env("PORT", 3000),\n\n\tdb: {\n\t\t{{db}}\n\t},{{edge}}\n\n\trouter: { prefix: env("ROUTER_PREFIX", ""), directory: "routes" },\n\tview: { directory: "views" },\n\tapp: { key: env("APP_KEY", ""), debug: env("DEBUG", false) as unknown as boolean },\n\tmiddleware: {\n\t\tcors: { origin: env("CORS_ORIGIN", "*"), credentials: true },\n\t\tlogger: { enabled: env("DEBUG", false) as unknown as boolean, showQuery: true },\n\t\tcsrf: { secret: env("APP_KEY", "") },\n\t\tthrottle: { max: 100, window: 60000 },\n\t},\n}\n`,
-		{ db: dbMap[database] ?? dbMap.sqlite, edge },
+		`/**\n * Application configuration.\n */\nimport { env } from "bunigniter/helpers/env"\n\nexport default {\n\tport: Number(process.env.PORT) || env("PORT", 3000),\n\n\tdb: {\n\t\t{{db}}\n\t},{{edge}}\n\n\trouter: { prefix: env("ROUTER_PREFIX", ""), directory: "routes" },\n\tview: { directory: "views" },\n\tapp: { key: env("APP_KEY", ""), debug: env("DEBUG", false) as unknown as boolean },{{services}}\n\tmiddleware: {\n\t\tcors: { origin: env("CORS_ORIGIN", "*"), credentials: true },\n\t\tlogger: { enabled: env("DEBUG", false) as unknown as boolean, showQuery: true },\n\t\tcsrf: { secret: env("APP_KEY", "") },\n\t\tthrottle: { max: 100, window: 60000 },\n\t},\n}\n`,
+		{ db: dbMap[database] ?? dbMap.sqlite, edge, services },
 	)
 }
 
@@ -526,7 +528,7 @@ export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
 	makeFile(join(projectDir, ".gitignore"), genGitignore())
 	makeFile(join(projectDir, ".env.example"), genEnvExample(database, isCf))
 	makeFile(join(projectDir, "dev.ts"), genDevEntry(projectName))
-	makeFile(join(projectDir, "config", "app.ts"), genConfigApp(database, isCf))
+	makeFile(join(projectDir, "config", "app.ts"), genConfigApp(database, isCf, openapi))
 
 	if (database !== "none") makeFile(join(projectDir, "db", "seed.ts"), genSeedScript(database))
 	if (template === "simple") makeFile(join(projectDir, "routes", "index.ts"), genRouteIndex())
