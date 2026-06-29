@@ -19,6 +19,7 @@ const ALLOWLIST = [
 	"index.ts",
 	"base/",
 	"helpers/",
+	"services/",
 	"router/",
 	"db/",
 	"view/",
