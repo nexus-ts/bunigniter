@@ -124,8 +124,8 @@ async function promptOptions(skip: boolean, projectName: string): Promise<Prompt
 	// ─── 4. Template ──────────────────────────────────────────
 	let template: "simple" | "todo" = "simple"
 	if (!skip) {
-		const ans = (await ask("Template?", "simple (welcome page) / todo (coming soon)")).toLowerCase()
-		if (ans === "todo") template = "todo"
+		const ans = (await ask("Template?", "simple (welcome page) / todo (full CRUD)")).toLowerCase()
+		if (ans === "todo" || ans === "t") template = "todo"
 	}
 
 	// ─── 5. Install ───────────────────────────────────────────
@@ -524,7 +524,7 @@ INSERT INTO items (title, content) VALUES ('D1 Database', 'SQLite-compatible ser
 // ═══════════════════════════════════════════════════════════════════
 
 export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
-	const { projectName, projectDir, runtime, database, openapi, mergePkg } = options
+	const { projectName, projectDir, runtime, database, openapi, template, mergePkg } = options
 	const isCf = runtime === "cloudflare"
 
 	console.log(`\n  ${G("◇")}  Scaffolding ${C(projectName)}...\n`)
@@ -547,14 +547,27 @@ export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
 	makeFile(join(projectDir, "dev.ts"), genDevEntry(projectName))
 	makeFile(join(projectDir, "config", "app.ts"), genConfigApp(database, isCf, openapi))
 
-	if (database !== "none") makeFile(join(projectDir, "db", "seed.ts"), genSeedScript(database))
-	// Simple template: welcome page + API route
-	// Todo template: coming soon — currently falls back to simple
-	makeFile(join(projectDir, "routes", "index.ts"), genRouteIndex())
+	if (database !== "none") {
+		if (template === "todo") {
+			makeFile(join(projectDir, "db", "seed.ts"), genTodoSeedScript())
+		} else {
+			makeFile(join(projectDir, "db", "seed.ts"), genSeedScript(database))
+		}
+	}
 
-	makeFile(join(projectDir, "routes", "api.ts"), genRouteApi(openapi))
-	makeFile(join(projectDir, "views", "_layout.html"), genLayoutHtml())
-	makeFile(join(projectDir, "views", "welcome.html"), genWelcomeView())
+	if (template === "todo") {
+		// Todo template: full CRUD todo app
+		makeFile(join(projectDir, "routes", "index.ts"), genTodoRouteIndex())
+		makeFile(join(projectDir, "routes", "todos.ts"), genTodoRouteTodos())
+		makeFile(join(projectDir, "views", "_layout.html"), genLayoutHtml())
+		makeFile(join(projectDir, "views", "todos.html"), genTodoViewTodos())
+	} else {
+		// Simple template: welcome page + API route
+		makeFile(join(projectDir, "routes", "index.ts"), genRouteIndex())
+		makeFile(join(projectDir, "routes", "api.ts"), genRouteApi(openapi))
+		makeFile(join(projectDir, "views", "_layout.html"), genLayoutHtml())
+		makeFile(join(projectDir, "views", "welcome.html"), genWelcomeView())
+	}
 
 	if (isCf) {
 		makeFile(join(projectDir, "wrangler.toml"), genWranglerToml(projectName))
@@ -631,4 +644,182 @@ export async function initProject(args: string[]): Promise<void> {
 	const opts = await promptOptions(skip, projectName)
 	await scaffoldProject({ projectName, projectDir, ...opts, mergePkg })
 	finishSetup(projectName, projectDir, opts.install, opts.database, opts.runtime)
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TODO TEMPLATE GENERATORS
+// ═══════════════════════════════════════════════════════════════════
+
+function genTodoRouteIndex(): string {
+	return `/**
+ * Home — redirects to /todos.
+ */
+import { Controller } from "bunigniter"
+
+export class Home extends Controller {
+	async index() {
+		return this.redirect("/todos")
+	}
+}
+`
+}
+
+function genTodoRouteTodos(): string {
+	return `/**
+ * Todos Controller — full CRUD with Rendu views.
+ *
+ * GET    /todos        -> List all todos
+ * GET    /todos/new    -> Show create form
+ * POST   /todos        -> Create todo
+ * POST   /todos/:id    -> Update or delete (via _method)
+ */
+import { Controller } from "bunigniter"
+
+interface Todo {
+	id: number
+	title: string
+	completed: number
+	created_at: string
+}
+
+export class Todos extends Controller {
+	async index() {
+		const result = await this.db.query<Todo>("SELECT * FROM todos ORDER BY created_at DESC")
+		const todos = result.rows ?? []
+		const activeCount = todos.filter((t: Todo) => !t.completed).length
+		return this.view("todos", {
+			title: "Todos",
+			todos,
+			total: todos.length,
+			activeCount,
+		})
+	}
+
+	async create() {
+		const v = this.validate(this.body, { title: "required|min:1|max:500" })
+		if (v.fails()) {
+			const result = await this.db.query<Todo>("SELECT * FROM todos ORDER BY created_at DESC")
+			return this.view("todos", {
+				title: "Todos",
+				todos: result.rows ?? [],
+				total: result.rows?.length ?? 0,
+				activeCount: result.rows?.filter((t: Todo) => !t.completed).length ?? 0,
+				errors: v.errors,
+				oldTitle: this.request.post("title", ""),
+			})
+		}
+		await this.db.query("INSERT INTO todos (title) VALUES (?)", [v.data.title.trim()])
+		return this.redirect("/todos")
+	}
+
+	async update(id: number) {
+		const body = this.body
+		if (body?.title !== undefined) {
+			const v = this.validate(body, { title: "required|min:1|max:500" })
+			if (v.fails()) return this.badRequest(v.errors)
+			await this.db.query("UPDATE todos SET title = ?, completed = ? WHERE id = ?", [
+				v.data.title.trim(), body.completed ? 1 : 0, id,
+			])
+		} else {
+			await this.db.query("UPDATE todos SET completed = ? WHERE id = ?", [
+				body?.completed ? 1 : 0, id,
+			])
+		}
+		return this.redirect("/todos")
+	}
+
+	async destroy(id: number) {
+		await this.db.query("DELETE FROM todos WHERE id = ?", [id])
+		return this.redirect("/todos")
+	}
+}
+`
+}
+
+function genTodoViewTodos(): string {
+	return `<div style="max-width: 560px; margin: 0 auto;">
+  <h1>📋 Todos (<?= activeCount ?? 0 ?> active)</h1>
+
+  <? if (errors) { ?>
+    <div style="background: #5c1a1a; border: 1px solid #e94560; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+      <? for (const err of Object.values(errors)) { ?>
+        <p style="color: #e94560; font-size: 13px;"><?= Array.isArray(err) ? err[0] : err ?></p>
+      <? } ?>
+    </div>
+  <? } ?>
+
+  <form action="/todos" method="POST" style="display: flex; gap: 8px; margin-bottom: 24px;">
+    <input type="text" name="title" placeholder="What needs to be done?" value="<?= oldTitle ?? '' ?>"
+      style="flex:1; padding:10px 14px; border-radius:8px; border:1px solid #333; background:#1a1a3e; color:#fff; font-size:14px;" required />
+    <button type="submit" class="btn btn-primary" style="white-space: nowrap;">+ Add</button>
+  </form>
+
+  <? if (todos && todos.length > 0) { ?>
+    <? for (const todo of todos) { ?>
+      <div class="card" style="display: flex; align-items: center; gap: 12px;">
+        <form action="/todos/<?= todo.id ?>" method="POST" style="margin: 0;">
+          <input type="hidden" name="_method" value="PUT" />
+          <input type="hidden" name="completed" value="<?= todo.completed ? 0 : 1 ?>" />
+          <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 18px;">
+            <? if (todo.completed) { ?>✅<? } else { ?>⬜<? } ?>
+          </button>
+        </form>
+        <span style="flex:1; <?= todo.completed ? 'text-decoration: line-through; color: #555;' : '' ?>">
+          <?= todo.title ?>
+        </span>
+        <form action="/todos/<?= todo.id ?>" method="POST" style="margin: 0;">
+          <input type="hidden" name="_method" value="DELETE" />
+          <button type="submit" style="background: none; border: none; color: #666; cursor: pointer; font-size: 16px;">✕</button>
+        </form>
+      </div>
+    <? } ?>
+    <p style="text-align: center; color: #555; font-size: 12px; margin-top: 16px;">
+      <?= total ?> total · <?= activeCount ?> active · <?= total - activeCount ?> completed
+    </p>
+  <? } else { ?>
+    <div style="text-align: center; padding: 60px 0; color: #666;">
+      <p style="font-size: 48px; margin-bottom: 16px;">📭</p>
+      <p>No todos yet. Add one above!</p>
+    </div>
+  <? } ?>
+</div>`
+}
+
+function genTodoSeedScript(): string {
+	return `/**
+ * Todo seeder — creates tables and sample todos.
+ */
+import { Database } from "bun:sqlite"
+import { join } from "node:path"
+import { mkdirSync, existsSync } from "node:fs"
+
+const DATA_DIR = join(import.meta.dirname, "..", "data")
+if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+
+const db = new Database(join(DATA_DIR, "app.db"))
+db.run("PRAGMA journal_mode=WAL")
+
+db.run(
+  "CREATE TABLE IF NOT EXISTS todos (" +
+  "  id INTEGER PRIMARY KEY AUTOINCREMENT," +
+  "  title TEXT NOT NULL," +
+  "  completed INTEGER DEFAULT 0," +
+  "  created_at TEXT NOT NULL DEFAULT (datetime('now'))" +
+  ")"
+)
+
+const existing = db.query("SELECT count(*) as count FROM todos").get() as any
+if (existing.count === 0) {
+  db.run("INSERT INTO todos (title) VALUES ('Learn Bunigniter')")
+  db.run("INSERT INTO todos (title) VALUES ('Build an app')")
+  db.run("INSERT INTO todos (title) VALUES ('Deploy to production')")
+  db.run("INSERT INTO todos (title, completed) VALUES ('Done task', 1)")
+  console.log("[seed] 4 todos created")
+} else {
+  console.log(\`[seed] \${existing.count} todos already exist\`)
+}
+
+db.close()
+console.log("[seed] done")
+`
 }
