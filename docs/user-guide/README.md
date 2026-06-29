@@ -10,8 +10,8 @@
 | [Inertia-style Pages](inertia.md) | SPA-like navigation with this.page(), this.share() |
 | [Database](database.md) | CI-style query builder, pagination, joins |
 | [Validation](helpers.md#validation) | String rules + Zod schema |
-| [Helpers](helpers.md) | 14 stateless helper modules |
 | [Services](services.md) | 6 stateful service classes (Cache, Queue, Mail, Upload, Image, WS) |
+| [Helpers](helpers.md) | 14 stateless helper modules |
 | [Architecture](../analysis/architecture.md) | Helpers vs Services vs Middleware — design rationale |
 | [CLI Reference](cli-reference.md) | 28 CLI commands |
 | [HMVC Modules](hmvc-modules.md) | Modular HMVC architecture |
