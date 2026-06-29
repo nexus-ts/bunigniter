@@ -11,9 +11,9 @@
  *            layoutHtml, welcomeView, wranglerToml, workerEntry, initSql
  */
 
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join, relative } from "node:path"
-import { cwd, exit, stdout, stdin } from "node:process"
+import { cwd, exit, stdin, stdout } from "node:process"
 import { render } from "./templates"
 
 // ═══════════════════════════════════════════════════════════════════
