@@ -13,7 +13,7 @@ chdir(appDir)
 process.env.ROUTER_PREFIX = ''
 process.env.PORT = '3000'
 process.env.APP_KEY = 'simple-app-dev-key'
-process.env.DEBUG = 'false'
+if (!process.env.DEBUG) process.env.DEBUG = 'true'
 
 console.log(`[simple-app] Starting from ${appDir}`)
 console.log(`[simple-app] Open http://localhost:3000`)
