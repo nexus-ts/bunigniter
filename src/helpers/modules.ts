@@ -23,11 +23,11 @@ import { existsSync, readdirSync } from "node:fs"
 import { join } from "node:path"
 import type { Elysia } from "elysia"
 import type { DbClient } from "../db/drizzle"
-import type { Cache } from "../libraries/cache"
-import type { Mail } from "../libraries/mail"
-import type { Queue } from "../libraries/queue"
-import type { Upload } from "../libraries/upload"
 import { registerFileRoutes } from "../router/file-router"
+import type { Cache } from "../services/cache"
+import type { Mail } from "../services/mail"
+import type { Queue } from "../services/queue"
+import type { Upload } from "../services/upload"
 
 export interface ModuleServices {
 	db?: DbClient

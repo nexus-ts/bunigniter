@@ -3,13 +3,13 @@
  *
  * Scans project-level directories:
  *   helpers/   → export function (stateless)
- *   libraries/ → export class   (stateful, instantiated once)
+ *   services/ → export class   (stateful, instantiated once)
  *
  * @example
  * ```ts
  * // Project structure:
  * //   helpers/format_date.ts     → export function formatDate(date)
- * //   libraries/payment.ts      → export class PaymentGateway
+ * //   services/payment.ts      → export class PaymentGateway
  *
  * class Orders extends Controller {
  *   async index() {
@@ -18,7 +18,7 @@
  *     const formatted = formatDate(new Date())
  *
  *     // Load library (instantiates class, cached per request)
- *     const payment = await this.load.library('payment', { apiKey: 'xxx' })
+ *     const payment = await this.load.service('payment', { apiKey: 'xxx' })
  *     await payment.charge(100)
  *   }
  * }
@@ -75,7 +75,7 @@ export class LoadService {
 	}
 
 	/**
-	 * Load a library class from the project's libraries/ directory.
+	 * Load a library class from the project's services/ directory.
 	 *
 	 * Libraries are stateful classes. The class is instantiated with
 	 * the provided options on first call and cached for the request.
@@ -86,7 +86,7 @@ export class LoadService {
 	 *
 	 * @example
 	 * ```ts
-	 * const payment = await this.load.library('payment', { apiKey: 'xxx' })
+	 * const payment = await this.load.service('payment', { apiKey: 'xxx' })
 	 * await payment.charge(100)
 	 * ```
 	 */
@@ -97,10 +97,10 @@ export class LoadService {
 		}
 
 		const paths = [
-			join(this._projectDir, "libraries", `${name}.ts`),
-			join(this._projectDir, "libraries", `${name}.js`),
-			join(this._projectDir, "libraries", name, "index.ts"),
-			join(this._projectDir, "libraries", name, "index.js"),
+			join(this._projectDir, "services", `${name}.ts`),
+			join(this._projectDir, "services", `${name}.js`),
+			join(this._projectDir, "services", name, "index.ts"),
+			join(this._projectDir, "services", name, "index.js"),
 		]
 
 		for (const filePath of paths) {
@@ -112,14 +112,14 @@ export class LoadService {
 					this._libraryCache.set(cacheKey, instance)
 					return instance as T
 				}
-				throw new Error(`Library "${name}" must export a class or default export`)
+				throw new Error(`Service "${name}" must export a class or default export`)
 			}
 		}
 
-		throw new Error(`Library not found: ${name} (looked in libraries/${name}.ts)`)
+		throw new Error(`Service not found: ${name} (looked in services/${name}.ts)`)
 	}
 
-	/** Clear all cached helpers and libraries. */
+	/** Clear all cached helpers and services. */
 	clear(): void {
 		this._helperCache.clear()
 		this._libraryCache.clear()

@@ -17,9 +17,8 @@ request → Middleware → Controller → Libraries / Helpers → response
 | Layer | Directory | Export Style | State | Initialization |
 |-------|-----------|-------------|-------|---------------|
 | **Helper** | `helpers/` | `export function` | Stateless | None — call directly |
-| **Library** | `libraries/` | `export class` | Stateful | `new Class(opts)` |
+| **Service(Library)** | `services/` | `export class` | Stateful | `new Class(opts)` |
 | **Middleware** | `middleware/` | `export default defineMiddleware(...)` | Stateless | Auto-applied by router |
-| **Service** | `src/helpers/*` | Mixed (framework internal) | Mixed | Wired at app boot |
 
 ---
 
@@ -79,7 +78,7 @@ const { formatDate } = await this.load.helper('format_date')
 
 ## 2. Libraries — Stateful Service Classes
 
-**Location:** `libraries/` (project-level) or `bunigniter/libraries/*` (framework-provided)
+**Location:** `services/` (project-level) or `bunigniter/services/*` (framework-provided)
 
 Libraries are **classes that manage state and resources**. They hold configuration, maintain connections, and provide a stateful API. A library must be **initialized** before use.
 
@@ -90,22 +89,22 @@ Libraries are **classes that manage state and resources**. They hold configurati
 - Must be instantiated before use — `new Library(options)`
 - May have side effects (network, filesystem, database)
 
-### Framework-provided libraries
+### Framework-provided services
 
 ```ts
-import { Cache, createCache } from 'bunigniter/libraries/cache'
-import { Queue, createQueue } from 'bunigniter/libraries/queue'
-import { Mail, createMail } from 'bunigniter/libraries/mail'
-import { Upload, createUpload } from 'bunigniter/libraries/upload'
-import { Image } from 'bunigniter/libraries/image'
-import { Session } from 'bunigniter/libraries/session'
-import { ws } from 'bunigniter/libraries/ws'
+import { Cache, createCache } from 'bunigniter/services/cache'
+import { Queue, createQueue } from 'bunigniter/services/queue'
+import { Mail, createMail } from 'bunigniter/services/mail'
+import { Upload, createUpload } from 'bunigniter/services/upload'
+import { Image } from 'bunigniter/services/image'
+import { Session } from 'bunigniter/services/session'
+import { ws } from 'bunigniter/services/ws'
 ```
 
-### User-defined libraries
+### User-defined services
 
 ```ts
-// libraries/payment.ts
+// services/payment.ts
 export class PaymentGateway {
   private apiKey: string
 
@@ -232,7 +231,7 @@ import "bunigniter"
        └─ Server listens on :PORT
 ```
 
-Services (Cache, Queue, Upload, Mail) are instantiated at boot and injected into the router. Controllers access them via `this.cache`, `this.queue`, `this.upload`, `this.mail`. User-defined libraries are loaded on demand via `this.load.library()`.
+Services (Cache, Queue, Upload, Mail) are instantiated at boot and injected into the router. Controllers access them via `this.cache`, `this.queue`, `this.upload`, `this.mail`. User-defined services are loaded on demand via `this.load.library()`.
 
 ---
 
@@ -243,7 +242,7 @@ Services (Cache, Queue, Upload, Mail) are instantiated at boot and injected into
   "exports": {
     ".": "./src/index.ts",
     "./helpers/*": "./src/helpers/*",     // stateless function collections
-    "./libraries/*": "./src/libraries/*", // stateful service classes
+    "./services/*": "./src/services/*", // stateful service classes
     "./edge": "./src/edge.ts"
   }
 }
@@ -254,7 +253,7 @@ Users import only what they need:
 ```ts
 import "bunigniter"                          // framework boot (always)
 import { env } from 'bunigniter/helpers/env'  // helper (stateless)
-import { ws } from 'bunigniter/libraries/ws'  // library (stateful)
+import { ws } from 'bunigniter/services/ws'  // library (stateful)
 ```
 
 Unused imports are tree-shaken by Bun's bundler — only the code you actually use ends up in the production build.
@@ -266,4 +265,4 @@ Unused imports are tree-shaken by Bun's bundler — only the code you actually u
 - [Controller Guide](../user-guide/controller-lifecycle.md) — Request lifecycle
 - [Middleware Guide](../user-guide/middleware.md) — Creating middleware
 - [Helpers Reference](../user-guide/helpers.md) — Built-in helpers
-- [Load Service](../user-guide/load.md) — Loading user helpers/libraries
+- [Load Service](../user-guide/load.md) — Loading user helpers/services

@@ -1,4 +1,4 @@
-import { ws } from "bunigniter/libraries/ws";
+import { ws } from "bunigniter/services/ws";
 
 ws.handle("/ws/chat", {
 	message(wsInstance, data: any) {

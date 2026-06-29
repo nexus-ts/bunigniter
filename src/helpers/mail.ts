@@ -3,4 +3,4 @@
  * Content moved to src/libraries/mail.ts
  * Import from "bunigniter/libraries/mail" for the canonical path.
  */
-export * from "../libraries/mail"
+export * from "../services/mail"

@@ -3,4 +3,4 @@
  * Content moved to src/libraries/session.ts
  * Import from "bunigniter/libraries/session" for the canonical path.
  */
-export * from "../libraries/session"
+export * from "../services/session"

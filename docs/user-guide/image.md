@@ -341,6 +341,6 @@ await Image.open('photo.jpg')
 
 ## Source
 
-- Implementation: `src/libraries/image.ts`
+- Implementation: `src/services/image.ts`
 - Controller: `this.imageOpen()` — `src/base/controller.ts`
 - Engine: `sharp` (libvips)

@@ -1,7 +1,7 @@
 # Helpers & Libraries Reference
 
 > **Helpers** (`bunigniter/helpers/*`) are stateless function collections — pure utilities like `env()`, `jwt.sign()`, `corsMiddleware()`.
-> **Libraries** (`bunigniter/libraries/*`) are stateful service classes — Cache, Queue, Mail, Upload, Image, Session, WebSocket.
+> **Libraries** (`bunigniter/services/*`) are stateful service classes — Cache, Queue, Mail, Upload, Image, Session, WebSocket.
 > See [Architecture](../analysis/architecture.md) for the full design rationale.
 
 ## Environment
@@ -152,7 +152,7 @@ const result = await db.paginate('SELECT * FROM users', [], { page: 2, perPage: 
 ## Cache
 
 ```ts
-import { Cache, createCache } from 'bunigniter/libraries/cache'
+import { Cache, createCache } from 'bunigniter/services/cache'
 ```
 
 ```ts
@@ -175,7 +175,7 @@ const data = await cache.remember('users', 300, async () => {
 ## Queue
 
 ```ts
-import { Queue, createQueue } from 'bunigniter/libraries/queue'
+import { Queue, createQueue } from 'bunigniter/services/queue'
 ```
 
 ```ts
@@ -200,7 +200,7 @@ Features: retry with exponential backoff, max concurrency, error isolation.
 ## Upload
 
 ```ts
-import { Upload, createUpload } from 'bunigniter/libraries/upload'
+import { Upload, createUpload } from 'bunigniter/services/upload'
 ```
 
 ```ts
@@ -228,7 +228,7 @@ const path = upload.store(file, 'avatars') // → 'avatars/1712345678_abc123.jpg
 ## Image Manipulation
 
 ```ts
-import { Image } from 'bunigniter/libraries/image'
+import { Image } from 'bunigniter/services/image'
 ```
 
 ```ts
@@ -256,7 +256,7 @@ await Image.open('photo.jpg')
 ## Mail
 
 ```ts
-import { Mail, createMail, SmtpTransport, FileTransport, NullTransport } from 'bunigniter/libraries/mail'
+import { Mail, createMail, SmtpTransport, FileTransport, NullTransport } from 'bunigniter/services/mail'
 ```
 
 ```ts
@@ -411,7 +411,7 @@ See [JWT Auth](jwt-auth.md) for full documentation.
 ## WebSocket
 
 ```ts
-import { ws } from 'bunigniter/libraries/ws'
+import { ws } from 'bunigniter/services/ws'
 ```
 
 See [WebSocket](websocket.md) for full documentation.
