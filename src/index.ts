@@ -22,16 +22,9 @@ import { DbClient } from "./db/drizzle"
 import { loadEnv } from "./helpers/env"
 import type { MiddlewareConfig } from "./helpers/middleware"
 import { applyMiddleware } from "./helpers/middleware"
-import { registerModules } from "./helpers/modules"
-import { openapi } from "./helpers/openapi"
 import { authMiddleware, sessionMiddleware } from "./helpers/session-middleware"
 import { registerFileRoutes } from "./router/file-router"
 import { registerServerRoutes } from "./router/server-router"
-import { createCache } from "./services/cache"
-import { createMail } from "./services/mail"
-import { createQueue } from "./services/queue"
-import { createUpload } from "./services/upload"
-import { ws } from "./services/ws"
 import { setViewsDir } from "./view/renderer"
 
 export { Controller, Service } from "./base/index"
@@ -48,6 +41,15 @@ interface AppConfig {
 	view?: { directory?: string; scripts?: string[] }
 	app?: { key?: string; debug?: boolean }
 	middleware?: MiddlewareConfig
+	services?: {
+		cache?: false
+		queue?: false
+		mail?: false
+		upload?: false
+		ws?: false
+		openapi?: false
+		modules?: false
+	}
 }
 
 async function loadConfig(): Promise<AppConfig> {
@@ -113,16 +115,49 @@ async function main() {
 		}
 	}
 
-	// ─── Services (Cache, Queue, Upload, Mail) ─────────────────
-	const cache = createCache()
-	const queue = createQueue()
-	const upload = createUpload()
-	const mail = createMail({
-		transport:
-			process.env.NODE_ENV === "production"
-				? undefined // SMTP in production
-				: undefined, // Null in dev (set via env)
-	})
+	// ─── Services (dynamic imports — tree-shakeable) ────────
+	// Each service is only imported and initialized if not explicitly disabled
+	// in config/app.ts via services: { cache: false, ... }
+
+	const svc = config.services ?? {}
+
+	// Cache
+	const cache =
+		svc.cache === false
+			? undefined
+			: await (async () => {
+					const { createCache: fn } = await import("./services/cache")
+					return fn()
+				})()
+
+	// Queue
+	const queue =
+		svc.queue === false
+			? undefined
+			: await (async () => {
+					const { createQueue: fn } = await import("./services/queue")
+					return fn()
+				})()
+
+	// Upload
+	const upload =
+		svc.upload === false
+			? undefined
+			: await (async () => {
+					const { createUpload: fn } = await import("./services/upload")
+					return fn()
+				})()
+
+	// Mail
+	const mail =
+		svc.mail === false
+			? undefined
+			: await (async () => {
+					const { createMail: fn } = await import("./services/mail")
+					return fn({
+						transport: process.env.NODE_ENV === "production" ? undefined : undefined,
+					})
+				})()
 
 	// ─── File-based Routes ────────────────────────────────────
 	const routerPrefix = config.router?.prefix ?? "/api"
@@ -166,10 +201,16 @@ async function main() {
 	}
 
 	// ─── HMVC Modules ──────────────────────────────────────────
-	await registerModules(app, { db, dbs: namedDbs, cache, queue, upload, mail })
+	if (svc.modules !== false) {
+		const { registerModules: fn } = await import("./helpers/modules")
+		await fn(app, { db, dbs: namedDbs, cache, queue, upload, mail })
+	}
 
 	// ─── WebSocket ───────────────────────────────────────────────
-	ws.mount(app)
+	if (svc.ws !== false) {
+		const { ws: wss } = await import("./services/ws")
+		wss.mount(app)
+	}
 
 	// ─── Server Routes (Void-style) ───────────────────────────
 	const routesDir = "routes"
@@ -178,10 +219,10 @@ async function main() {
 	}
 
 	// ─── OpenAPI Documentation ───────────────────────────────
-	openapi(app, {
-		title: "Bunigniter API",
-		version: "0.1.0",
-	})
+	if (svc.openapi !== false) {
+		const { openapi: openapiFn } = await import("./helpers/openapi")
+		openapiFn(app, { title: "Bunigniter API", version: "0.1.0" })
+	}
 
 	// ─── Health Check ─────────────────────────────────────────
 	app.get(
