@@ -558,7 +558,12 @@ export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
 	if (template === "todo") {
 		// Todo template: full CRUD todo app
 		makeFile(join(projectDir, "routes", "index.ts"), genTodoRouteIndex())
-		makeFile(join(projectDir, "routes", "todos.ts"), genTodoRouteTodos())
+		if (database === "none") {
+			makeFile(join(projectDir, "helpers", "json-db.ts"), genJsonDbHelper())
+			makeFile(join(projectDir, "routes", "todos.ts"), genTodoRouteTodosJson())
+		} else {
+			makeFile(join(projectDir, "routes", "todos.ts"), genTodoRouteTodos())
+		}
 		makeFile(join(projectDir, "views", "_layout.html"), genLayoutHtml())
 		makeFile(join(projectDir, "views", "todos.html"), genTodoViewTodos())
 	} else {
@@ -821,5 +826,129 @@ if (existing.count === 0) {
 
 db.close()
 console.log("[seed] done")
+`
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// JSON DATA STORE — in-memory storage for database=none mode
+// ═══════════════════════════════════════════════════════════════════
+
+function genJsonDbHelper(): string {
+	return `/**
+ * JSON data store — lightweight in-memory storage for demo/DB-less mode.
+ * Used when no database is configured. Data resets on server restart.
+ */
+interface StoreItem {
+	id: number
+	[key: string]: any
+}
+
+const stores = new Map<string, StoreItem[]>()
+const counters = new Map<string, number>()
+
+export function jsonDb(table: string) {
+	if (!stores.has(table)) {
+		stores.set(table, [])
+		counters.set(table, 1)
+	}
+	const items = stores.get(table)!
+	let counter = counters.get(table)!
+
+	return {
+		all<T = StoreItem>(): T[] { return items as T[] },
+
+		get<T = StoreItem>(id: number): T | undefined { return items.find(i => i.id === id) as T },
+
+		insert(data: Record<string, any>): StoreItem {
+			const item = { id: counter++, ...data, created_at: new Date().toISOString() }
+			items.push(item)
+			counters.set(table, counter)
+			return item
+		},
+
+		update(id: number, data: Record<string, any>): StoreItem | null {
+			const idx = items.findIndex(i => i.id === id)
+			if (idx === -1) return null
+			items[idx] = { ...items[idx], ...data }
+			return items[idx]
+		},
+
+		delete(id: number): boolean {
+			const idx = items.findIndex(i => i.id === id)
+			if (idx === -1) return false
+			items.splice(idx, 1)
+			return true
+		},
+
+		count(): number { return items.length },
+	}
+}
+
+// Seed data for demo
+export function seedTodos() {
+	const db = jsonDb("todos")
+	if (db.count() > 0) return
+	db.insert({ title: "Learn Bunigniter", completed: false })
+	db.insert({ title: "Build an app", completed: false })
+	db.insert({ title: "Deploy to production", completed: false })
+	db.insert({ title: "Done task", completed: true })
+}
+`
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// JSON-BASED TODO CONTROLLER (for database=none mode)
+// ═══════════════════════════════════════════════════════════════════
+
+function genTodoRouteTodosJson(): string {
+	return `/**
+ * Todos Controller — full CRUD with JSON data store.
+ * No database required — data resets on server restart.
+ */
+import { Controller } from "bunigniter"
+import { jsonDb, seedTodos } from "../helpers/json-db"
+
+interface Todo {
+	id: number
+	title: string
+	completed: boolean
+	created_at: string
+}
+
+export class Todos extends Controller {
+	async index() {
+		seedTodos() // ensure demo data on first run
+		const todos = jsonDb<Todo>("todos").all().reverse()
+		const activeCount = todos.filter(t => !t.completed).length
+		return this.view("todos", {
+			title: "Todos",
+			todos,
+			total: todos.length,
+			activeCount,
+		})
+	}
+
+	async create() {
+		const v = this.validate(this.body, { title: "required|min:1|max:500" })
+		if (v.fails()) return this.redirect("/todos")
+		jsonDb("todos").insert({ title: this.request.post("title", "").trim(), completed: false })
+		return this.redirect("/todos")
+	}
+
+	async update(id: number) {
+		const body = this.body
+		if (body?.title !== undefined) {
+			jsonDb("todos").update(id, { title: body.title.trim(), completed: body.completed ? true : false })
+		} else {
+			jsonDb("todos").update(id, { completed: body?.completed ? true : false })
+		}
+		return this.redirect("/todos")
+	}
+
+	async destroy(id: number) {
+		jsonDb("todos").delete(id)
+		return this.redirect("/todos")
+	}
+}
 `
 }
