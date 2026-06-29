@@ -1,4 +1,4 @@
-# Architecture — Helpers, Libraries, Middleware
+# Architecture — Helpers, Services, Middleware
 
 Bunigniter organizes reusable code into three distinct layers inspired by CodeIgniter 3's separation of concerns. Each layer has a clear responsibility, lifecycle, and API style.
 
@@ -7,17 +7,17 @@ Bunigniter organizes reusable code into three distinct layers inspired by CodeIg
 ## Layer Overview
 
 ```
-request → Middleware → Controller → Libraries / Helpers → response
+request → Middleware → Controller → Services / Helpers → response
                           │
                           ├─ this.load.helper('name')   → stateless functions
-                          ├─ this.load.library('name')  → stateful service class
+                          ├─ this.load.service('name')  → stateful service class
                           └─ middleware/ route guard     → HTTP pipeline hook
 ```
 
 | Layer | Directory | Export Style | State | Initialization |
 |-------|-----------|-------------|-------|---------------|
 | **Helper** | `helpers/` | `export function` | Stateless | None — call directly |
-| **Service(Library)** | `services/` | `export class` | Stateful | `new Class(opts)` |
+| **Service** | `services/` | `export class` | Stateful | `new Class(opts)` |
 | **Middleware** | `middleware/` | `export default defineMiddleware(...)` | Stateless | Auto-applied by router |
 
 ---
@@ -76,17 +76,17 @@ const { formatDate } = await this.load.helper('format_date')
 
 ---
 
-## 2. Libraries — Stateful Service Classes
+## 2. Services — Stateful Service Classes
 
 **Location:** `services/` (project-level) or `bunigniter/services/*` (framework-provided)
 
-Libraries are **classes that manage state and resources**. They hold configuration, maintain connections, and provide a stateful API. A library must be **initialized** before use.
+Services are **classes that manage state and resources**. They hold configuration, maintain connections, and provide a stateful API. A servicey must be **initialized** before use.
 
 ### Rules
 
 - `export class` with a constructor
 - Holds internal state (config, connection, cache store, etc.)
-- Must be instantiated before use — `new Library(options)`
+- Must be instantiated before use — `new Service(options)`
 - May have side effects (network, filesystem, database)
 
 ### Framework-provided services
@@ -125,11 +125,11 @@ export class PaymentGateway {
 
 ```ts
 // Controller
-const payment = await this.load.library('payment', { apiKey: 'sk_xxx' })
+const payment = await this.load.service('payment', { apiKey: 'sk_xxx' })
 const result = await payment.charge(100, 'tok_xxx')
 ```
 
-### When to create a Library
+### When to create a Service
 
 - You need **state** — configuration, connection pool, cached data
 - You need **initialization** — constructor arguments, async setup
@@ -182,14 +182,14 @@ I need to write some code. Where does it go?
 │  └─ Yes → middleware/
 │
 ├─ Does it hold state (config, connection, cache)?
-│  ├─ Yes → library/ (export class, constructor, new)
+│  ├─ Yes → service/ (export class, constructor, new)
 │  └─ No → helper/ (export function, pure)
 │
 ├─ Is it a reusable utility function with no dependencies?
 │  └─ Yes → helper/
 │
 └─ Is it an external service (payment, email, storage)?
-   └─ Yes → library/
+   └─ Yes → service/
 ```
 
 ### Concrete examples
@@ -198,13 +198,13 @@ I need to write some code. Where does it go?
 |------|------|--------|
 | Validate CSRF token on POST | **Middleware** | Every POST request needs it |
 | Format a date string | **Helper** | Pure function, no state |
-| Charge a credit card | **Library** | Holds API key, makes network calls |
+| Charge a credit card | **Service** | Holds API key, makes network calls |
 | Log request duration | **Middleware** | Every request, cross-cutting |
 | Paginate a query result | **Helper** | Pure calculation |
-| Send an email | **Library** | Needs SMTP config, connection |
+| Send an email | **Service** | Needs SMTP config, connection |
 | Check authentication | **Middleware** | Before every protected route |
 | Generate a JWT | **Helper** | Pure crypto operation |
-| Manage file uploads | **Library** | Holds config, manages files |
+| Manage file uploads | **Service** | Holds config, manages files |
 
 ---
 
@@ -231,7 +231,7 @@ import "bunigniter"
        └─ Server listens on :PORT
 ```
 
-Services (Cache, Queue, Upload, Mail) are instantiated at boot and injected into the router. Controllers access them via `this.cache`, `this.queue`, `this.upload`, `this.mail`. User-defined services are loaded on demand via `this.load.library()`.
+Services (Cache, Queue, Upload, Mail) are instantiated at boot and injected into the router. Controllers access them via `this.cache`, `this.queue`, `this.upload`, `this.mail`. User-defined services are loaded on demand via `this.load.service()`.
 
 ---
 
@@ -253,7 +253,7 @@ Users import only what they need:
 ```ts
 import "bunigniter"                          // framework boot (always)
 import { env } from 'bunigniter/helpers/env'  // helper (stateless)
-import { ws } from 'bunigniter/services/ws'  // library (stateful)
+import { ws } from 'bunigniter/services/ws'  // service (stateful)
 ```
 
 Unused imports are tree-shaken by Bun's bundler — only the code you actually use ends up in the production build.

@@ -1,5 +1,5 @@
 /**
- * Load — CI3-style helper & library loader for controllers.
+ * Load — CI3-style helper & service loader for controllers.
  *
  * Scans project-level directories:
  *   helpers/   → export function (stateless)
@@ -17,7 +17,7 @@
  *     const { formatDate } = await this.load.helper('format_date')
  *     const formatted = formatDate(new Date())
  *
- *     // Load library (instantiates class, cached per request)
+ *     // Load service (instantiates class, cached per request)
  *     const payment = await this.load.service('payment', { apiKey: 'xxx' })
  *     await payment.charge(100)
  *   }
@@ -30,7 +30,7 @@ import { cwd } from "node:process"
 
 export class LoadService {
 	private _helperCache = new Map<string, Record<string, any>>()
-	private _libraryCache = new Map<string, any>()
+	private _serviceCache = new Map<string, any>()
 	private _projectDir: string
 
 	constructor(projectDir?: string) {
@@ -75,14 +75,14 @@ export class LoadService {
 	}
 
 	/**
-	 * Load a library class from the project's services/ directory.
+	 * Load a service class from the project's services/ directory.
 	 *
-	 * Libraries are stateful classes. The class is instantiated with
+	 * Services are stateful classes. The class is instantiated with
 	 * the provided options on first call and cached for the request.
 	 *
 	 * @param name - File name without extension (e.g. "payment")
 	 * @param options - Constructor options passed to the class
-	 * @returns Instance of the library class
+	 * @returns Instance of the service class
 	 *
 	 * @example
 	 * ```ts
@@ -90,10 +90,10 @@ export class LoadService {
 	 * await payment.charge(100)
 	 * ```
 	 */
-	async library<T = any>(name: string, options?: Record<string, any>): Promise<T> {
+	async service<T = any>(name: string, options?: Record<string, any>): Promise<T> {
 		const cacheKey = `${name}:${JSON.stringify(options ?? {})}`
-		if (this._libraryCache.has(cacheKey)) {
-			return this._libraryCache.get(cacheKey) as T
+		if (this._serviceCache.has(cacheKey)) {
+			return this._serviceCache.get(cacheKey) as T
 		}
 
 		const paths = [
@@ -109,7 +109,7 @@ export class LoadService {
 				const ExportedClass = mod.default || Object.values(mod)[0]
 				if (typeof ExportedClass === "function" || typeof ExportedClass === "object") {
 					const instance = typeof ExportedClass === "function" ? new ExportedClass(options ?? {}) : ExportedClass
-					this._libraryCache.set(cacheKey, instance)
+					this._serviceCache.set(cacheKey, instance)
 					return instance as T
 				}
 				throw new Error(`Service "${name}" must export a class or default export`)
@@ -122,6 +122,6 @@ export class LoadService {
 	/** Clear all cached helpers and services. */
 	clear(): void {
 		this._helperCache.clear()
-		this._libraryCache.clear()
+		this._serviceCache.clear()
 	}
 }
