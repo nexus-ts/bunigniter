@@ -164,7 +164,7 @@ bun run bi build:edge         # Build for Cloudflare Workers
 | Engine | File | Syntax | Best For |
 |--------|------|--------|----------|
 | **Rendu** | `.html` | `<?= title ?>`, `<? if(...) { ?>` | PHP/Laravel developers, designers |
-| **MDX** | `.mdx` | `{{ title }}` + Markdown | Documentation, content sites |
+| **MDX** | `.mdx` | `{{ title }}` / `<?= title ?>` + Markdown | Documentation, content sites |
 | **React SSR** | `.tsx` | `{title}` (JSX) | Complex UI, component libraries |
 
 All three support **auto-layout** (`views/_layout.html` → `<?= slot ?>`), **named slots**, and **nested templates**.
@@ -185,6 +185,9 @@ No build step required — Bun serves `.html`/`.mdx`/`.tsx` directly.
 **Stats:** {{ total }} items ({{ active }} active)
 
 ![Diagram]({{ diagramUrl }})
+
+{{! Also supports Rendu syntax for inline logic }}
+<? if (user) { ?>Welcome, **{{ user.name }}**<? } ?>
 ```
 
 ```tsx
