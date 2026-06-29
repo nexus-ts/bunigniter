@@ -524,7 +524,7 @@ INSERT INTO items (title, content) VALUES ('D1 Database', 'SQLite-compatible ser
 // ═══════════════════════════════════════════════════════════════════
 
 export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
-	const { projectName, projectDir, runtime, database, openapi, template, mergePkg } = options
+	const { projectName, projectDir, runtime, database, openapi, mergePkg } = options
 	const isCf = runtime === "cloudflare"
 
 	console.log(`\n  ${G("◇")}  Scaffolding ${C(projectName)}...\n`)
@@ -548,7 +548,9 @@ export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
 	makeFile(join(projectDir, "config", "app.ts"), genConfigApp(database, isCf, openapi))
 
 	if (database !== "none") makeFile(join(projectDir, "db", "seed.ts"), genSeedScript(database))
-	if (template === "simple") makeFile(join(projectDir, "routes", "index.ts"), genRouteIndex())
+	// Simple template: welcome page + API route
+	// Todo template: coming soon — currently falls back to simple
+	makeFile(join(projectDir, "routes", "index.ts"), genRouteIndex())
 
 	makeFile(join(projectDir, "routes", "api.ts"), genRouteApi(openapi))
 	makeFile(join(projectDir, "views", "_layout.html"), genLayoutHtml())
