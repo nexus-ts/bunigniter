@@ -12,6 +12,7 @@
 | [Helpers](helpers.md) | 27 helper modules reference |
 | [CLI Reference](cli-reference.md) | 27 CLI commands |
 | [HMVC Modules](hmvc-modules.md) | Modular HMVC architecture |
+| [Inertia-style Pages](inertia.md) | SPA-like navigation with this.page(), this.share() |
 | [JWT Auth](jwt-auth.md) | JWT sign/verify, middleware |
 | [Multi-Database](multi-database.md) | Named connections via `this.dbs.*` |
 | [File Upload](upload.md) | Upload, validate, store, delete files |
