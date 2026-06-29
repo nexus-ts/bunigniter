@@ -14,9 +14,9 @@ import { existsSync, readFileSync } from "node:fs";
 import { Elysia } from "elysia";
 import { DbClient } from "../../src/db/drizzle";
 import { registerFileRoutes } from "../../src/router/file-router";
-import { createCache } from "../../src/helpers/cache";
-import { createUpload } from "../../src/helpers/upload";
-import { ws } from "../../src/helpers/ws";
+import { createCache } from "../../src/libraries/cache";
+import { createUpload } from "../../src/libraries/upload";
+import { ws } from "../../src/libraries/ws";
 import {
 	sessionMiddleware,
 	authMiddleware,
