@@ -1,7 +1,8 @@
-# Helpers & Libraries Reference
+# Helpers & Services Reference
 
 > **Helpers** (`bunigniter/helpers/*`) are stateless function collections — pure utilities like `env()`, `jwt.sign()`, `corsMiddleware()`.
-> **Libraries** (`bunigniter/services/*`) are stateful service classes — Cache, Queue, Mail, Upload, Image, Session, WebSocket.
+> **Services** (`bunigniter/services/*`) are stateful service classes — Cache, Queue, Mail, Upload, Image, Session, WebSocket.
+> Disable unused services in `config/app.ts` via `services: { cache: false }` to tree-shake from build.
 > See [Architecture](../analysis/architecture.md) for the full design rationale.
 
 ## Environment

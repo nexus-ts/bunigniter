@@ -10,8 +10,9 @@
 | [Inertia-style Pages](inertia.md) | SPA-like navigation with this.page(), this.share() |
 | [Database](database.md) | CI-style query builder, pagination, joins |
 | [Validation](helpers.md#validation) | String rules + Zod schema |
-| [Helpers](helpers.md) | 27 helper modules reference |
-| [CLI Reference](cli-reference.md) | 27 CLI commands |
+| [Helpers & Services](helpers.md) | 15 helpers + 7 services reference |
+| [Architecture](../analysis/architecture.md) | Helpers vs Services vs Middleware — design rationale |
+| [CLI Reference](cli-reference.md) | 28 CLI commands |
 | [HMVC Modules](hmvc-modules.md) | Modular HMVC architecture |
 | [JWT Auth](jwt-auth.md) | JWT sign/verify, middleware |
 | [Multi-Database](multi-database.md) | Named connections via `this.dbs.*` |

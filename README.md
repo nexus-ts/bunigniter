@@ -65,10 +65,10 @@ No decorators. No DI containers. No boilerplate. Just `this.db`, `this.request`,
 | **Templates** | Rendu (PHP `<?= ?>`), MDX, React SSR, auto-layout, named slots |
 | **Auth** | Session auth, JWT (HS256/RS256), CSRF, CORS |
 | **API** | OpenAPI 3.1 auto-docs with Scalar UI |
-| **CLI** | 27 artisan-style commands: `make:controller`, `db:migrate`, `key:generate`, `repl`, `list` |
+| **CLI** | 28 artisan-style commands: `bi new`, `bi init`, `make:*`, `db:*`, `repl`, `list` |
 | **Realtime** | WebSocket (rooms, broadcast), SSE, cron scheduler |
 | **Middleware** | Logger, rate limiter, CORS, CSRF, timing |
-| **Services** | Cache (TTL), queue (retry), upload (validation), mail, image (sharp), HTTP client |
+| **Services** | Cache, Queue, Mail, Upload, Image, Session, WS — tree-shakeable via `config/app.ts` |
 | **Security** | AES-256-GCM session encryption + HMAC, CSRF, rate limiting, JWT |
 | **Edge** | Cloudflare Workers, Deno — `bun run bi build:edge` |
 | **Debug** | Toolbar with SQL profiling, session viewer, request headers |

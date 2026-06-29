@@ -15,7 +15,8 @@ views/         ← Templates (.html Rendu / .mdx / .tsx React)
 modules/       ← HMVC modules (blog/shop/admin)
 config/app.ts  ← Single config file
 middleware/    ← Global middleware (01_*.ts)
-src/helpers/   ← 25 helper modules
+src/helpers/   ← 15 stateless helper modules
+src/services/  ← 7 stateful service classes (Cache, Queue, Mail, Upload, Image, Session, WS)
 src/cli/       ← 28 CLI commands
 docs/
 ├── user-guide/  ← 13 user-facing docs
@@ -31,7 +32,8 @@ examples/      ← 8 example apps
 4. **HMVC modules in `modules/<name>/routes/`** — with their own views/
 5. **All `make:*` templates share `src/cli/templates.ts`** — single source of truth for scaffolding commands
 6. **Project scaffold templates in `src/cli/scaffold.ts`** — single source of truth for `bi new`
-7. **Docs in English + Korean** — both files simultaneously
+7. **Config template in `src/cli/templates/config-app.ts.tpl`** — single source for config/app.ts
+8. **Docs in English + Korean** — both files simultaneously
 
 ## Creating a Controller
 
@@ -144,7 +146,7 @@ protected _before() {
 
 ```ts
 // routes/ws.ts
-import { ws } from 'bunigniter/helpers/ws'
+import { ws } from 'bunigniter/services/ws'
 ws.handle('/ws/chat', { message(ws, data) { ws.publish('chat', data) } })
 
 // routes/sse.ts
@@ -172,6 +174,8 @@ Available: `new`, `init`, `make:controller`, `make:model`, `make:migration`, `db
 | `examples/petstore/dev.ts` | Pet Store | Rendu HTML |
 | `examples/blog-app-html/dev.ts` | Blog CMS | Rendu HTML |
 | `examples/blog-app-tsx/dev.ts` | Blog CMS | React SSR |
+| `examples/blog-app-inertia-react/dev.ts` | Blog CMS | Inertia React |
+| `examples/slack-app/dev.ts` | Slack Clone | Full-stack |
 
 ## Testing
 
