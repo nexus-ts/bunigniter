@@ -2,6 +2,35 @@
 
 All notable changes to Bunigniter are documented in this file.
 
+## [0.5.7] — 2026-07-01
+
+### Changed
+
+- **⚠️ BREAKING: sharp moved to peerDependencies** — Image service now requires manual installation of `sharp`. Run `bun add sharp` to use image manipulation features. This reduces bundle size by ~30MB for projects that don't need image processing.
+- **Image service lazy loading** — Sharp is now loaded only when Image methods are called, with clear error messages if not installed.
+- **Package exports fixed** — `./services/*` paths now correctly point to `./src/services/*` instead of the old `./src/libraries/*` path.
+
+### Added
+
+- **Runtime validation for sharp** — Image service throws a descriptive error with installation instructions when sharp is missing.
+- **Documentation updates** — Added installation instructions for Image service in `docs/user-guide/image.md` and `docs/user-guide/services.md`.
+
+### Fixed
+
+- **CI/CD workflows** — Added explicit `bun add sharp` step in GitHub Actions workflows to ensure tests pass.
+
+**Migration Guide:**
+
+If you use the Image service, add sharp to your project:
+
+```bash
+bun add sharp
+```
+
+If you don't use Image service, no action needed — your bundle is now ~30MB lighter.
+
+[0.5.7]: https://github.com/kabyeon/bunigniter/compare/v0.5.6...v0.5.7
+
 ## [0.5.6] — 2026-06-30
 
 ### Changed
