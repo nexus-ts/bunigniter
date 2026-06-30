@@ -2,6 +2,15 @@
 
 All notable changes to Bunigniter are documented in this file.
 
+## [0.5.6] — 2026-06-30
+
+### Changed
+
+- **Elysia updated** — Bumped from `2.0.0-exp.14` to `2.0.0-exp` (latest experimental).
+- **Repository URL** — Updated remote origin to `kabyeon/bunigniter.git`.
+
+[0.5.6]: https://github.com/kabyeon/bunigniter/compare/v0.5.5...v0.5.6
+
 ## [0.5.5] — 2026-07-01
 
 ### Fixed
