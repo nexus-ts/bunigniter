@@ -13,10 +13,10 @@ if ((db.query('SELECT count(*) as c FROM users').get() as any).c === 0) {
   db.run("INSERT INTO users (username, password) VALUES ('alice','alice123')")
   db.run("INSERT INTO users (username, password) VALUES ('bob','bob123')")
   for (const p of [
-    ['Getting Started with Bunigniter','getting-started-nexusts','Bunigniter is a Bun-native framework inspired by CodeIgniter. It combines Rendu, React SSR, and MDX.','A Bun-native framework for PHP devs.',1],
+    ['Getting Started with Bunigniter','getting-started-bunigniter','Bunigniter is a Bun-native framework inspired by CodeIgniter. It combines Rendu, React SSR, and MDX.','A Bun-native framework for PHP devs.',1],
     ['Elysia v2 Multi-Runtime','elysia-v2-multi-runtime','Elysia v2 adds adapters for Bun, Node, Deno, and CF Workers.','Run anywhere with Elysia adapters.',1],
     ['Rendu Templates Guide','rendu-templates-guide','PHP-style templates with <?= ?> syntax. No build step.','PHP templates in TypeScript.',1],
-    ['MDX in Bunigniter','mdx-in-nexusts','Markdown with embedded React components. Best of both worlds.','Markdown with superpowers.',1],
+    ['MDX in Bunigniter','mdx-in-bunigniter','Markdown with embedded React components. Best of both worlds.','Markdown with superpowers.',1],
     ['Session Management','session-management','AES-256-GCM encrypted cookie sessions. No Redis needed.','Secure sessions without server storage.',1],
     ['OpenAPI Auto-Docs','openapi-auto-docs','GET /openapi.json + Scalar UI at /docs. Zero config.','Auto API docs from routes.',1],
   ]) db.run('INSERT INTO posts (title,slug,content,excerpt,user_id) VALUES (?,?,?,?,?)', ...p)

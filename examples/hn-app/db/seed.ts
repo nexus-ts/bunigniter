@@ -53,7 +53,7 @@ if (existing.c === 0) {
   db.run("INSERT INTO users (username, password) VALUES ('bob', 'password123')")
   db.run("INSERT INTO users (username, password) VALUES ('charlie', 'password123')")
 
-  db.run("INSERT INTO stories (title, url, user_id, points) VALUES ('Bunigniter — Bun-native fullstack framework', 'https://github.com/nexus-ts/nexusts', 1, 15)")
+  db.run("INSERT INTO stories (title, url, user_id, points) VALUES ('Bunigniter — Bun-native fullstack framework', 'https://github.com/kabyeon/bunigniter', 1, 15)")
   db.run("INSERT INTO stories (title, url, user_id, points) VALUES ('Bun 1.3 released with improved performance', 'https://bun.sh', 2, 42)")
   db.run("INSERT INTO stories (title, text, user_id, points) VALUES ('Show HN: I built a Hacker News clone in one hour', 'It uses Bunigniter with SQLite and Rendu templates. Check it out!', 1, 87)")
   db.run("INSERT INTO stories (title, url, user_id, points) VALUES ('TypeScript 6.0: What is new', 'https://typescriptlang.org', 3, 33)")

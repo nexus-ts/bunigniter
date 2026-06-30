@@ -13,7 +13,7 @@
  * Each file exports a default middleware function:
  * ```ts
  * // middleware/01.request-id.ts
- * import { defineMiddleware } from 'nexusts'
+ * import { defineMiddleware } from 'bunigniter'
  *
  * export default defineMiddleware(async (c, next) => {
  *   const start = performance.now()
@@ -44,7 +44,7 @@ export type MiddlewareFn = (c: any, next: () => Promise<void>) => Promise<void> 
  * @example
  * ```ts
  * // middleware/01.logger.ts
- * import { defineMiddleware } from 'nexusts'
+ * import { defineMiddleware } from 'bunigniter'
  *
  * export default defineMiddleware(async (c, next) => {
  *   console.log(c.request.method, c.request.url)

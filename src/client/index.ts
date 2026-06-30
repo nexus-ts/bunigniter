@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { api } from 'nexusts/client'
+ * import { api } from 'bunigniter/client'
  *
  * // GET: fully typed response
  * const users = await api.get('/api/users')
@@ -63,7 +63,7 @@ export interface FetchError {
  *
  * @example
  * ```ts
- * import { fetch } from 'nexusts/client'
+ * import { fetch } from 'bunigniter/client'
  * const users = await fetch('/api/users')
  * ```
  */

@@ -268,7 +268,7 @@ function genPkgJson(
 	const deps: Record<string, string> = {
 		bunigniter: "^0.5",
 		"drizzle-orm": "^0.45",
-		elysia: "^2.0.0-exp.13",
+		elysia: "^2.0.0-exp",
 		typebox: "^1.3",
 		rendu: "^0.1.0",
 		react: "^19",

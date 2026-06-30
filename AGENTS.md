@@ -3,7 +3,7 @@
 Bun-native fullstack framework. CodeIgniter spirit × Elysia v2 × Edge-ready.
 
 > 90+ commits, 85+ source files, 15 docs, 8 example apps.
-> GitHub: github.com/nexus-ts/bunigniter
+> GitHub: github.com/kabyeon/bunigniter
 
 ---
 

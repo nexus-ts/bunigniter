@@ -20,7 +20,7 @@ All notable changes to Bunigniter are documented in this file.
 
 - **Test discovery** — Updated `tests/examples.test.ts` to discover example apps by `main.ts` instead of `dev.ts`.
 
-[0.5.4]: https://github.com/nexus-ts/bunigniter/compare/v0.5.3...v0.5.4
+[0.5.4]: https://github.com/kabyeon/bunigniter/compare/v0.5.3...v0.5.4
 
 ## [0.5.3] — 2026-06-29
 
@@ -39,7 +39,7 @@ All notable changes to Bunigniter are documented in this file.
 
 - **TypeScript interface compliance** — Fixed `AppConfig.endpoints` type definition to match runtime usage.
 
-[0.5.3]: https://github.com/nexus-ts/bunigniter/compare/v0.5.2...v0.5.3
+[0.5.3]: https://github.com/kabyeon/bunigniter/compare/v0.5.2...v0.5.3
 
 ## [0.5.0] — 2026-06-29
 
@@ -129,7 +129,7 @@ All notable changes to Bunigniter are documented in this file.
 - **CI lockfile freeze** — `bun.lock` now matches `package.json` (elysia version bump).
 - **Biome lint errors** — `@ts-ignore` → `@ts-expect-error`, import/export sorting, formatting.
 
-[0.4.1]: https://github.com/nexus-ts/bunigniter/compare/v0.4.0...v0.4.1
+[0.4.1]: https://github.com/kabyeon/bunigniter/compare/v0.4.0...v0.4.1
 
 ## [0.4.0] — 2026-06-28
 
@@ -148,7 +148,7 @@ All notable changes to Bunigniter are documented in this file.
   3. Rewrites root `package.json` to `./dist/` paths for npm consumers
 - **`scripts/restore-pkg.ts`** — New script that restores root `package.json` from backup and cleans up `dist/` after publish.
 
-[0.4.0]: https://github.com/nexus-ts/bunigniter/compare/v0.3.1...v0.4.0
+[0.4.0]: https://github.com/kabyeon/bunigniter/compare/v0.3.1...v0.4.0
 
 ## [0.3.1] — 2026-06-28
 
@@ -157,7 +157,7 @@ All notable changes to Bunigniter are documented in this file.
 - **npm publish workflow** — Automated npm publish via GitHub Actions on release
 - **Version bump** — 0.3.0 unpublished and re-published as 0.3.1
 
-[0.3.1]: https://github.com/nexus-ts/bunigniter/compare/v0.3.0...v0.3.1
+[0.3.1]: https://github.com/kabyeon/bunigniter/compare/v0.3.0...v0.3.1
 
 ## [0.3.0] — 2026-06-28
 
@@ -184,9 +184,9 @@ All notable changes to Bunigniter are documented in this file.
 
 ### Changed
 
-- **Package rename** — `@nexusts/core` → `bunigniter`, v0.2.0 → v0.3.0
+- **Package rename** — `@bunigniter/core` → `bunigniter`, v0.2.0 → v0.3.0
 - **CLI** — `nx` → `bi` command
-- **Repository** — `github.com/nexus-ts/framework` → `github.com/nexus-ts/bunigniter`
+- **Repository** — `github.com/kabyeon/framework` → `github.com/kabyeon/bunigniter`
 - **npm publish** — `dist/`-only via `prepublishOnly` build script, 192 → 51 files in tarball
 - **Docs restructured** — `docs/` → `docs/user-guide/` (13 files) + `docs/analysis/` (3 files)
 
@@ -196,4 +196,4 @@ All notable changes to Bunigniter are documented in this file.
 - New test files: `cors`, `csrf`, `logger`, `throttle`, `handler`, `queue`, `schedule`, `debug`, `middleware`, `middleware-loader`, `session-middleware`, `request-context`, `modules`, `image`, `upload`, `request`, `playwright`
 - CI: Bun 1.3.14 pinned, `libvips-dev` for sharp, biome lint check, 5-min timeout
 
-[0.3.0]: https://github.com/nexus-ts/bunigniter/compare/v0.2.0...v0.3.0
+[0.3.0]: https://github.com/kabyeon/bunigniter/compare/v0.2.0...v0.3.0

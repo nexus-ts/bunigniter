@@ -3,7 +3,7 @@
 # Bunigniter
 
 [![npm](https://img.shields.io/npm/v/bunigniter)](https://www.npmjs.com/package/bunigniter)
-[![CI](https://github.com/nexus-ts/bunigniter/actions/workflows/ci.yml/badge.svg)](https://github.com/nexus-ts/bunigniter/actions)
+[![CI](https://github.com/kabyeon/bunigniter/actions/workflows/ci.yml/badge.svg)](https://github.com/kabyeon/bunigniter/actions)
 
 **Bun-native fullstack framework — CodeIgniter's DX × Elysia v2 performance × Edge-ready.**
 
@@ -80,7 +80,7 @@ No decorators. No DI containers. No boilerplate. Just `this.db`, `this.request`,
 
 ```bash
 # Clone & explore
-git clone https://github.com/nexus-ts/bunigniter.git
+git clone https://github.com/kabyeon/bunigniter.git
 cd bunigniter && bun install
 
 # Pick an example — all working out of the box

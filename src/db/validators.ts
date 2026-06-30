@@ -8,7 +8,7 @@
  * ```ts
  * // db/schema.ts
  * import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
- * import { createInsertSchema } from 'nexusts/db'
+ * import { createInsertSchema } from 'bunigniter/db'
  *
  * export const users = sqliteTable('users', {
  *   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -25,7 +25,7 @@
  *
  * Then in a route handler:
  * ```ts
- * import { defineHandler } from 'nexusts'
+ * import { defineHandler } from 'bunigniter'
  * import { insertUserSchema } from '@schema'
  *
  * export const POST = defineHandler.withValidator({
