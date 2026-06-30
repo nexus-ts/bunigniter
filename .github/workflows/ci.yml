@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Install sharp (peer dependency for tests)
+        run: bun add sharp
+
       - name: Create bunigniter package link for examples
         run: |
           mkdir -p node_modules/bunigniter

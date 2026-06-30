@@ -74,6 +74,8 @@ const path = upload.store(file, 'avatars') // → 'avatars/1712345678_abc123.jpg
 
 ## Image Manipulation
 
+> **Requires:** `bun add sharp` (peer dependency)
+
 ```ts
 import { Image } from 'bunigniter/services/image'
 ```
@@ -86,6 +88,12 @@ await Image.open('photo.jpg')
   .rotate(90)
   .watermark('logo.png', 'bottom-right', 0.5)
   .save('thumb.jpg')
+```
+
+Image service requires `sharp` as a peer dependency. Install it separately:
+
+```bash
+bun add sharp
 ```
 
 | Method | Description |

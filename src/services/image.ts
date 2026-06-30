@@ -3,6 +3,11 @@
  *
  * Uses `sharp` for high-performance image processing.
  *
+ * **Installation required:**
+ * ```bash
+ * bun add sharp
+ * ```
+ *
  * @example
  * ```ts
  * // Resize & save
@@ -22,7 +27,30 @@
  */
 import { existsSync, mkdirSync } from "node:fs"
 import { extname } from "node:path"
-import sharp, { type FitEnum, type Gravity, type Sharp } from "sharp"
+import type { FitEnum, Gravity, Sharp } from "sharp"
+
+// Lazy-loaded sharp instance
+let _sharp: typeof import("sharp").default | null = null
+
+/**
+ * Get sharp instance with lazy loading and error handling.
+ * Throws descriptive error if sharp is not installed.
+ */
+function getSharp(): typeof import("sharp").default {
+	if (!_sharp) {
+		try {
+			_sharp = require("sharp").default || require("sharp")
+		} catch (_error) {
+			throw new Error(
+				"Sharp is not installed. Image service requires sharp for image processing.\n" +
+					"Install it with: bun add sharp\n" +
+					"See: https://sharp.pixelplumbing.com/install",
+			)
+		}
+	}
+	// At this point _sharp is guaranteed to be set or an error was thrown
+	return _sharp!
+}
 
 export type ImageFormat = "jpeg" | "png" | "webp" | "gif" | "avif" | "tiff"
 
@@ -88,7 +116,8 @@ export class Image {
 	private _format: ImageFormat
 
 	constructor(input: Buffer | string, format?: ImageFormat) {
-		this._sharp = sharp(input)
+		const Sharp = getSharp()
+		this._sharp = Sharp(input)
 		this._format = format ?? "jpeg"
 	}
 
@@ -450,22 +479,23 @@ export class Image {
 			</svg>
 		`
 
+		const Sharp = getSharp()
 		const gravityMap: Record<string, number> = {
-			center: sharp.gravity.centre,
-			"top-left": sharp.gravity.northwest,
-			top: sharp.gravity.north,
-			"top-right": sharp.gravity.northeast,
-			left: sharp.gravity.west,
-			right: sharp.gravity.east,
-			"bottom-left": sharp.gravity.southwest,
-			bottom: sharp.gravity.south,
-			"bottom-right": sharp.gravity.southeast,
+			center: Sharp.gravity.centre,
+			"top-left": Sharp.gravity.northwest,
+			top: Sharp.gravity.north,
+			"top-right": Sharp.gravity.northeast,
+			left: Sharp.gravity.west,
+			right: Sharp.gravity.east,
+			"bottom-left": Sharp.gravity.southwest,
+			bottom: Sharp.gravity.south,
+			"bottom-right": Sharp.gravity.southeast,
 		}
 
 		this._sharp.composite([
 			{
 				input: Buffer.from(svgText),
-				gravity: gravityMap[position] ?? sharp.gravity.southeast,
+				gravity: gravityMap[position] ?? Sharp.gravity.southeast,
 			},
 		])
 

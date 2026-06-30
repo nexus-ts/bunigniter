@@ -4,6 +4,23 @@
 
 Uses `sharp` (libvips) for high-performance image processing. Available via `this.imageOpen()` in Controllers.
 
+## Installation
+
+**Image service requires `sharp` as a peer dependency.** Install it separately:
+
+```bash
+bun add sharp
+```
+
+Without `sharp`, importing or using Image methods will throw:
+
+```
+Error: Sharp is not installed. Install it with: bun add sharp
+Image service requires sharp for image processing.
+```
+
+> **Why separate?** Sharp is a ~30MB native binary. Projects that don't need image processing can skip it to keep dependencies lean.
+
 ---
 
 ## Basic Usage

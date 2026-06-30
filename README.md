@@ -68,7 +68,7 @@ No decorators. No DI containers. No boilerplate. Just `this.db`, `this.request`,
 | **CLI** | 28 artisan-style commands: `bi new`, `bi init`, `make:*`, `db:*`, `repl`, `list` |
 | **Realtime** | WebSocket (rooms, broadcast), SSE, cron scheduler |
 | **Middleware** | Logger, rate limiter, CORS, CSRF, timing |
-| **Services** | Cache, Queue, Mail, Upload, Image, Session, WS — tree-shakeable via `services:` in `config/app.ts` |
+| **Services** | Cache, Queue, Mail, Upload, Image (requires `sharp`), Session, WS — tree-shakeable via `services:` in `config/app.ts` |
 | **Endpoints** | `/health`, OpenAPI docs — toggle via `endpoints:` in `config/app.ts` |
 | **Security** | AES-256-GCM session encryption + HMAC, CSRF, rate limiting, JWT |
 | **Edge** | Cloudflare Workers, Deno — `bun run bi build:edge` |

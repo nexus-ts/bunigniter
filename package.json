@@ -20,13 +20,13 @@
     "./helpers/http": "./src/helpers/http.ts",
     "./helpers/image": "./src/helpers/image.ts",
     "./helpers/pagination": "./src/helpers/pagination.ts",
-    "./services/cache": "./src/libraries/cache.ts",
-    "./services/queue": "./src/libraries/queue.ts",
-    "./services/mail": "./src/libraries/mail.ts",
-    "./services/upload": "./src/libraries/upload.ts",
-    "./services/image": "./src/libraries/image.ts",
-    "./services/session": "./src/libraries/session.ts",
-    "./services/ws": "./src/libraries/ws.ts",
+    "./services/cache": "./src/services/cache.ts",
+    "./services/queue": "./src/services/queue.ts",
+    "./services/mail": "./src/services/mail.ts",
+    "./services/upload": "./src/services/upload.ts",
+    "./services/image": "./src/services/image.ts",
+    "./services/session": "./src/services/session.ts",
+    "./services/ws": "./src/services/ws.ts",
     "./helpers/session": "./src/helpers/session.ts",
     "./helpers/cache": "./src/helpers/cache.ts",
     "./helpers/queue": "./src/helpers/queue.ts",
@@ -82,8 +82,15 @@
     "elysia": "^2.0.0-exp.22",
     "openapi-types": "^12.1.3",
     "rendu": "^0.1.0",
-    "sharp": "^0.35.2",
     "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "sharp": "^0.35.0"
+  },
+  "peerDependenciesMeta": {
+    "sharp": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
