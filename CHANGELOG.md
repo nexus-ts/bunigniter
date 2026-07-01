@@ -2,6 +2,12 @@
 
 All notable changes to Bunigniter are documented in this file.
 
+## [0.5.8] — 2026-07-01
+
+### Fixed
+
+- **Windows CLI compatibility** — `bi init` and `bi new` commands now work correctly on Windows. Fixed path separator handling in scaffold.ts where hardcoded `/` was used instead of platform-aware `path.dirname()`. Previously caused file creation failures on Windows due to incorrect directory path parsing.
+
 ## [0.5.7] — 2026-07-01
 
 ### Changed

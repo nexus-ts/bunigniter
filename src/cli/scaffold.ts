@@ -12,7 +12,7 @@
  */
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
-import { join, relative } from "node:path"
+import { dirname, join, relative } from "node:path"
 import { cwd, exit, stdin, stdout } from "node:process"
 import { render } from "./templates"
 
@@ -100,7 +100,7 @@ function ensureDir(dir: string): void {
 }
 
 function makeFile(filePath: string, content: string): void {
-	ensureDir(filePath.substring(0, filePath.lastIndexOf("/")))
+	ensureDir(dirname(filePath))
 	writeFileSync(filePath, content, "utf-8")
 	console.log(`  ${G("✓")}  Created: ${relative(cwd(), filePath)}`)
 }
